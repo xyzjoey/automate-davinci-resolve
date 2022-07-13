@@ -1,0 +1,29 @@
+[tool.tox]
+legacy_tox_ini = """
+
+[tox]
+envlist = davinci-{win}
+
+[testenv]
+skipsdist = true
+skip_install = true
+platform =
+    win: win32
+
+[testenv:davinci-{win}]
+passenv =
+    TEXT_CLIP_BIN_PATH
+    SUBTITLE_FILE_PATH
+    GAP_FILLER_CLIP_COLOR
+setenv =
+    win: RESOLVE_SCRIPT_API={env:ProgramData}\\Blackmagic Design\\DaVinci Resolve\\Support\\Developer\\Scripting
+    win: RESOLVE_SCRIPT_LIB=d:\\Programs\\Blackmagic Design\\DaVinci Resolve\\fusionscript.dll
+    win: PYTHONPATH={env:RESOLVE_SCRIPT_API}\\Modules\\
+deps =
+    py >= 1.11.0
+    pydantic >= 1.9.1
+    srt >= 3.5.2
+commands =
+    python {posargs}
+
+"""
