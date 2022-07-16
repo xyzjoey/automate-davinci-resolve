@@ -1,11 +1,22 @@
 # davinci-resolve-helpers
 
+## Feature
+- [x] generate fusion text from .srt subtitle file
+- [x] apply fusion text style to tracks
+
 ## How to run
-(Davinci Resolve Studio) Davinci Resolve > Preferences > Generael > External scripting using > Local
+Enable external scripting in Davinci Resolve Studio:
+
+Preferences > Generael > External scripting using > Local
 
 ```sh
-pip install tox
+pip install tox # if not yet installed
 python -m tox -e davinci-win -- scripts/<script_name>.py
+```
+
+```sh
+# e.g.
+python -m tox -e davinci-win -- scripts/choose_script.py
 ```
 
 ## Reference

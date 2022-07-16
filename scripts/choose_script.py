@@ -8,7 +8,7 @@ def main():
     choice_input.add_choice("i", fusion_text_from_srt.Process(), "import .srt file and generate fusion text in a new timeline")
     # choice_input.add_choice("o", ..., "export .srt file from fusion text in track")
     choice_input.add_choice("c", apply_current_fusion_text_style_to_track.Process(), "apply fusion text style from current clip to track")
-    choice_input.add_choice("m", ..., "apply fusion text style from media pool to track")
+    # choice_input.add_choice("m", ..., "apply fusion text style from media pool to track")
     choice_input.add_choice("q", SpecialInputValue.QUIT, "quit")
 
     print()
