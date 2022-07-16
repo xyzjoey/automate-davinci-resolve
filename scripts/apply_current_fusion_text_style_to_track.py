@@ -184,7 +184,7 @@ class Process:
         default_text_node.Delete()
 
         print("Text style:")
-        pprint.pprint({k: (v.value, v.default_value) for k, v in data.items() if not v.is_default and k in ["Font", "Style", "Size", "Red1", "Green1", "Blue1", "ShadingGradient1"]})
+        pprint.pprint({k: v.value for k, v in data.items() if not v.is_default and k in ["Font", "Style", "Size", "Red1", "Green1", "Blue1", "ShadingGradient1"]})
 
         return data
 
