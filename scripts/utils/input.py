@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, NamedTuple
 
-from .custom_print import CustomPrint
+from .terminal_io import TerminalIO
 
 
 class SpecialInputValue(Enum):
@@ -34,11 +34,11 @@ class ChoiceInput:
         full_prompt = f"{prompt} [{choice_name_hint}]: "
 
         while True:
-            choice_name = input(full_prompt)
+            choice_name = TerminalIO.colored_input(full_prompt)
             choice_value, error = self.validate(choice_name)
 
             if choice_value is None:
-                CustomPrint.print_error(str(error))
+                TerminalIO.print_error(str(error))
             elif choice_value == SpecialInputValue.HELP:
                 self.print_help()
             else:

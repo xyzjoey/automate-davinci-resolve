@@ -1,5 +1,5 @@
 import os.path
-from pprint import pprint
+import pprint
 from typing import List, Optional, NamedTuple
 
 from pydantic import BaseSettings, Field
@@ -7,8 +7,8 @@ import srt
 
 from davinci_utils.clip_color import ClipColor
 from davinci_utils.resolve_context import ResolveContext
-from utils.custom_print import CustomPrint
-from utils.fileio import FileIO
+from utils.terminal_io import TerminalIO
+from utils.file_io import FileIO
 
 
 class MediaPoolFusionCompositionInput:
@@ -21,13 +21,12 @@ class MediaPoolFusionCompositionInput:
     @classmethod
     def ask_for_input(cls, prompt):
         while True:
-            bin_path = input(prompt)
+            bin_path = TerminalIO.colored_input(prompt)
 
             try:
-                media_pool_fusion_composition_input = cls.validate(bin_path)
-                return media_pool_fusion_composition_input
+                return cls.validate(bin_path)
             except Exception as e:
-                CustomPrint.print_error(str(e))
+                TerminalIO.print_error(str(e))
 
     @classmethod
     def validate(cls, v):
@@ -64,15 +63,13 @@ class SubtitlesInput:
     @classmethod
     def ask_for_input(cls, prompt):
         while True:
-            print(prompt)
-
+            TerminalIO.print_question(prompt)
             file_path = FileIO.ask_file(patterns=[".srt"])
 
             try:
-                subtitles_input = cls.validate(file_path)
-                return subtitles_input
+                return cls.validate(file_path)
             except Exception as e:
-                CustomPrint.print_error(str(e))
+                TerminalIO.print_error(str(e))
 
     @classmethod
     def validate(cls, v):
@@ -90,7 +87,7 @@ class SubtitlesInput:
         try:
             print(f"Parsing subtitles from '{file_path}'...")
 
-            with open(file_path, encoding='utf-8') as f:
+            with open(file_path, encoding="utf-8") as f:
                 subtitles = list(srt.parse("".join(f.readlines())))
 
                 print(f"Parsed {len(subtitles)} subtitles")
@@ -111,7 +108,7 @@ class SubtitleInsertInfo(NamedTuple):
     is_gap_filler: bool
 
 
-class FusionTextFromSrtInputs(BaseSettings):
+class Inputs(BaseSettings):
     text_clip_input: MediaPoolFusionCompositionInput = Field(
         env="text_clip_bin_path",
         default_factory=lambda: MediaPoolFusionCompositionInput.ask_for_input("Please enter bin location of fusion composition you want to use for generating subtitle\n"
@@ -127,7 +124,7 @@ class FusionTextFromSrtInputs(BaseSettings):
     gap_filler_clip_color: ClipColor = ClipColor.Chocolate
 
 
-class FusionTextFromSrt:
+class Process:
     def __init__(self):
         self.resolve_context = ResolveContext.get()
 
@@ -174,8 +171,6 @@ class FusionTextFromSrt:
         return subtitle_insert_infos
 
     def prepare_timeline(self):
-        print("Creating timeline for insertion...")
-
         root_folder = self.resolve_context.media_pool.GetRootFolder()
         current_folder = self.resolve_context.media_pool.GetCurrentFolder()
 
@@ -217,19 +212,20 @@ class FusionTextFromSrt:
                 timeline_item.SetProperty("Opacity", 0)
 
         print()
-        print("Insersion done")
+        print("Done")
 
-    def run_with_input(self, inputs: FusionTextFromSrtInputs):
+    def run_with_input(self, inputs: Inputs):
         subtitle_insert_infos = self.prepare_subtitle_insert_infos(inputs.subtitles_input.get())
         timeline = self.prepare_timeline()
 
         self.insert_subtitles(timeline, inputs.text_clip_input.get(), inputs.gap_filler_clip_color, subtitle_insert_infos)
 
     def run(self):
-        inputs = FusionTextFromSrtInputs()
+        self.resolve_context.update()
+        inputs = Inputs()
 
         if inputs.subtitles_input is None:
-            CustomPrint.print_warning("Cancelled")
+            TerminalIO.print_warning("Cancelled")
             return
 
         self.run_with_input(inputs)
@@ -239,4 +235,4 @@ class FusionTextFromSrt:
 
 
 if __name__ == "__main__":
-    FusionTextFromSrt().main()
+    Process().main()

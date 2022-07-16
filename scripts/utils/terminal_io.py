@@ -1,7 +1,7 @@
 import py.io
 
 
-class CustomPrint:
+class TerminalIO:
     instance = None
 
     def __init__(self):
@@ -21,3 +21,12 @@ class CustomPrint:
     @classmethod
     def print_warning(cls, msg):
         cls.get().terminal_writer.write(f"{msg}\n", yellow=True)
+
+    @classmethod
+    def print_question(cls, msg):
+        cls.get().terminal_writer.write(f"{msg}\n", blue=True)
+
+    @classmethod
+    def colored_input(cls, msg):
+        cls.get().terminal_writer.write(f"{msg}", blue=True)
+        return input()
