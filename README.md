@@ -1,4 +1,4 @@
-# davinci-resolve-helpers
+# automate-davinci-resolve
 
 ## Feature
 - [x] generate fusion text from .srt subtitle file
