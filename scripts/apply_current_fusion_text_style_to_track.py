@@ -111,23 +111,17 @@ class VideoTrackIndicesInput:
             return v
 
         track_indices = None
-        error = None
 
         try:
             track_indices = [int(v)]
-        except Exception as e:
-            error = e
-        try:
-            track_indices = [int(index) for index in v]
-        except Exception as e:
-            error = e
-        try:
-            track_indices = [int(index) for index in eval(v)]
-        except Exception as e:
-            error = e
-
-        if track_indices is None:
-            raise Exception(f"'{v}' is not a valid integer or list of integer ({str(error)})")
+        except:
+            try:
+                track_indices = [int(index) for index in v]
+            except:
+                try:
+                    track_indices = [int(index) for index in eval(v)]
+                except Exception as e:
+                    raise Exception(f"'{v}' is not a valid integer or list of integer ({str(e)})")
 
         resolve_context = ResolveContext.get()
 
