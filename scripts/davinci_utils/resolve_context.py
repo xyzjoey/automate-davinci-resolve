@@ -61,10 +61,7 @@ class ResolveContext:
     instance = None
 
     def __init__(self):
-        self.resolve = DaVinciResolveScript.scriptapp("Resolve")
-
-        assert self.resolve is not None, "Failed to load DaVinci Resolve script app. Please check external scripting setting in davinci and environment variables. If settings are correct but still failed, please try restart davinci resolve."
-
+        self.resolve = None
         self.project_manager = None
         self.project = None
         self.media_storage = None
@@ -82,6 +79,11 @@ class ResolveContext:
         return cls.instance
 
     def update(self):
+        if self.resolve is None or not dir(self.resolve):
+            self.resolve = DaVinciResolveScript.scriptapp("Resolve")
+
+            assert self.resolve is not None, "Failed to load DaVinci Resolve script app. Please check external scripting setting in davinci and environment variables. If settings are correct but still failed, please try restart davinci resolve."
+
         self.project_manager = self.resolve.GetProjectManager()
         self.project = self.project_manager.GetCurrentProject()
         self.media_storage = self.resolve.GetMediaStorage()
