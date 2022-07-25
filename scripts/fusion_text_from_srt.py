@@ -171,17 +171,9 @@ class Process:
         return subtitle_insert_infos
 
     def prepare_timeline(self):
-        root_folder = self.resolve_context.media_pool.GetRootFolder()
-        current_folder = self.resolve_context.media_pool.GetCurrentFolder()
-
         timeline_name, timeline = self.resolve_context.create_timeline("Generated Subtitles")
-        timeline_as_media_pool_item = next((clip for clip in current_folder.GetClipList() if clip.GetName() == timeline_name), None)
 
-        if current_folder != root_folder:
-            self.resolve_context.media_pool.MoveClips([timeline_as_media_pool_item], )
-            self.resolve_context.media_pool.SetCurrentFolder(current_folder)
-
-        print(f"Created timeline '{timeline_name}' under root folder")
+        print(f"Created timeline '{timeline_name}' under current folder '{self.resolve_context.media_pool.GetCurrentFolder().GetName()}'")
 
         return timeline
 
@@ -205,11 +197,17 @@ class Process:
 
             comp = timeline_item.GetFusionCompByIndex(1)
             text_node = comp.FindToolByID("TextPlus")
-            text_node.SetInput("StyledText", insert_info.text_content)
 
-            if insert_info.is_gap_filler:
+            if not insert_info.is_gap_filler:
+                text_node.SetInput("StyledText", insert_info.text_content)
+            else:
                 timeline_item.SetClipColor(gap_filler_clip_color.value)
-                timeline_item.SetProperty("Opacity", 0)
+                text_node.Delete()
+
+                background = comp.Background()
+                background.SetInput("TopLeftAlpha", 0)
+                media_out = comp.FindToolByID("MediaOut")
+                media_out.ConnectInput("Input", background)
 
         print()
         print("Done")
