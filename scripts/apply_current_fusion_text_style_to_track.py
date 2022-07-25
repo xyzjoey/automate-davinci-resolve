@@ -229,7 +229,7 @@ class Process:
         print("Done")
 
     def run_with_inputs(self, inputs: Inputs):
-        fusion_text_data = self.get_fusion_text_data(inputs.text_clip_input.get(), exclude_ids=["StyledText"])
+        fusion_text_data = self.get_fusion_text_data(inputs.text_clip_input.get(), exclude_ids=["StyledText", "GlobalIn", "GlobalOut"])
         self.set_fusion_text_in_tracks(inputs.track_indices_input.get(), fusion_text_data)
 
     def run(self):
