@@ -19,34 +19,26 @@ class MediaPoolFusionCompositionInput:
         return self.media_pool_fusion_composition
 
     @classmethod
-    def ask_for_input(cls, prompt):
-        while True:
-            bin_path = TerminalIO.colored_input(prompt)
+    def ask_for_input(cls):
+        resolve_context = ResolveContext.get()
 
-            try:
-                return cls.validate(bin_path)
-            except Exception as e:
-                TerminalIO.print_error(str(e))
+        while True:
+            for media_pool_item, folders in resolve_context.iter_media_pool_items():
+                if (media_pool_item.GetClipProperty("Clip Name") == "Text+" and media_pool_item.GetClipProperty("Type") == "Generator"):
+                    print(f"Text+ found in Media Pool at {'/'.join([folder.GetName() for folder in folders])}")
+
+                    return cls(media_pool_item)
+
+            TerminalIO.print_error("Text+ not found in Media Pool\n"
+                                   "Due to scripting API limitation, it is required for user to put Text+ in Media Pool in advance")
+            TerminalIO.colored_input("Please put Text+ in anywhere in Media Pool and press Enter: ")
 
     @classmethod
     def validate(cls, v):
         if isinstance(v, cls):
             return v
 
-        bin_path = v
-        media_pool_item = ResolveContext.get().get_media_pool_item(bin_path)
-        clip_type = media_pool_item.GetClipProperty("Type")
-
-        if clip_type != "Generator":
-            raise Exception(f"Expect clip to be a fusion composition (Type=Generator), got Type={clip_type}")
-
-        print("Clip found:")
-        print(f"\tClip Name: {media_pool_item.GetClipProperty('Clip Name')}")
-        print(f"\tFile Name: {media_pool_item.GetClipProperty('File Name')}")
-        print(f"\tName: {media_pool_item.GetName()}")
-        print(f"\tType: {media_pool_item.GetClipProperty('Type')}")
-
-        return cls(media_pool_item)
+        raise Exception(f"Expected {cls}, get {type(v)}")
 
     @classmethod
     def __get_validators__(cls):
@@ -61,9 +53,9 @@ class SubtitlesInput:
         return self.subtitles
 
     @classmethod
-    def ask_for_input(cls, prompt):
+    def ask_for_input(cls):
         while True:
-            TerminalIO.print_question(prompt)
+            TerminalIO.print_question("Please select a subtitle file from the pop up file dialog")
             file_path = FileIO.ask_file(patterns=[".srt"])
 
             try:
@@ -109,19 +101,9 @@ class SubtitleInsertInfo(NamedTuple):
 
 
 class Inputs(BaseSettings):
-    text_clip_input: MediaPoolFusionCompositionInput = Field(
-        env="text_clip_bin_path",
-        default_factory=lambda: MediaPoolFusionCompositionInput.ask_for_input("Please enter bin location of fusion composition you want to use for generating subtitle\n"
-                                                                              "the fusion composition should include text+ node\n"
-                                                                              "E.g. 'subfolder/my_fusion_text' (relative path)\n"
-                                                                              "E.g. '/folder/my_fusion_text' (add '/' prefix for absolute path)\n"
-                                                                              ": ")
-    )
-    subtitles_input: Optional[SubtitlesInput] = Field(
-        env="subtitle_file_path",
-        default_factory=lambda: SubtitlesInput.ask_for_input("Please select a subtitle file from the pop up file dialog")
-    )
-    gap_filler_clip_color: ClipColor = ClipColor.Chocolate
+    text_clip_input: MediaPoolFusionCompositionInput = Field(default_factory=lambda: MediaPoolFusionCompositionInput.ask_for_input())
+    subtitles_input: Optional[SubtitlesInput] = Field(env="subtitle_file_path", default_factory=lambda: SubtitlesInput.ask_for_input())
+    gap_filler_clip_color: ClipColor
 
 
 class Process:
