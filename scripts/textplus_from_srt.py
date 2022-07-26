@@ -11,7 +11,7 @@ from utils.terminal_io import TerminalIO
 from utils.file_io import FileIO
 
 
-class MediaPoolFusionCompositionInput:
+class MediaPoolTextPlusInput:
     def __init__(self, media_pool_fusion_composition):
         self.media_pool_fusion_composition = media_pool_fusion_composition
 
@@ -101,7 +101,7 @@ class SubtitleInsertInfo(NamedTuple):
 
 
 class Inputs(BaseSettings):
-    text_clip_input: MediaPoolFusionCompositionInput = Field(default_factory=lambda: MediaPoolFusionCompositionInput.ask_for_input())
+    media_pool_textplus_input: MediaPoolTextPlusInput = Field(default_factory=lambda: MediaPoolTextPlusInput.ask_for_input())
     subtitles_input: Optional[SubtitlesInput] = Field(env="subtitle_file_path", default_factory=lambda: SubtitlesInput.ask_for_input())
     gap_filler_clip_color: ClipColor
 
@@ -143,7 +143,7 @@ class Process:
             used_subtitle_count += 1
             last_frame = subtitle_end_frame
 
-        print(f"Will insert {used_subtitle_count} text clips + {gap_filler_count} gap filler clips = {len(subtitle_insert_infos)} clips")
+        print(f"Will insert ({used_subtitle_count} Text+) + ({gap_filler_count} gap filler) = {len(subtitle_insert_infos)} clips")
 
         if len(unused_subtitles) > 0:
             print(f"{len(unused_subtitles)} subtitles will not be added because of overlapping")
@@ -159,11 +159,11 @@ class Process:
 
         return timeline
 
-    def insert_subtitles(self, timeline, media_pool_text_clip, gap_filler_clip_color, subtitle_insert_infos):
+    def insert_subtitles(self, timeline, media_pool_textplus, gap_filler_clip_color, subtitle_insert_infos):
         print(f"Inserting {len(subtitle_insert_infos)} clips into timeline '{timeline.GetName()}'...")
 
         insert_args = [{
-            "mediaPoolItem": media_pool_text_clip,
+            "mediaPoolItem": media_pool_textplus,
             "startFrame": 0,
             "endFrame": insert_info.frames - 1,
         } for insert_info in subtitle_insert_infos]
@@ -171,20 +171,20 @@ class Process:
         self.resolve_context.project.SetCurrentTimeline(timeline)
         timeline_items = self.resolve_context.media_pool.AppendToTimeline(insert_args)
 
-        assert timeline_items is not None, "Failed to add text clips"
+        assert timeline_items is not None, "Failed to add clips"
         assert len(subtitle_insert_infos) == len(timeline_items)
 
         for i, (insert_info, timeline_item) in enumerate(zip(subtitle_insert_infos, timeline_items)):
             print(f"Setting clip content ({i + 1}/{len(timeline_items)})...", end="\r")
 
             comp = timeline_item.GetFusionCompByIndex(1)
-            text_node = comp.FindToolByID("TextPlus")
+            textplus = comp.FindToolByID("TextPlus")
 
             if not insert_info.is_gap_filler:
-                text_node.SetInput("StyledText", insert_info.text_content)
+                textplus.SetInput("StyledText", insert_info.text_content)
             else:
                 timeline_item.SetClipColor(gap_filler_clip_color.value)
-                text_node.Delete()
+                textplus.Delete()
 
                 background = comp.Background()
                 background.SetInput("TopLeftAlpha", 0)
@@ -198,7 +198,7 @@ class Process:
         subtitle_insert_infos = self.prepare_subtitle_insert_infos(inputs.subtitles_input.get())
         timeline = self.prepare_timeline()
 
-        self.insert_subtitles(timeline, inputs.text_clip_input.get(), inputs.gap_filler_clip_color, subtitle_insert_infos)
+        self.insert_subtitles(timeline, inputs.media_pool_textplus_input.get(), inputs.gap_filler_clip_color, subtitle_insert_infos)
 
     def run(self):
         self.resolve_context.update()
