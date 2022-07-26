@@ -1,22 +1,29 @@
 # automate-davinci-resolve
 
 ## Feature
-- [x] generate fusion text from .srt subtitle file
-- [x] apply fusion text style to tracks
+- [x] generate Text+ from .srt subtitle file
+- [x] apply Text+ style to tracks
 
 ## How to run
-Enable external scripting in Davinci Resolve Studio:
-
-Preferences > Generael > External scripting using > Local
+1. Enable external scripting in Davinci Resolve Studio (Preferences > Generael > External scripting using > Local)
+2. run `install_requirements.bat`
+3. run `start_script_win.bat`
 
 ```sh
-pip install tox # if not yet installed
-python -m tox -e davinci-win -- scripts/<script_name>.py
+# what it will show
+=============
+Start script!
+=============
+? - print help
+a - apply Text+ style from the current timeline clip to track(s)
+g - generate Text+ in a new timeline from a .srt subtitle file
+q - quit
+What do you want to do? [?/a/g/q]:
 ```
 
+Or run from command:
 ```sh
-# e.g.
-python -m tox -e davinci-win -- scripts/choose_script.py
+python -m tox -e davinci-win -- scripts/<script_name>.py
 ```
 
 ## Reference

@@ -7,7 +7,7 @@ from davinci_utils.resolve_context import ResolveContext
 from utils.terminal_io import TerminalIO
 
 
-class CurrentFusionCompInput:
+class CurrentTimelineTextPlusInput:
     def __init__(self, clip):
         self.clip = clip
 
@@ -28,7 +28,7 @@ class CurrentFusionCompInput:
 
         while True:
             track_index = TerminalIO.colored_input(f"Please enter a video track index (available track: 1 to {track_count})\n"
-                                                    "for finding the clip at playhead as text style reference"
+                                                    "for finding the Text+ at playhead as style reference"
                                                     ": ")
 
             try:
@@ -47,6 +47,8 @@ class CurrentFusionCompInput:
         if not resolve_context.is_valid_track_index("video", track_index):
             raise Exception(f"'{track_index}' is out of track range")
 
+        print(f"Finding reference clip at playhead in video track {track_index} ('{resolve_context.project.GetCurrentTimeline().GetTrackName('video', track_index)}')...")
+
         timeline_item = resolve_context.find_current_timeline_item_at_track("video", track_index)
 
         if timeline_item is None:
@@ -60,12 +62,12 @@ class CurrentFusionCompInput:
         if timeline_item.GetFusionCompCount() == 0:
             raise Exception("Clip has no fusion composition")
 
-        text_node = timeline_item.GetFusionCompByIndex(1).FindToolByID("TextPlus")
+        textplus = timeline_item.GetFusionCompByIndex(1).FindToolByID("TextPlus")
 
-        if text_node is None:
+        if textplus is None:
             raise Exception("Clip has no Text+ node in 1st fusion composition")
 
-        print(f"\tText: {repr(text_node.GetInput('StyledText'))}")
+        print(f"\tText: {repr(textplus.GetInput('StyledText'))}")
 
         return cls(timeline_item)
 
@@ -95,7 +97,7 @@ class VideoTrackIndicesInput:
 
         while True:
             track_indices = TerminalIO.colored_input(f"Please enter video track indices (available track: 1 to {track_count})\n"
-                                                        "for applying text style\n"
+                                                        "for applying Text+ style\n"
                                                         "E.g. 2\n"
                                                         "E.g. 1,2,3\n"
                                                         ": ")
@@ -137,74 +139,58 @@ class VideoTrackIndicesInput:
 
 
 class Inputs(BaseSettings):
-    text_clip_input: CurrentFusionCompInput = Field(env="reference_track", default_factory=lambda: CurrentFusionCompInput.ask_for_input())
+    timeline_textplus_input: CurrentTimelineTextPlusInput = Field(env="reference_track", default_factory=lambda: CurrentTimelineTextPlusInput.ask_for_input())
     track_indices_input: VideoTrackIndicesInput = Field(env="tracks", default_factory=lambda: VideoTrackIndicesInput.ask_for_input())
-
-
-class TextPlusData(NamedTuple):
-    value: Any
-    is_gradient: bool
-    is_default: bool
-    default_value: Any
 
 
 class Process:
     def __init__(self):
         self.resolve_context = ResolveContext.get()
 
-    def get_fusion_text_data(self, timeline_item, exclude_ids):
+    def get_textplus_data(self, timeline_item, exclude_ids):
         comp = timeline_item.GetFusionCompByIndex(1)
-        text_node = comp.FindToolByID("TextPlus")
-        default_text_node = comp.AddTool("TextPlus")
+        textplus = comp.FindToolByID("TextPlus")
 
         data = {}
 
-        for input in text_node.GetInputList().values():
+        for input in textplus.GetInputList().values():
             input_id = input.GetAttrs('INPS_ID')
 
             if input_id in exclude_ids:
                 continue
 
-            value = text_node.GetInput(input_id)
-            default_value = default_text_node.GetInput(input_id)
-            is_gradient = hasattr(value, "ID") and value.ID == "Gradient"
+            data[input_id] = textplus.GetInput(input_id)
 
-            if is_gradient:
-                value = value.Value
-                default_value = default_value if default_value is None else default_value.Value
-
-            data[input_id] = TextPlusData(value=value, is_gradient=is_gradient, is_default=(value == default_value), default_value=default_value)
-
-        default_text_node.Delete()
-
-        print("Text style:")
-        pprint.pprint({k: v.value for k, v in data.items() if not v.is_default and k in ["Font", "Style", "Size", "Red1", "Green1", "Blue1", "ShadingGradient1"]})
+        print("Text+ style (partial info):")
+        print(f"\tFont: {data['Font']} ({data['Style']})")
+        print(f"\tSize: {data['Size']}")
+        print(f"\tColor: ({data['Red1']}, {data['Green1']}, {data['Blue1']})")
 
         return data
 
-    def set_fusion_text(self, timeline_item, fusion_text_data):
+    def set_textplus(self, timeline_item, textplus_data):
         if timeline_item.GetFusionCompCount() == 0:
             return False
 
         comp = timeline_item.GetFusionCompByIndex(1)
-        text_node = comp.FindToolByID("TextPlus")
+        textplus = comp.FindToolByID("TextPlus")
 
-        if text_node is None:
+        if textplus is None:
             return False
 
-        for id, data in fusion_text_data.items():
-            if data.is_gradient:
-                gradient = text_node.GetInput(id)
+        for id, value in textplus_data.items():
+            if hasattr(value, "ID") and value.ID == "Gradient":
+                gradient = textplus.GetInput(id)
 
-                if gradient is not None and gradient.Value != data.value:
-                    gradient.Value = data.value
+                if gradient is not None and gradient.Value != value.Value:
+                    gradient.Value = value.Value
             else:
-                if text_node.GetInput(id) != data.value:
-                    text_node.SetInput(id, data.value)
+                if textplus.GetInput(id) != value:
+                    textplus.SetInput(id, value)
 
         return True
 
-    def set_fusion_text_in_tracks(self, track_indices, fusion_text_data):
+    def set_textplus_in_tracks(self, track_indices, textplus_data):
         timeline = self.resolve_context.project.GetCurrentTimeline()
 
         for track_index in track_indices:
@@ -213,9 +199,9 @@ class Process:
             unapplied_count = 0
 
             for i, timeline_item in enumerate(timeline_items):
-                print(f"Applying fusion text style to {i + 1}/{len(timeline_items)} clip in video track {track_index}...", end="\r")
+                print(f"Applying Text+ style to {i + 1}/{len(timeline_items)} clip in video track {track_index}...", end="\r")
 
-                if self.set_fusion_text(timeline_item, fusion_text_data):
+                if self.set_textplus(timeline_item, textplus_data):
                     applied_count += 1
                 else:
                     unapplied_count += 1
@@ -229,8 +215,8 @@ class Process:
         print("Done")
 
     def run_with_inputs(self, inputs: Inputs):
-        fusion_text_data = self.get_fusion_text_data(inputs.text_clip_input.get(), exclude_ids=["StyledText", "GlobalIn", "GlobalOut"])
-        self.set_fusion_text_in_tracks(inputs.track_indices_input.get(), fusion_text_data)
+        textplus_data = self.get_textplus_data(inputs.timeline_textplus_input.get(), exclude_ids=["StyledText", "GlobalIn", "GlobalOut"])
+        self.set_textplus_in_tracks(inputs.track_indices_input.get(), textplus_data)
 
     def run(self):
         self.resolve_context.update()

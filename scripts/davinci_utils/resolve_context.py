@@ -111,6 +111,27 @@ class ResolveContext:
 
         return actual_name, timeline
 
+    def iter_media_pool_items(self):
+        folder_stacks = [[self.media_pool.GetRootFolder()]]
+
+        while folder_stacks != [[]]:
+            current_path = [folders[0] for folders in folder_stacks]
+            current_folder = folder_stacks[-1][0]
+
+            for media_pool_item in current_folder.GetClipList():
+                yield media_pool_item, current_path
+
+            subfolders = list(current_folder.GetSubFolderList())
+
+            if len(subfolders) > 0:
+                folder_stacks.append(subfolders)
+            else:
+                folder_stacks[-1].pop(0)
+
+                while len(folder_stacks[-1]) == 0 and len(folder_stacks) > 1:
+                    folder_stacks.pop()
+                    folder_stacks[-1].pop(0)
+
     def get_media_pool_item(self, path: str):
         tokens = path.split("/")
         folder_names = tokens[:-1]
