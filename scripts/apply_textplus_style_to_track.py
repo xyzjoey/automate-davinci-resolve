@@ -143,13 +143,6 @@ class Inputs(BaseSettings):
     track_indices_input: VideoTrackIndicesInput = Field(env="tracks", default_factory=lambda: VideoTrackIndicesInput.ask_for_input())
 
 
-class TextPlusData(NamedTuple):
-    value: Any
-    is_gradient: bool
-    is_default: bool
-    default_value: Any
-
-
 class Process:
     def __init__(self):
         self.resolve_context = ResolveContext.get()
@@ -157,7 +150,6 @@ class Process:
     def get_textplus_data(self, timeline_item, exclude_ids):
         comp = timeline_item.GetFusionCompByIndex(1)
         textplus = comp.FindToolByID("TextPlus")
-        default_textplus = comp.AddTool("TextPlus")
 
         data = {}
 
@@ -167,20 +159,12 @@ class Process:
             if input_id in exclude_ids:
                 continue
 
-            value = textplus.GetInput(input_id)
-            default_value = default_textplus.GetInput(input_id)
-            is_gradient = hasattr(value, "ID") and value.ID == "Gradient"
+            data[input_id] = textplus.GetInput(input_id)
 
-            if is_gradient:
-                value = value.Value
-                default_value = default_value if default_value is None else default_value.Value
-
-            data[input_id] = TextPlusData(value=value, is_gradient=is_gradient, is_default=(value == default_value), default_value=default_value)
-
-        default_textplus.Delete()
-
-        print("Text style:")
-        pprint.pprint({k: v.value for k, v in data.items() if not v.is_default and k in ["Font", "Style", "Size", "Red1", "Green1", "Blue1", "ShadingGradient1"]})
+        print("Text+ style (partial info):")
+        print(f"\tFont: {data['Font']} ({data['Style']})")
+        print(f"\tSize: {data['Size']}")
+        print(f"\tColor: ({data['Red1']}, {data['Green1']}, {data['Blue1']})")
 
         return data
 
@@ -194,15 +178,15 @@ class Process:
         if textplus is None:
             return False
 
-        for id, data in textplus_data.items():
-            if data.is_gradient:
+        for id, value in textplus_data.items():
+            if hasattr(value, "ID") and value.ID == "Gradient":
                 gradient = textplus.GetInput(id)
 
-                if gradient is not None and gradient.Value != data.value:
-                    gradient.Value = data.value
+                if gradient is not None and gradient.Value != value.Value:
+                    gradient.Value = value.Value
             else:
-                if textplus.GetInput(id) != data.value:
-                    textplus.SetInput(id, data.value)
+                if textplus.GetInput(id) != value:
+                    textplus.SetInput(id, value)
 
         return True
 
