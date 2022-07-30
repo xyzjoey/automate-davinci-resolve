@@ -5,9 +5,9 @@ from typing import List, Optional, NamedTuple
 from pydantic import BaseSettings, Field
 import srt
 
-from davinci_utils.clip_color import ClipColor
-from davinci_utils.resolve_context import ResolveContext
-from utils.terminal_io import TerminalIO
+from utils import terminal_io
+from utils.davinci_utils.clip_color import ClipColor
+from utils.davinci_utils.resolve_context import ResolveContext
 from utils.file_io import FileIO
 
 
@@ -29,9 +29,9 @@ class MediaPoolTextPlusInput:
 
                     return cls(media_pool_item)
 
-            TerminalIO.print_error("Text+ not found in Media Pool\n"
+            terminal_io.print_error("Text+ not found in Media Pool\n"
                                    "Due to scripting API limitation, it is required for user to put Text+ in Media Pool in advance")
-            TerminalIO.colored_input("Please put Text+ in anywhere in Media Pool and press Enter: ")
+            terminal_io.colored_input("Please put Text+ in anywhere in Media Pool and press Enter: ")
 
     @classmethod
     def validate(cls, v):
@@ -55,13 +55,13 @@ class SubtitlesInput:
     @classmethod
     def ask_for_input(cls):
         while True:
-            TerminalIO.print_question("Please select a subtitle file from the pop up file dialog")
+            terminal_io.print_question("Please select a subtitle file from the pop up file dialog")
             file_path = FileIO.ask_file(patterns=[".srt"])
 
             try:
                 return cls.validate(file_path)
             except Exception as e:
-                TerminalIO.print_error(str(e))
+                terminal_io.print_error(str(e))
 
     @classmethod
     def validate(cls, v):
@@ -205,7 +205,7 @@ class Process:
         inputs = Inputs()
 
         if inputs.subtitles_input is None:
-            TerminalIO.print_warning("Cancelled")
+            terminal_io.print_warning("Cancelled")
             return
 
         self.run_with_input(inputs)

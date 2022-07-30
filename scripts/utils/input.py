@@ -1,26 +1,32 @@
 from enum import Enum
 from typing import Any, NamedTuple
 
-from .terminal_io import TerminalIO
+from . import terminal_io
 
 
-class SpecialInputValue(Enum):
+class ChoiceValue(Enum):
     HELP = 1
     QUIT = 2
 
 
 class Choice(NamedTuple):
+    name: str
     value: Any
     description: str
 
 
 class ChoiceInput:
-    def __init__(self):
-        self.choices = {}
-        self.add_choice("?", SpecialInputValue.HELP, "print help")
+    def __init__(self, choices):
+        self.choices = {c.name: c for c in choices}
 
-    def add_choice(self, name, value, description=None):
-        self.choices[name] = Choice(value=value, description=description)
+        self.raw_value = None
+        self.selected_choice = None
+
+    def get_value(self):
+        return self.selected_choice.value if self.selected_choice is not None else None
+
+    def get_choice_names(self):
+        return self.choices.keys()
 
     def print_help(self):
         for name, choice in self.choices.items():
@@ -29,25 +35,26 @@ class ChoiceInput:
             else:
                 print(f"{name} - {choice.description}")
 
-    def ask_for_input(self, prompt):
-        choice_name_hint = "/".join(self.choices.keys())
+    @classmethod
+    def ask_for_input(cls, prompt, choices) -> "ChoiceInput":
+        choice_input = cls(choices)
+
+        choice_name_hint = "/".join(choice_input.get_choice_names())
         full_prompt = f"{prompt} [{choice_name_hint}]: "
 
         while True:
-            choice_name = TerminalIO.colored_input(full_prompt)
-            choice_value, error = self.validate(choice_name)
+            choice_input.raw_value = terminal_io.colored_input(full_prompt)
 
-            if choice_value is None:
-                TerminalIO.print_error(str(error))
-            elif choice_value == SpecialInputValue.HELP:
-                self.print_help()
-            else:
-                return choice_value
+            try:
+                return cls.validate(choice_input)
+            except Exception as e:
+                terminal_io.print_error(str(e))
 
-    def validate(self, choice_name):
-        choice = self.choices.get(choice_name)
+    @classmethod
+    def validate(cls, choice_input) -> "ChoiceInput":
+        choice_input.selected_choice = choice_input.choices.get(choice_input.raw_value)
 
-        if choice is None:
-            return None, Exception("Invalid input, type ? for help")
+        if choice_input.selected_choice is None:
+            raise Exception("Invalid input, type ? for help")
 
-        return choice.value, None
+        return choice_input

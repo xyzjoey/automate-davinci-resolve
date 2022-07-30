@@ -1,10 +1,9 @@
-import pprint
-from typing import Any, NamedTuple
-
 from pydantic import BaseSettings, Field
 
-from davinci_utils.resolve_context import ResolveContext
-from utils.terminal_io import TerminalIO
+from utils import terminal_io
+from utils.davinci_utils import textplus_utils
+from utils.davinci_utils.resolve_context import ResolveContext
+from utils.davinci_utils.track_context import TrackContext
 
 
 class CurrentTimelineTextPlusInput:
@@ -24,17 +23,17 @@ class CurrentTimelineTextPlusInput:
             try:
                 return cls.validate(1)
             except Exception as e:
-                TerminalIO.print_error(str(e))
+                terminal_io.print_error(str(e))
 
         while True:
-            track_index = TerminalIO.colored_input(f"Please enter a video track index (available track: 1 to {track_count})\n"
+            track_index = terminal_io.colored_input(f"Please enter a video track index (available track: 1 to {track_count})\n"
                                                     "for finding the Text+ at playhead as style reference"
                                                     ": ")
 
             try:
                 return cls.validate(track_index)
             except Exception as e:
-                TerminalIO.print_error(str(e))
+                terminal_io.print_error(str(e))
 
     @classmethod
     def validate(cls, v):
@@ -93,10 +92,10 @@ class VideoTrackIndicesInput:
             try:
                 return cls.validate([1])
             except Exception as e:
-                TerminalIO.print_error(str(e))
+                terminal_io.print_error(str(e))
 
         while True:
-            track_indices = TerminalIO.colored_input(f"Please enter video track indices (available track: 1 to {track_count})\n"
+            track_indices = terminal_io.colored_input(f"Please enter video track indices (available track: 1 to {track_count})\n"
                                                         "for applying Text+ style\n"
                                                         "E.g. 2\n"
                                                         "E.g. 1,2,3\n"
@@ -105,7 +104,7 @@ class VideoTrackIndicesInput:
             try:
                 return cls.validate(track_indices)
             except Exception as e:
-                TerminalIO.print_error(str(e))
+                terminal_io.print_error(str(e))
 
     @classmethod
     def validate(cls, v):
@@ -147,75 +146,21 @@ class Process:
     def __init__(self):
         self.resolve_context = ResolveContext.get()
 
-    def get_textplus_data(self, timeline_item, exclude_ids):
-        comp = timeline_item.GetFusionCompByIndex(1)
-        textplus = comp.FindToolByID("TextPlus")
-
-        data = {}
-
-        for input in textplus.GetInputList().values():
-            input_id = input.GetAttrs('INPS_ID')
-
-            if input_id in exclude_ids:
-                continue
-
-            data[input_id] = textplus.GetInput(input_id)
-
-        print("Text+ style (partial info):")
-        print(f"\tFont: {data['Font']} ({data['Style']})")
-        print(f"\tSize: {data['Size']}")
-        print(f"\tColor: ({data['Red1']}, {data['Green1']}, {data['Blue1']})")
-
-        return data
-
-    def set_textplus(self, timeline_item, textplus_data):
-        if timeline_item.GetFusionCompCount() == 0:
-            return False
-
-        comp = timeline_item.GetFusionCompByIndex(1)
-        textplus = comp.FindToolByID("TextPlus")
-
-        if textplus is None:
-            return False
-
-        for id, value in textplus_data.items():
-            if hasattr(value, "ID") and value.ID == "Gradient":
-                gradient = textplus.GetInput(id)
-
-                if gradient is not None and gradient.Value != value.Value:
-                    gradient.Value = value.Value
-            else:
-                if textplus.GetInput(id) != value:
-                    textplus.SetInput(id, value)
-
-        return True
-
     def set_textplus_in_tracks(self, track_indices, textplus_data):
         timeline = self.resolve_context.project.GetCurrentTimeline()
 
         for track_index in track_indices:
-            timeline_items = timeline.GetItemListInTrack("video", track_index)
-            applied_count = 0
-            unapplied_count = 0
-
-            for i, timeline_item in enumerate(timeline_items):
-                print(f"Applying Text+ style to {i + 1}/{len(timeline_items)} clip in video track {track_index}...", end="\r")
-
-                if self.set_textplus(timeline_item, textplus_data):
-                    applied_count += 1
-                else:
-                    unapplied_count += 1
-
-            print()
-
-            if unapplied_count > 0:
-                print(f"Applied to {applied_count} clips in video track {track_index}")
-                print(f"{unapplied_count} clips are skipped because cannot find Text+ node in 1st fusion composition")
+            track_context = TrackContext.get(timeline, "video", track_index)
+            textplus_utils.apply_textplus_style_to(track_context, textplus_data, print_progress=True)
 
         print("Done")
 
     def run_with_inputs(self, inputs: Inputs):
-        textplus_data = self.get_textplus_data(inputs.timeline_textplus_input.get(), exclude_ids=["StyledText", "GlobalIn", "GlobalOut"])
+        textplus_data = textplus_utils.get_textplus_data(inputs.timeline_textplus_input.get())
+
+        print("Text+ info:")
+        textplus_utils.print_textplus(textplus_data)
+
         self.set_textplus_in_tracks(inputs.track_indices_input.get(), textplus_data)
 
     def run(self):

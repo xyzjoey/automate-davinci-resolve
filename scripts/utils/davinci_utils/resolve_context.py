@@ -61,12 +61,14 @@ class ResolveContext:
     instance = None
 
     def __init__(self):
+        # resolve object
         self.resolve = None
         self.project_manager = None
         self.project = None
         self.media_storage = None
         self.media_pool = None
 
+        # cache
         self.start_timecode_cache = StartTimecodeCache()
         self.frame_rate_cache = FrameRateCache()
 
@@ -88,6 +90,11 @@ class ResolveContext:
         self.project = self.project_manager.GetCurrentProject()
         self.media_storage = self.resolve.GetMediaStorage()
         self.media_pool = self.project.GetMediaPool()
+
+    def print_timeline_item(self, timeline_item):
+        print(f"\tClip Name: {timeline_item.GetName()}")
+        print(f"\tStart: {self.frame_to_timecode(timeline_item.GetStart())}")
+        print(f"\tEnd: {self.frame_to_timecode(timeline_item.GetEnd())}")
 
     def get_unique_timeline_name(self, name) -> str:
         timeline_names = [self.project.GetTimelineByIndex(i + 1).GetName() for i in range(self.project.GetTimelineCount())]
