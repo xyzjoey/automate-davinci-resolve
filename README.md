@@ -3,6 +3,7 @@
 ## Feature
 - [x] generate Text+ from .srt subtitle file
 - [x] apply Text+ style to tracks
+- [x] monitor and apply Text+ track style continuously
 
 ## How to run
 1. Enable external scripting in Davinci Resolve Studio (Preferences > Generael > External scripting using > Local)
@@ -10,15 +11,17 @@
 3. run `start_script_win.bat`
 
 ```sh
-# what it will show
+# what it looks like
 =============
 Start script!
 =============
-? - print help
+What do you want to do? [a/g/m/q/?]: ?
 a - apply Text+ style from the current timeline clip to track(s)
 g - generate Text+ in a new timeline from a .srt subtitle file
+m - monitor and apply Text+ track style continuously
 q - quit
-What do you want to do? [?/a/g/q]:
+? - print help
+What do you want to do? [a/g/m/q/?]:
 ```
 
 Or run from command:

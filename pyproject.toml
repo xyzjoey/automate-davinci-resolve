@@ -24,6 +24,7 @@ deps =
     py >= 1.11.0
     pydantic >= 1.9.1
     srt >= 3.5.2
+    aioconsole >= 0.5.0
 commands =
     python {posargs}
 

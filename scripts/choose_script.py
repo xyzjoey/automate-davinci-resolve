@@ -1,28 +1,38 @@
+import asyncio
+
 import apply_textplus_style_to_track
 import textplus_from_srt
-from utils.input import ChoiceInput, SpecialInputValue
+import monitor_and_apply_textplus_track_style
+from utils.input import ChoiceInput, ChoiceValue, Choice
 
 
-def main():
-    choice_input = ChoiceInput()
-    choice_input.add_choice("a", apply_textplus_style_to_track.Process(), "apply Text+ style from the current timeline clip to track(s)")
-    choice_input.add_choice("g", textplus_from_srt.Process(), "generate Text+ in a new timeline from a .srt subtitle file")
-    choice_input.add_choice("q", SpecialInputValue.QUIT, "quit")
+async def main():
+    choices = [
+        Choice("a", apply_textplus_style_to_track.Process(), "apply Text+ style from the current timeline clip to track(s)"),
+        Choice("g", textplus_from_srt.Process(), "generate Text+ in a new timeline from a .srt subtitle file"),
+        Choice("m", monitor_and_apply_textplus_track_style.Process(), "monitor and apply Text+ track style continuously"),
+        Choice("q", ChoiceValue.QUIT, "quit"),
+        Choice("?", ChoiceValue.HELP, "print help"),
+    ]
 
     print()
     print("=============")
     print("Start script!")
     print("=============")
 
-    choice_input.print_help()
-
     while True:
-        action = choice_input.ask_for_input("What do you want to do?")
+        choice_input = ChoiceInput.ask_for_input("What do you want to do?", choices)
         
-        if action == SpecialInputValue.QUIT:
+        if choice_input.get_value() == ChoiceValue.HELP:
+            choice_input.print_help()
+        elif choice_input.get_value() == ChoiceValue.QUIT:
             break
         else:
-            action.run()
+            process = choice_input.get_value()
+            if asyncio.iscoroutinefunction(process.run):
+                await process.run()
+            else:
+                process.run()
 
     print("=============")
     print("End script")
@@ -30,4 +40,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
