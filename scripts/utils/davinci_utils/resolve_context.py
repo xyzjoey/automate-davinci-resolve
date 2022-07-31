@@ -1,4 +1,5 @@
 from datetime import datetime, time, timedelta
+from enum import Enum
 
 import DaVinciResolveScript
 
@@ -57,6 +58,12 @@ class FrameRateCache:
         return self.frame_rate
 
 
+class ResolveStatus(Enum):
+    NotAvail = 0
+    ProjectAvail = 1
+    TimelineAvail = 2
+
+
 class ResolveContext:
     instance = None
 
@@ -81,15 +88,21 @@ class ResolveContext:
         return cls.instance
 
     def update(self):
-        if self.resolve is None or not dir(self.resolve):
+        if self.resolve is None or self.resolve.GetProductName is None or self.resolve.GetProductName() is None:
             self.resolve = DaVinciResolveScript.scriptapp("Resolve")
 
-            assert self.resolve is not None, "Failed to load DaVinci Resolve script app. Please check external scripting setting in davinci and environment variables. If settings are correct but still failed, please try restart davinci resolve."
+            if self.resolve is None:
+                return ResolveStatus.NotAvail
 
         self.project_manager = self.resolve.GetProjectManager()
         self.project = self.project_manager.GetCurrentProject()
         self.media_storage = self.resolve.GetMediaStorage()
         self.media_pool = self.project.GetMediaPool()
+
+        if self.project.GetCurrentTimeline() is None:
+            return ResolveStatus.ProjectAvail
+        else:
+            return ResolveStatus.TimelineAvail
 
     def print_timeline_item(self, timeline_item):
         print(f"\tClip Name: {timeline_item.GetName()}")
