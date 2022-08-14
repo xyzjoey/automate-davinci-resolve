@@ -5,8 +5,10 @@ from . import terminal_io
 
 
 class ChoiceValue(Enum):
-    HELP = 1
+    HELP = 0
+    HELP_MORE = 1
     QUIT = 2
+    PAUSE = 3
 
 
 class Choice(NamedTuple):

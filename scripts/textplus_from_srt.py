@@ -7,7 +7,7 @@ import srt
 
 from utils import terminal_io
 from utils.davinci_utils.clip_color import ClipColor
-from utils.davinci_utils.resolve_context import ResolveContext
+from utils.davinci_utils.resolve_context import ResolveContext, ResolveStatus
 from utils.file_io import FileIO
 
 
@@ -201,14 +201,20 @@ class Process:
         self.insert_subtitles(timeline, inputs.media_pool_textplus_input.get(), inputs.gap_filler_clip_color, subtitle_insert_infos)
 
     def run(self):
-        self.resolve_context.update()
-        inputs = Inputs()
+        status = self.resolve_context.update()
 
-        if inputs.subtitles_input is None:
-            terminal_io.print_warning("Cancelled")
-            return
+        if status == ResolveStatus.NotAvail:
+            terminal_io.print_error("Failed to load Davinci Resolve script app. Is Davinci Resolve running?")
+        elif status == ResolveStatus.ProjectAvail:
+            terminal_io.print_error("Davinci Resolve project is not opened")
+        else:
+            inputs = Inputs()
 
-        self.run_with_input(inputs)
+            if inputs.subtitles_input is None:
+                terminal_io.print_warning("Cancelled")
+                return
+
+            self.run_with_input(inputs)
 
     def main(self):
         self.run()
