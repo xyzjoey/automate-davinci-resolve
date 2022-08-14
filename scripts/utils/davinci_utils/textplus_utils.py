@@ -1,5 +1,12 @@
+from typing import Any, NamedTuple
+
 from .track_context import TrackContext
 from .. import terminal_io
+
+
+class Gradient(NamedTuple):
+    fusion_gradient: Any
+    value: dict
 
 
 def get_textplus_data(timeline_item):
@@ -10,7 +17,12 @@ def get_textplus_data(timeline_item):
 
     for input in textplus.GetInputList().values():
         input_id = input.GetAttrs('INPS_ID')
-        data[input_id] = textplus.GetInput(input_id)
+        value = textplus.GetInput(input_id)
+
+        if hasattr(value, "ID") and value.ID == "Gradient":
+            data[input_id] = Gradient(fusion_gradient=value, value=value.Value)
+        else:
+            data[input_id] = value
 
     return data
 
@@ -32,11 +44,13 @@ def set_textplus_data(timeline_item, textplus_data, exclude_data_ids=[]):
         if id in exclude_data_ids:
             continue
 
-        if hasattr(value, "ID") and value.ID == "Gradient":
+        if isinstance(value, Gradient):
             gradient = textplus.GetInput(id)
 
-            if gradient is None or gradient.Value != value.Value:
-                gradient.Value = value.Value
+            if gradient is None:
+                textplus.SetInput(id, value.fusion_gradient)
+            elif gradient.Value != value.value:
+                gradient.Value = value.value
         else:
             if textplus.GetInput(id) != value:
                 textplus.SetInput(id, value)

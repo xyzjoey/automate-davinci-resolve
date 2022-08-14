@@ -2,7 +2,7 @@ from pydantic import BaseSettings, Field
 
 from utils import terminal_io
 from utils.davinci_utils import textplus_utils
-from utils.davinci_utils.resolve_context import ResolveContext
+from utils.davinci_utils.resolve_context import ResolveContext, ResolveStatus
 from utils.davinci_utils.track_context import TrackContext
 
 
@@ -164,9 +164,15 @@ class Process:
         self.set_textplus_in_tracks(inputs.track_indices_input.get(), textplus_data)
 
     def run(self):
-        self.resolve_context.update()
-        inputs = Inputs()
-        self.run_with_inputs(inputs)
+        status = self.resolve_context.update()
+
+        if status == ResolveStatus.NotAvail:
+            terminal_io.print_error("Failed to load Davinci Resolve script app. Is Davinci Resolve running?")
+        elif status == ResolveStatus.ProjectAvail:
+            terminal_io.print_error("Davinci Resolve project is not opened")
+        else:
+            inputs = Inputs()
+            self.run_with_inputs(inputs)
 
     def main(self):
         self.run()

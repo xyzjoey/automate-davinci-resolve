@@ -6,7 +6,7 @@ import aioconsole
 
 from utils import terminal_io
 from utils.davinci_utils import textplus_utils
-from utils.davinci_utils.resolve_context import ResolveContext
+from utils.davinci_utils.resolve_context import ResolveContext, ResolveStatus
 from utils.davinci_utils.track_context import TrackContext
 from utils.input import ChoiceInput, ChoiceValue, Choice
 
@@ -17,7 +17,7 @@ class ReferenceClip:
         self.textplus_data = textplus_utils.get_textplus_data(timeline_item)
 
     def print(self):
-        if self.timeline_item.GetName() is None:
+        if self.timeline_item.GetName is None or self.timeline_item.GetName() is None:
             print("\tClip Name: (clip is deleted)")
         else:
             ResolveContext.get().print_timeline_item(self.timeline_item)
@@ -25,16 +25,13 @@ class ReferenceClip:
         textplus_utils.print_textplus(self.textplus_data)
 
 
-class ExtraChoiceValue(Enum):
-    HELP_MORE = 1
-
-
 class ReferenceClipOrChoiceInput(ChoiceInput):
     def __init__(self):
         super().__init__([
-            Choice("q", ChoiceValue.QUIT, "Quit"),
+            Choice("p", ChoiceValue.PAUSE, "pause or resume"),
+            Choice("q", ChoiceValue.QUIT, "quit"),
             Choice("?", ChoiceValue.HELP, "print help"),
-            Choice("??", ExtraChoiceValue.HELP_MORE, "print style being tracked"),
+            Choice("??", ChoiceValue.HELP_MORE, "print style being tracked"),
         ])
 
         self.track_index = None
@@ -110,6 +107,7 @@ class Process:
         self.resolve_context = ResolveContext.get()
         self.monitored_track_infos = {}
         self.styling_task = None
+        self.paused = False
 
     def print_monitored_track_info(self, print_style=False):
         current_timeline = self.resolve_context.project.GetCurrentTimeline()
@@ -203,7 +201,15 @@ class Process:
 
     async def maintain_track_styles(self):
         while True:
+            resolve_status = self.resolve_context.update()
+
+            if resolve_status != ResolveStatus.TimelineAvail:
+                terminal_io.print_warning("Detect Davinci Resolve project closed. Pause monitoring.")
+                self.paused = True
+                break
+
             timeline = self.resolve_context.project.GetCurrentTimeline()
+            timeline_id = timeline.GetUniqueId()
             track_count = timeline.GetTrackCount("video")
 
             new_track_contexts = {track_index: TrackContext.get(timeline, "video", track_index) for track_index in range(1, track_count + 1)}
@@ -211,8 +217,6 @@ class Process:
 
             self.update_monitored_tracks_on_track_moved(timeline, new_track_contexts)
 
-            timeline = self.resolve_context.project.GetCurrentTimeline()
-            timeline_id = timeline.GetUniqueId()
             track_infos = self.monitored_track_infos.get(timeline_id, {})
 
             for track_index, track_info in track_infos.items():
@@ -242,21 +246,34 @@ class Process:
             self.styling_task = None
 
     async def run(self):
-        self.resolve_context.update()
+        if self.resolve_context.update() != ResolveStatus.TimelineAvail:
+            terminal_io.print_error("Davinci Resolve project is not opened")
+            return
 
         while True:
             choice_input = await ReferenceClipOrChoiceInput.ask_for_input()
 
             await self.stop_maintain_track_styles()
 
-            if choice_input.get_value() == ChoiceValue.HELP:
+            if self.resolve_context.update() != ResolveStatus.TimelineAvail:
+                terminal_io.print_error("Davinci Resolve project is not opened. Paused.")
+                continue
+            elif choice_input.get_value() == ChoiceValue.HELP:
                 self.print_monitored_track_info()
                 choice_input.print_help()
-            elif choice_input.get_value() == ExtraChoiceValue.HELP_MORE:
+            elif choice_input.get_value() == ChoiceValue.HELP_MORE:
                 self.print_monitored_track_info(print_style=True)
             elif choice_input.get_value() == ChoiceValue.QUIT:
                 terminal_io.print_warning("Stop monitoring Text+ style")
                 break
+            elif choice_input.get_value() == ChoiceValue.PAUSE:
+                if self.paused:
+                    terminal_io.print_warning("Resume monitoring Text+ style")
+                    self.paused = False
+                else:
+                    terminal_io.print_normal("Pause monitoring Text+ style")
+                    self.paused = True
+                    continue
             else:
                 timeline = self.resolve_context.project.GetCurrentTimeline()
                 track_context = TrackContext.get(timeline, "video", choice_input.track_index)
