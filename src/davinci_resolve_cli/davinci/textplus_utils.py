@@ -1,7 +1,7 @@
 from typing import Any, NamedTuple
 
 from .track_context import TrackContext
-from .. import terminal_io
+from ..utils import terminal_io
 
 
 class Gradient(NamedTuple):

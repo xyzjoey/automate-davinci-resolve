@@ -11,8 +11,6 @@ platform =
     win: win32
 setenv = 
     PYTHONPATH={toxinidir}/src
-deps =
-    -rrequirements.txt
 
 [testenv:davinci-{win}]
 passenv =
@@ -22,7 +20,9 @@ setenv =
     GAP_FILLER_CLIP_COLOR={env:GAP_FILLER_CLIP_COLOR:Chocolate}
     win: RESOLVE_SCRIPT_API={env:ProgramData}\\Blackmagic Design\\DaVinci Resolve\\Support\\Developer\\Scripting
     win: RESOLVE_SCRIPT_LIB=d:\\Programs\\Blackmagic Design\\DaVinci Resolve\\fusionscript.dll
-    win: PYTHONPATH={env:RESOLVE_SCRIPT_API}\\Modules\\
+    win: PYTHONPATH={toxinidir}/src;{env:RESOLVE_SCRIPT_API}\\Modules\\
+deps =
+    -rrequirements.txt
 commands =
     python {posargs}
 
