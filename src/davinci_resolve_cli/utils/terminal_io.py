@@ -4,6 +4,7 @@ from contextlib import contextmanager
 import py.io
 
 
+# TODO: use curses
 class EscapeCode:
     SAVE_POSITION = "\x1b[s"
     MOVE_TO_SAVED_POSITION = "\x1b[u"

@@ -5,11 +5,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      # - uses: actions/setup-python@v4
-      #   with:
-      #     python-version: '3.9'
-      #     cache: 'pip'
       - run: pip install tox
-      - run: ls
-      - run: pwd
       - run: python -m tox -e test

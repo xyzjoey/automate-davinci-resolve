@@ -76,8 +76,8 @@ class ResolveContext:
         self.media_pool = None
 
         # cache
-        self.start_timecode_cache = StartTimecodeCache()
-        self.frame_rate_cache = FrameRateCache()
+        self.start_timecode_cache = StartTimecodeCache()  # TODO: remove
+        self.frame_rate_cache = FrameRateCache()  # TODO: remove
 
         self.update()
 
