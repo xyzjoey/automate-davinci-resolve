@@ -3,7 +3,7 @@ import asyncio
 import apply_textplus_style_to_track
 import textplus_from_srt
 import monitor_and_apply_textplus_track_style
-from utils.input import ChoiceInput, ChoiceValue, Choice
+from davinci_resolve_cli.utils.input import ChoiceInput, ChoiceValue, Choice
 
 
 async def main():

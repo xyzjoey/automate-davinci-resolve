@@ -5,10 +5,10 @@ from typing import List, Optional, NamedTuple
 from pydantic import BaseSettings, Field
 import srt
 
-from utils import terminal_io
-from utils.davinci_utils.clip_color import ClipColor
-from utils.davinci_utils.resolve_context import ResolveContext, ResolveStatus
-from utils.file_io import FileIO
+from davinci_resolve_cli.utils import terminal_io
+from davinci_resolve_cli.davinci.clip_color import ClipColor
+from davinci_resolve_cli.davinci.resolve_context import ResolveContext, ResolveStatus
+from davinci_resolve_cli.utils.file_io import FileIO
 
 
 class MediaPoolTextPlusInput:

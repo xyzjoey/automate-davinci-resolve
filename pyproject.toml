@@ -9,6 +9,8 @@ skipsdist = true
 skip_install = true
 platform =
     win: win32
+setenv = 
+    PYTHONPATH={toxinidir}/src
 
 [testenv:davinci-{win}]
 passenv =
@@ -16,16 +18,18 @@ passenv =
     GAP_FILLER_CLIP_COLOR
 setenv =
     GAP_FILLER_CLIP_COLOR={env:GAP_FILLER_CLIP_COLOR:Chocolate}
-
     win: RESOLVE_SCRIPT_API={env:ProgramData}\\Blackmagic Design\\DaVinci Resolve\\Support\\Developer\\Scripting
     win: RESOLVE_SCRIPT_LIB=d:\\Programs\\Blackmagic Design\\DaVinci Resolve\\fusionscript.dll
-    win: PYTHONPATH={env:RESOLVE_SCRIPT_API}\\Modules\\
+    win: PYTHONPATH={toxinidir}/src;{env:RESOLVE_SCRIPT_API}\\Modules\\
 deps =
-    py >= 1.11.0
-    pydantic >= 1.9.1
-    srt >= 3.5.2
-    aioconsole >= 0.5.0
+    -rrequirements.txt
 commands =
     python {posargs}
 
+[testenv:test]
+deps =
+    -rrequirements.txt
+    pytest
+commands =
+    pytest tests {posargs}
 """

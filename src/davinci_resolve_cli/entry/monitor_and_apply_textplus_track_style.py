@@ -1,14 +1,13 @@
 import asyncio
-from enum import Enum
 from typing import List
 
 import aioconsole
 
-from utils import terminal_io
-from utils.davinci_utils import textplus_utils
-from utils.davinci_utils.resolve_context import ResolveContext, ResolveStatus
-from utils.davinci_utils.track_context import TrackContext
-from utils.input import ChoiceInput, ChoiceValue, Choice
+from davinci_resolve_cli.utils import terminal_io
+from davinci_resolve_cli.davinci import textplus_utils
+from davinci_resolve_cli.davinci.resolve_context import ResolveContext, ResolveStatus
+from davinci_resolve_cli.davinci.track_context import TrackContext
+from davinci_resolve_cli.utils.input import ChoiceInput, ChoiceValue, Choice
 
 
 class ReferenceClip:

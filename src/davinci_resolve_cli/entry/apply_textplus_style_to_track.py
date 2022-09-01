@@ -1,9 +1,10 @@
 from pydantic import BaseSettings, Field
 
-from utils import terminal_io
-from utils.davinci_utils import textplus_utils
-from utils.davinci_utils.resolve_context import ResolveContext, ResolveStatus
-from utils.davinci_utils.track_context import TrackContext
+from davinci_resolve_cli.utils import terminal_io
+from davinci_resolve_cli.davinci import textplus_utils
+from davinci_resolve_cli.davinci.resolve_context import ResolveContext, ResolveStatus
+from davinci_resolve_cli.davinci.track_context import TrackContext
+from davinci_resolve_cli.utils.input import IntegerListInput
 
 
 class CurrentTimelineTextPlusInput:
@@ -111,19 +112,7 @@ class VideoTrackIndicesInput:
         if isinstance(v, cls):
             return v
 
-        track_indices = None
-
-        try:
-            track_indices = [int(v)]
-        except:
-            try:
-                track_indices = [int(index) for index in v]
-            except:
-                try:
-                    track_indices = [int(index) for index in eval(v)]
-                except Exception as e:
-                    raise Exception(f"'{v}' is not a valid integer or list of integer ({str(e)})")
-
+        track_indices = IntegerListInput.validate(v)
         resolve_context = ResolveContext.get()
 
         for i, track_index in enumerate(track_indices):
