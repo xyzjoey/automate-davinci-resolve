@@ -37,7 +37,13 @@ def mock_resolve_data(request):
 
 
 @pytest.fixture(autouse=True)
-def mock_resolve(monkeypatch, mock_resolve_data):
+def resolve_app(monkeypatch, mock_resolve_data):
     with monkeypatch.context() as m:
-        m.setattr("DaVinciResolveScript.scriptapp", lambda _: resolve_mock.ResolveAppMock(mock_resolve_data))
-        yield
+        resolve_app_mock = resolve_mock.ResolveAppMock(mock_resolve_data)
+        m.setattr("DaVinciResolveScript.scriptapp", lambda _: resolve_app_mock)
+        yield resolve_app_mock
+
+
+@pytest.fixture
+def current_timeline(resolve_app: resolve_mock.ResolveAppMock):
+    return resolve_app.GetProjectManager().GetCurrentProject().GetCurrentTimeline()

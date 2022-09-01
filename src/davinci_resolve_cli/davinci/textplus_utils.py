@@ -1,4 +1,4 @@
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, Optional
 
 from .track_context import TrackContext
 from ..utils import terminal_io
@@ -9,9 +9,21 @@ class Gradient(NamedTuple):
     value: dict
 
 
-def get_textplus_data(timeline_item):
+def find_textplus(timeline_item):
+    if timeline_item.GetFusionCompCount() == 0:
+        return None
+
     comp = timeline_item.GetFusionCompByIndex(1)
     textplus = comp.FindToolByID("TextPlus")
+
+    return textplus
+
+
+def get_textplus_data(timeline_item) -> Optional[dict]:
+    textplus = find_textplus(timeline_item)
+
+    if textplus is None:
+        return None
 
     data = {}
 
@@ -27,15 +39,11 @@ def get_textplus_data(timeline_item):
     return data
 
 
-def set_textplus_data(timeline_item, textplus_data, exclude_data_ids=[]):
-    if timeline_item.GetName() is None:  # clip is deleted
+def set_textplus_data(timeline_item, textplus_data, exclude_data_ids=[]) -> bool:
+    if timeline_item.GetName() is None:  # clip is deleted  # TODO: remove check
         return False
 
-    if timeline_item.GetFusionCompCount() == 0:
-        return False
-
-    comp = timeline_item.GetFusionCompByIndex(1)
-    textplus = comp.FindToolByID("TextPlus")
+    textplus = find_textplus(timeline_item)
 
     if textplus is None:
         return False
@@ -69,7 +77,7 @@ def apply_textplus_style_to(track_context: TrackContext, textplus_data, filter_i
 
     for i, timeline_item in enumerate(track_context.items):
         if print_progress:
-            terminal_io.print_normal(f"Applying Text+ style to {i + 1}/{len(track_context.items)} clip in video track {track_context.index}...", end="\r")
+            terminal_io.print_info(f"Applying Text+ style to {i + 1}/{len(track_context.items)} clip in video track {track_context.index}...", end="\r")
 
         if not filter_if(timeline_item):
             if set_textplus_data_only_style(timeline_item, textplus_data):
@@ -80,15 +88,15 @@ def apply_textplus_style_to(track_context: TrackContext, textplus_data, filter_i
         #     filtered_items.append(timeline_item)
 
     if print_progress:
-        terminal_io.print_normal("")
+        terminal_io.print_info("")
 
     applied_count = len(applied_items)
     skipped_count = len(skipped_items)
 
     if skipped_count == 0:
-        terminal_io.print_normal(f"Applied to {applied_count} clips in video track {track_context.index}.")
+        terminal_io.print_info(f"Applied to {applied_count} clips in video track {track_context.index}.")
     else:
-        terminal_io.print_normal(f"Applied to {applied_count} clips in video track {track_context.index}. ({skipped_count} clips without Text+ are skipped)")
+        terminal_io.print_info(f"Applied to {applied_count} clips in video track {track_context.index}. ({skipped_count} clips without Text+ are skipped)")
 
     return applied_items
 

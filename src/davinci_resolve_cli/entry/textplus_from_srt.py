@@ -5,9 +5,9 @@ from typing import List, Optional, NamedTuple
 from pydantic import BaseSettings, Field
 import srt
 
-from davinci_resolve_cli.utils import terminal_io
 from davinci_resolve_cli.davinci.clip_color import ClipColor
 from davinci_resolve_cli.davinci.resolve_context import ResolveContext, ResolveStatus
+from davinci_resolve_cli.utils import terminal_io
 from davinci_resolve_cli.utils.file_io import FileIO
 
 
@@ -31,7 +31,7 @@ class MediaPoolTextPlusInput:
 
             terminal_io.print_error("Text+ not found in Media Pool\n"
                                    "Due to scripting API limitation, it is required for user to put Text+ in Media Pool in advance")
-            terminal_io.colored_input("Please put Text+ in anywhere in Media Pool and press Enter: ")
+            terminal_io.prompt("Please put Text+ in anywhere in Media Pool and press Enter: ")
 
     @classmethod
     def validate(cls, v):
@@ -55,8 +55,7 @@ class SubtitlesInput:
     @classmethod
     def ask_for_input(cls):
         while True:
-            terminal_io.print_question("Please select a subtitle file from the pop up file dialog")
-            file_path = FileIO.ask_file(patterns=[".srt"])
+            file_path = FileIO.ask_file(title="subtitle file", patterns=[".srt"])
 
             try:
                 return cls.validate(file_path)
@@ -111,6 +110,8 @@ class Process:
         self.resolve_context = ResolveContext.get()
 
     def prepare_subtitle_insert_infos(self, subtitles):
+        timecode_context = self.resolve_context.get_current_timeline_context().get_timecode_context()
+
         subtitle_insert_infos = []
         unused_subtitles = []
         used_subtitle_count = 0
@@ -119,8 +120,11 @@ class Process:
         last_frame = 0
 
         for subtitle in subtitles:
-            subtitle_start_frame = self.resolve_context.timedelta_to_frame(subtitle.start)
-            subtitle_end_frame = self.resolve_context.timedelta_to_frame(subtitle.end)
+            subtitle_start = timecode_context.create_timecode_from_timedelta(subtitle.start, False)
+            subtitle_end = timecode_context.create_timecode_from_timedelta(subtitle.end, False)
+
+            subtitle_start_frame = subtitle_start.get_frame(False)
+            subtitle_end_frame = subtitle_end.get_frame(False)
 
             if last_frame > subtitle_start_frame:
                 unused_subtitles.append(subtitle)

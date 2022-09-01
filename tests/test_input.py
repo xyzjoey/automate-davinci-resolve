@@ -1,7 +1,8 @@
 import pytest
 from pydantic import BaseModel
 
-from davinci_resolve_cli.utils.input import Choice, ChoiceInput, ChoiceValue, IntegerListInput
+from davinci_resolve_cli.inputs.choice_input import Choice, ChoiceInput, ChoiceValue
+from davinci_resolve_cli.inputs.integer_list_input import IntegerListInput
 
 
 class TestInput:

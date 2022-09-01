@@ -6,8 +6,7 @@ import aioconsole
 from davinci_resolve_cli.utils import terminal_io
 from davinci_resolve_cli.davinci import textplus_utils
 from davinci_resolve_cli.davinci.resolve_context import ResolveContext, ResolveStatus
-from davinci_resolve_cli.davinci.track_context import TrackContext
-from davinci_resolve_cli.utils.input import ChoiceInput, ChoiceValue, Choice
+from davinci_resolve_cli.inputs.choice_input import ChoiceInput, ChoiceValue, Choice
 
 
 class ReferenceClip:
@@ -70,21 +69,17 @@ class ReferenceClipOrChoiceInput(ChoiceInput):
             return super().validate(choice_input)
 
         resolve_context = ResolveContext.get()
-        timeline = resolve_context.project.GetCurrentTimeline()
-        track_count = timeline.GetTrackCount("video")
+        timeline_context = resolve_context.get_current_timeline_context()
 
-        if track_index < 1 or track_count < track_index:
+        if not timeline_context.has_track("video", track_index):
             raise Exception(f"'{track_index}' is out of track range")
 
-        timeline_item = resolve_context.find_current_timeline_item_at_track("video", track_index)
+        timeline_item = timeline_context.get_current_item_at_track("video", track_index)
 
         if timeline_item is None:
             raise Exception("No clip at playhead location")
 
-        if timeline_item.GetFusionCompCount() == 0:
-            raise Exception(f"Clip '{timeline_item.GetName()}' has no fusion composition")
-
-        textplus = timeline_item.GetFusionCompByIndex(1).FindToolByID("TextPlus")
+        textplus = textplus_utils.find_textplus(timeline_item)
 
         if textplus is None:
             raise Exception(f"Clip '{timeline_item.GetName()}' has no Text+ node in 1st fusion composition")
@@ -180,12 +175,12 @@ class Process:
 
         # print
         if moved_tracks:
-            terminal_io.print_normal("Detected track(s) moved:")
+            terminal_io.print_info("Detected track(s) moved:")
             for old, new in moved_tracks.items():
-                terminal_io.print_normal(f"\t{old} --> {new}")
+                terminal_io.print_info(f"\t{old} --> {new}")
         
         if lost_tracks:
-            terminal_io.print_normal(f"Detected lost track(s): {lost_tracks}")
+            terminal_io.print_info(f"Detected lost track(s): {lost_tracks}")
 
     def update_monitored_tracks(self, timeline, track_context, reference_clip):
         timeline_id = timeline.GetUniqueId()
@@ -207,11 +202,12 @@ class Process:
                 self.paused = True
                 break
 
-            timeline = self.resolve_context.project.GetCurrentTimeline()
+            timeline_context = self.resolve_context.get_current_timeline_context()
+            timeline = timeline_context.timeline
             timeline_id = timeline.GetUniqueId()
             track_count = timeline.GetTrackCount("video")
 
-            new_track_contexts = {track_index: TrackContext.get(timeline, "video", track_index) for track_index in range(1, track_count + 1)}
+            new_track_contexts = {track_index: timeline_context.get_track_context("video", track_index) for track_index in range(1, track_count + 1)}
             new_track_contexts = {k: v for k, v in new_track_contexts.items() if v is not None}
 
             self.update_monitored_tracks_on_track_moved(timeline, new_track_contexts)
@@ -223,7 +219,7 @@ class Process:
                 newly_added_clip_ids = set(new_clip_ids) - set(track_info.clip_ids)
 
                 if len(newly_added_clip_ids) > 0:
-                    terminal_io.print_normal(f"Detected new clip(s) in video track {track_index}.")
+                    terminal_io.print_info(f"Detected new clip(s) in video track {track_index}.")
                     textplus_utils.apply_textplus_style_to(new_track_contexts[track_index], track_info.reference_clip.textplus_data, filter_if=lambda item: not item.GetUniqueId() in newly_added_clip_ids)
 
                 track_info.clip_ids = new_clip_ids
@@ -270,12 +266,13 @@ class Process:
                     terminal_io.print_warning("Resume monitoring Text+ style")
                     self.paused = False
                 else:
-                    terminal_io.print_normal("Pause monitoring Text+ style")
+                    terminal_io.print_info("Pause monitoring Text+ style")
                     self.paused = True
                     continue
             else:
-                timeline = self.resolve_context.project.GetCurrentTimeline()
-                track_context = TrackContext.get(timeline, "video", choice_input.track_index)
+                timeline_context = self.resolve_context.get_current_timeline_context()
+                timeline = timeline_context.timeline
+                track_context = timeline_context.get_track_context("video", choice_input.track_index)
 
                 self.update_monitored_tracks(timeline, track_context, choice_input.reference_clip)
                 textplus_utils.apply_textplus_style_to(track_context, choice_input.reference_clip.textplus_data, print_progress=True)

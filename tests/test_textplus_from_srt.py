@@ -10,6 +10,7 @@ from davinci_resolve_cli.entry.textplus_from_srt import SubtitleInsertInfo
 class TestTextplusFromSrt:
     @pytest.mark.mock_resolve_current_timeline({
         "setting": {"timelineFrameRate": 60.0},
+        "start_timecode": "01:00:00:00",
     })
     def test_subtitle_insert_infos(self):
         process = textplus_from_srt.Process()

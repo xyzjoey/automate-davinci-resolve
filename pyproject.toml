@@ -13,11 +13,7 @@ setenv =
     PYTHONPATH={toxinidir}/src
 
 [testenv:davinci-{win}]
-passenv =
-    SUBTITLE_FILE_PATH
-    GAP_FILLER_CLIP_COLOR
 setenv =
-    GAP_FILLER_CLIP_COLOR={env:GAP_FILLER_CLIP_COLOR:Chocolate}
     win: RESOLVE_SCRIPT_API={env:ProgramData}\\Blackmagic Design\\DaVinci Resolve\\Support\\Developer\\Scripting
     win: RESOLVE_SCRIPT_LIB=d:\\Programs\\Blackmagic Design\\DaVinci Resolve\\fusionscript.dll
     win: PYTHONPATH={toxinidir}/src;{env:RESOLVE_SCRIPT_API}\\Modules\\
