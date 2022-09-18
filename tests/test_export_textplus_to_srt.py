@@ -1,11 +1,10 @@
-# import inspect
 from datetime import timedelta
 
 import pytest
 import srt
 
 from davinci_resolve_cli.davinci.timeline_context import TimelineContext
-from davinci_resolve_cli.entry import export_srt_from_textplus
+from davinci_resolve_cli.entry import export_textplus_to_srt
 
 
 class TestExportSrt:
@@ -54,7 +53,7 @@ class TestExportSrt:
         },
     })
     def test_create_subtitles_from_timeline(self, current_timeline):
-        process = export_srt_from_textplus.Process()
+        process = export_textplus_to_srt.Process()
 
         subtitles = process.create_subtitles_from_timeline(TimelineContext(current_timeline))
 

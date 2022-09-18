@@ -136,10 +136,10 @@ class Process:
         self.resolve_context = ResolveContext.get()
 
     def set_textplus_in_tracks(self, track_indices, textplus_data):
-        timeline = self.resolve_context.project.GetCurrentTimeline()
+        timeline_context = self.resolve_context.get_current_timeline_context()
 
         for track_index in track_indices:
-            track_context = TimelineContext(timeline).get_track_context("video", track_index)
+            track_context = timeline_context.get_track_context("video", track_index)
             textplus_utils.apply_textplus_style_to(track_context, textplus_data, print_progress=True)
 
         print("Done")

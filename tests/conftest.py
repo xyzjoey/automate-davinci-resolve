@@ -6,9 +6,8 @@ from utils import resolve_mock
 
 
 def pytest_configure(config):
-    config.addinivalue_line(
-        "markers", "mock_resolve_current_timeline(data): mock current timeline data"
-    )
+    config.addinivalue_line("markers", "mock_resolve_current_timeline(data): mock current timeline data")
+    config.addinivalue_line("markers", "mock_resolve_project(data): mock project data")
 
     # mock module import
     sys.modules["DaVinciResolveScript"] = resolve_mock
@@ -16,9 +15,8 @@ def pytest_configure(config):
 
 @pytest.fixture
 def mock_resolve_data(request):
-    marker = request.node.get_closest_marker("mock_resolve_current_timeline")
-
     default_data = {
+        "product_name": "resolve",
         "project_manager": {
             "current_project": {
                 "media_pool": {},
@@ -28,10 +26,11 @@ def mock_resolve_data(request):
         "media_storage": {}
     }
 
-    if marker is None or len(marker.args) == 0:
-        return default_data
+    for marker in request.node.iter_markers("mock_resolve_project"):
+        default_data["project_manager"]["current_project"].update(marker.args[0])
 
-    default_data["project_manager"]["current_project"]["current_timeline"] = marker.args[0]
+    for marker in request.node.iter_markers("mock_resolve_current_timeline"):
+        default_data["project_manager"]["current_project"]["current_timeline"].update(marker.args[0])
 
     return default_data
 
@@ -41,7 +40,10 @@ def resolve_app(monkeypatch, mock_resolve_data):
     with monkeypatch.context() as m:
         resolve_app_mock = resolve_mock.ResolveAppMock(mock_resolve_data)
         m.setattr("DaVinciResolveScript.scriptapp", lambda _: resolve_app_mock)
+
         yield resolve_app_mock
+
+        mock_resolve_data.clear()
 
 
 @pytest.fixture

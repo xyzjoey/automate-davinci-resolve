@@ -16,7 +16,7 @@ class FileIO:
     settings = FileIOSettings()
 
     @classmethod
-    def ask_file(cls, title: str, patterns: list[str], **kw):
+    def ask_load_file(cls, title: str, patterns: list[str], **kw):
         if cls.settings.file_dialog:
             root = Tk()
             root.withdraw()
@@ -27,4 +27,20 @@ class FileIO:
             return filedialog.askopenfilename(title=title, **kw)
 
         else:
-            return terminal_io.prompt(f"Please enter the file path for {title} (should match {patterns}):")
+            return terminal_io.prompt(f"Please enter the file path for {title}:")
+
+    @classmethod
+    def ask_save_file(cls, title: str, patterns: list[str], **kw):
+        if cls.settings.file_dialog:
+            root = Tk()
+            root.withdraw()
+
+            kw["filetypes"] = [(p, p) for p in patterns]
+
+            default_filename = "*" if len(patterns) == 0 else "*" + patterns[0]
+
+            terminal_io.print_question(f"Please select the file path for {title} from file dialog")
+            return filedialog.asksaveasfilename(title=title, initialfile=default_filename, **kw)
+
+        else:
+            return terminal_io.prompt(f"Please enter the file path for {title}:")

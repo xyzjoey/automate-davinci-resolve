@@ -4,14 +4,14 @@ import srt
 
 from davinci_resolve_cli.davinci import textplus_utils
 from davinci_resolve_cli.process.process_base import ProcessBase, ProcessResult
-from davinci_resolve_cli.inputs.file_path_input import FilePathInput
+from davinci_resolve_cli.inputs.file_path_input import SaveFilePath
 from davinci_resolve_cli.utils import terminal_io
 
 
 class Inputs(BaseSettings):
-    subtitle_output_path: FilePathInput = Field(
-        description="where to export subtitle file",
-        default_factory=lambda: FilePathInput.ask_for_input("subtitle export", patterns=[".srt"])
+    subtitle_path: SaveFilePath = Field(
+        description="Path to export subtitle file",
+        default_factory=lambda: SaveFilePath.ask_for_input("subtitle export", patterns=[".srt"])
     )
 
 
@@ -51,7 +51,9 @@ class Process(ProcessBase):
         subtitles = self.create_subtitles_from_timeline(self.resolve_context.get_current_timeline_context())
 
         file_content = srt.compose(subtitles)
-        inputs.subtitle_output_path.get().write_text(file_content)
+        inputs.subtitle_path.get().write_text(file_content, encoding="utf-8")
+
+        terminal_io.print_info(f"Successfully saved subtitles at {inputs.subtitle_path.get()}!")
 
         return ProcessResult.Done
 

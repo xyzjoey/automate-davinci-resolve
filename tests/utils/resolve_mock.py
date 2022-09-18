@@ -75,6 +75,9 @@ class ResolveProjectMock(ResolveMockBase):
     def GetCurrentTimeline(self):
         return ResolveTimelineMock(self._data["current_timeline"])
 
+    def GetSetting(self, name):
+        return self._data["setting"][name]
+
 
 class ResolveProjectManagerMock(ResolveMockBase):
     def GetCurrentProject(self):
@@ -82,6 +85,9 @@ class ResolveProjectManagerMock(ResolveMockBase):
 
 
 class ResolveAppMock(ResolveMockBase):
+    def GetProductName(self):
+        return self._data.get("product_name")
+
     def GetProjectManager(self):
         return ResolveProjectManagerMock(self._data["project_manager"])
 

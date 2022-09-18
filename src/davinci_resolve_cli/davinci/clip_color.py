@@ -2,7 +2,6 @@ from enum import Enum
 
 
 class ClipColor(Enum):
-    # ClearColor = "Clear Color"
     Orange = "Orange"
     Apricot = "Apricot"
     Yellow = "Yellow"

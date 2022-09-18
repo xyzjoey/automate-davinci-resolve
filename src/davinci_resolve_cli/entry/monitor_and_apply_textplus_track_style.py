@@ -271,10 +271,9 @@ class Process:
                     continue
             else:
                 timeline_context = self.resolve_context.get_current_timeline_context()
-                timeline = timeline_context.timeline
                 track_context = timeline_context.get_track_context("video", choice_input.track_index)
 
-                self.update_monitored_tracks(timeline, track_context, choice_input.reference_clip)
+                self.update_monitored_tracks(timeline_context.timeline, track_context, choice_input.reference_clip)
                 textplus_utils.apply_textplus_style_to(track_context, choice_input.reference_clip.textplus_data, print_progress=True)
 
             await self.start_maintain_track_styles()
