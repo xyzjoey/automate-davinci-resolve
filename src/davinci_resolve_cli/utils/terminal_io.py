@@ -31,7 +31,7 @@ class TerminalIO:
 
         return cls.instance
 
-    def print_normal(self, msg, end="\n"):
+    def print_info(self, msg, end="\n"):
         self.__print(f"{msg}{end}")
 
     def print_error(self, msg, end="\n"):
@@ -43,7 +43,7 @@ class TerminalIO:
     def print_question(self, msg, end="\n"):
         self.__print(f"{msg}{end}", blue=True)
 
-    def colored_input(self, msg):
+    def prompt(self, msg):
         self.__print(f"{msg}", blue=True)
         return input()
 
@@ -68,8 +68,8 @@ class TerminalIO:
             self.terminal_writer.write(msg, **kw)
 
 
-def print_normal(*args, **kw):
-    TerminalIO.get().print_normal(*args, **kw)
+def print_info(*args, **kw):
+    TerminalIO.get().print_info(*args, **kw)
 
 
 def print_error(*args, **kw):
@@ -84,8 +84,8 @@ def print_question(*args, **kw):
     TerminalIO.get().print_question(*args, **kw)
 
 
-def colored_input(*args, **kw):
-    return TerminalIO.get().colored_input(*args, **kw)
+def prompt(*args, **kw):
+    return TerminalIO.get().prompt(*args, **kw)
 
 
 @contextmanager
