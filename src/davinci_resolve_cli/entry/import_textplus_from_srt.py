@@ -152,9 +152,8 @@ class Process(ProcessBase):
 
         assert timeline is not None, f"Failed to create timeline 'AutoSubtitle'"
 
-        # timeline.SetSetting("timelineFrameRate", str(subtitle_insert_context.frame_rate))  # no effect, use project frame rate ("timelineFrameRate" is read-only?)
-
-        print(subtitle_insert_context)
+        # below has no effect, use project frame rate ("timelineFrameRate" is read-only?)
+        # timeline.SetSetting("timelineFrameRate", str(subtitle_insert_context.frame_rate))
 
         timeline_items = self.resolve_context.media_pool.AppendToTimeline([{
             "mediaPoolItem": media_pool_textplus if insert_info.text_content is not None else media_pool_dummy,
