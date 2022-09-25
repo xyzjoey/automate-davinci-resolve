@@ -42,7 +42,7 @@ class Process(ProcessBase):
                     start=start.get_timedelta(),
                     end=end.get_timedelta(),
                     content=text,
-                    proprietary=f"video track {track_context.track_index}",
+                    proprietary=f"video track {track_context.index}",
                 ))
 
         return subtitles

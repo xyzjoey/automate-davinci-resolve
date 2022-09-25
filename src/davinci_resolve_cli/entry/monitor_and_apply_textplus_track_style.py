@@ -118,7 +118,7 @@ class Process:
                 print(f"Video track {track_index} '{track_name}' reference clip: ")
                 info.reference_clip.print()
 
-    def update_monitored_tracks_on_track_moved(self, timeline, new_track_contexts):
+    def update_monitored_tracks_on_track_moved(self, timeline, new_track_contexts: dict):
         timeline_id = timeline.GetUniqueId()
         track_infos = self.monitored_track_infos.get(timeline_id)
 
@@ -126,12 +126,12 @@ class Process:
             return
 
         tracks_to_check = {track_index: set(info.clip_ids) for track_index, info in sorted(track_infos.items())}
-        avail_tracks = {track_index: set([item.GetUniqueId() for item in track_context.items]) for track_index, track_context in new_track_contexts.items()}
+        avail_tracks = {track_index: set([item.GetUniqueId() for item in track_context.timeline_items]) for track_index, track_context in new_track_contexts.items()}
         moved_tracks = {}
         lost_tracks = []
 
         # check for unmoved tracks
-        for track_index, old_clip_ids in dict(tracks_to_check).items():  # avoid RuntimeError: dictionary changed size during iteration
+        for track_index, old_clip_ids in list(dict(tracks_to_check).items()):  # avoid RuntimeError: dictionary changed size during iteration
             if track_index not in avail_tracks:
                 continue
 
@@ -143,7 +143,7 @@ class Process:
                 avail_tracks.pop(track_index)
 
         # check for moved tracks
-        for track_index, clip_ids in dict(tracks_to_check).items():
+        for track_index, clip_ids in list(dict(tracks_to_check).items()):
             for other_track_index, other_clip_ids in avail_tracks.items():
                 clip_exist = clip_ids & other_clip_ids
 
@@ -154,7 +154,7 @@ class Process:
                     break
 
         # check for unmoved tracks (empty track)
-        for track_index, old_clip_ids in dict(tracks_to_check).items():
+        for track_index, old_clip_ids in list(dict(tracks_to_check).items()):
             if track_index not in avail_tracks:
                 continue
 
@@ -185,7 +185,7 @@ class Process:
     def update_monitored_tracks(self, timeline, track_context, reference_clip):
         timeline_id = timeline.GetUniqueId()
         
-        track_info = MonitoredTrackInfo(reference_clip=reference_clip, clip_ids=[item.GetUniqueId() for item in track_context.items])
+        track_info = MonitoredTrackInfo(reference_clip=reference_clip, clip_ids=[item.GetUniqueId() for item in track_context.timeline_items])
         
         self.monitored_track_infos.setdefault(timeline_id, {})
         self.monitored_track_infos[timeline_id][track_context.index] = track_info
@@ -215,7 +215,7 @@ class Process:
             track_infos = self.monitored_track_infos.get(timeline_id, {})
 
             for track_index, track_info in track_infos.items():
-                new_clip_ids = [item.GetUniqueId() for item in new_track_contexts[track_index].items]
+                new_clip_ids = [item.GetUniqueId() for item in new_track_contexts[track_index].timeline_items]
                 newly_added_clip_ids = set(new_clip_ids) - set(track_info.clip_ids)
 
                 if len(newly_added_clip_ids) > 0:

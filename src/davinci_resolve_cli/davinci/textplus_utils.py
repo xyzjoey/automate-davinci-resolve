@@ -75,9 +75,9 @@ def apply_textplus_style_to(track_context: TrackContext, textplus_data, filter_i
     skipped_items = []
     # filtered_items = []
 
-    for i, timeline_item in enumerate(track_context.items):
+    for i, timeline_item in enumerate(track_context.timeline_items):
         if print_progress:
-            terminal_io.print_info(f"Applying Text+ style to {i + 1}/{len(track_context.items)} clip in video track {track_context.index}...", end="\r")
+            terminal_io.print_info(f"Applying Text+ style to {i + 1}/{len(track_context.timeline_items)} clip in video track {track_context.index}...", end="\r")
 
         if not filter_if(timeline_item):
             if set_textplus_data_only_style(timeline_item, textplus_data):
