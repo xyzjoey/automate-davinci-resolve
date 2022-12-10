@@ -46,6 +46,9 @@ class ResolveTimelineItemMock(ResolveMockBase):
 
         return ResolveFusionCompMock(comp) if comp is not None else None
 
+    def GetClipColor(self) -> str:
+        return self._data.get("clip_color", "")
+
 
 class ResolveTimelineMock(ResolveMockBase):
     def GetSetting(self, name) -> float:

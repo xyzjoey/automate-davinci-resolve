@@ -26,7 +26,7 @@ class ProcessBase:
 
         self.resolve_context.update()
 
-    async def run(self, use_arg_parser=False):
+    async def run(self):
         while True:
             status = self.resolve_context.update()
 
@@ -44,7 +44,7 @@ class ProcessBase:
             inputs = None
 
             try:
-                inputs = self.get_inputs(use_arg_parser)
+                inputs = self.get_inputs()
             except CancelledError:
                 terminal_io.print_warning("Cancelled")
                 return
@@ -57,13 +57,9 @@ class ProcessBase:
             if result == ProcessResult.Done:
                 return
 
-
-    def get_inputs(self, use_arg_parser):
-        if use_arg_parser:
-            parser = ArgumentAndEnvParser(self.input_model)
-            return parser.parse_args_and_env()
-        else:
-            return self.input_model()
+    def get_inputs(self):
+        parser = ArgumentAndEnvParser(self.input_model)
+        return parser.parse_args_and_env()
 
     def main(self):
-        asyncio.run(self.run(use_arg_parser=True))
+        asyncio.run(self.run())
