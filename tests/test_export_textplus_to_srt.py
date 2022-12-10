@@ -72,11 +72,11 @@ class TestExportSrt:
             merge_mode_color=ClipColor.Beige,
             ignore_mode_color=ClipColor.Brown,
         )
-        process = export_textplus_to_srt.Process()
+        action = export_textplus_to_srt.Action()
         timeline_context = TimelineContext(current_timeline)
 
-        subtitle_infos = process.get_text_clip_infos(timeline_context, SubtitleModeMap(inputs))
-        subtitles = process.get_subtitles(subtitle_infos, timeline_context.get_timecode_context())
+        subtitle_infos = action.get_text_clip_infos(timeline_context, SubtitleModeMap(inputs))
+        subtitles = action.get_subtitles(subtitle_infos, timeline_context.get_timecode_context())
 
         expected_subtitles = [
             srt.Subtitle(index=None, start=timedelta(0), end=timedelta(seconds=3, microseconds=233333), content="normal"),

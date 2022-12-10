@@ -7,7 +7,7 @@ from typing import List, Optional, NamedTuple
 from pydantic import BaseSettings, Field
 import srt
 
-from davinci_resolve_cli.process.process_base import ProcessBase, ProcessResult
+from davinci_resolve_cli.action.action_base import ActionBase, ActionResult
 from davinci_resolve_cli.davinci import textplus_utils
 from davinci_resolve_cli.davinci.clip_color import ClipColor
 from davinci_resolve_cli.davinci.timecode import TimecodeContext
@@ -69,7 +69,7 @@ class Inputs(BaseSettings):
     gap_filler_clip_color: Optional[ClipColor] = None
 
 
-class Process(ProcessBase):
+class Action(ActionBase):
     def __init__(self):
         super().__init__(
             input_model=Inputs,
@@ -197,8 +197,8 @@ class Process(ProcessBase):
 
         os.remove(temp_timeline_path)
 
-        return ProcessResult.Done
+        return ActionResult.Done
 
 
 if __name__ == "__main__":
-    Process().main()
+    Action().main()

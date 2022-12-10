@@ -12,11 +12,11 @@ class TestTextplusFromSrt:
         "setting": {"timelineFrameRate": 60.0},
     })
     def test_subtitle_insert_infos(self):
-        process = import_textplus_from_srt.Process()
+        action = import_textplus_from_srt.Action()
 
-        assert process.prepare_subtitle_insert_context([]).infos == []
+        assert action.prepare_subtitle_insert_context([]).infos == []
 
-        assert process.prepare_subtitle_insert_context(srt.parse(inspect.cleandoc(  # copied from pypi.org/project/srt/
+        assert action.prepare_subtitle_insert_context(srt.parse(inspect.cleandoc(  # copied from pypi.org/project/srt/
             """
             1
             00:00:33,843 --> 00:00:38,097
@@ -39,7 +39,7 @@ class TestTextplusFromSrt:
         ]
 
         # skip overlapping subtitles
-        assert process.prepare_subtitle_insert_context(srt.parse(inspect.cleandoc(
+        assert action.prepare_subtitle_insert_context(srt.parse(inspect.cleandoc(
             """
             1
             00:00:33,843 --> 00:00:38,097

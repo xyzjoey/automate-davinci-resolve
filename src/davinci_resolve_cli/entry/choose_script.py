@@ -10,10 +10,10 @@ from davinci_resolve_cli.inputs.choice_input import ChoiceInput, ChoiceValue, Ch
 async def main():
     # TODO use subparser
     choices = [
-        Choice("a", apply_textplus_style_to_track.Process(), "apply Text+ style from the current timeline clip to track(s)"),
-        Choice("e", export_textplus_to_srt.Process(), "export all Text+ content in current timeline to a subtitle file"),
-        Choice("i", import_textplus_from_srt.Process(), "import Text+ from a subtitle file in a new timeline"),
-        Choice("m", monitor_and_apply_textplus_track_style.Process(), "monitor and apply Text+ track style continuously"),
+        Choice("a", apply_textplus_style_to_track.Action(), "apply Text+ style from the current timeline clip to track(s)"),
+        Choice("e", export_textplus_to_srt.Action(), "export all Text+ content in current timeline to a subtitle file"),
+        Choice("i", import_textplus_from_srt.Action(), "import Text+ from a subtitle file in a new timeline"),
+        Choice("m", monitor_and_apply_textplus_track_style.Action(), "monitor and apply Text+ track style continuously"),
         Choice("q", ChoiceValue.QUIT, "quit"),
         Choice("?", ChoiceValue.HELP, "print help"),
     ]
@@ -31,11 +31,11 @@ async def main():
         elif choice_input.get_value() == ChoiceValue.QUIT:
             break
         else:
-            process = choice_input.get_value()
-            if asyncio.iscoroutinefunction(process.run):
-                await process.run()
+            action = choice_input.get_value()
+            if asyncio.iscoroutinefunction(action.run):
+                await action.run()
             else:
-                process.run()
+                action.run()
 
     print("=============")
     print("End script")

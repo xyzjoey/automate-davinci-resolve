@@ -96,7 +96,7 @@ class MonitoredTrackInfo:
         self.clip_ids = clip_ids
 
 
-class Process:
+class Action:
     def __init__(self):
         self.resolve_context = ResolveContext.get()
         self.monitored_track_infos = {}
@@ -283,4 +283,4 @@ class Process:
 
 
 if __name__ == "__main__":
-    asyncio.run(Process().main())
+    asyncio.run(Action().main())

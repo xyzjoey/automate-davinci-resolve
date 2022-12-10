@@ -12,12 +12,12 @@ from ..utils.errors import CancelledError
 from ..utils.settings import Settings
 
 
-class ProcessResult(Enum):
+class ActionResult(Enum):
     Done = 0
     Continue = 1
 
 
-class ProcessBase:
+class ActionBase:
     def __init__(self, input_model: Type[BaseSettings], required_resolve_status: ResolveStatus = ResolveStatus.TimelineAvail):
         self.settings = Settings.get()
         self.resolve_context = ResolveContext.get()
@@ -54,7 +54,7 @@ class ProcessBase:
             else:
                 result = self.run_with_input(inputs)
 
-            if result == ProcessResult.Done:
+            if result == ActionResult.Done:
                 return
 
     def get_inputs(self):
