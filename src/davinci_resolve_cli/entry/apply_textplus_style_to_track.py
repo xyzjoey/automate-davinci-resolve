@@ -131,7 +131,7 @@ class Inputs(BaseSettings):
     track_indices_input: VideoTrackIndicesInput = Field(env="tracks", default_factory=lambda: VideoTrackIndicesInput.ask_for_input())
 
 
-class Process:
+class Action:
     def __init__(self):
         self.resolve_context = ResolveContext.get()
 
@@ -168,4 +168,4 @@ class Process:
 
 
 if __name__ == "__main__":
-    Process().main()
+    Action().main()

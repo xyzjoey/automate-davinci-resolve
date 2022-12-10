@@ -1,1 +1,1 @@
-cmd /k pip install tox
+cmd /k python -m pip install tox

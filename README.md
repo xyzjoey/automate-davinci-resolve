@@ -3,7 +3,7 @@
 ## Feature
 - [x] generate Text+ from .srt subtitle file
 - [x] apply Text+ style to tracks
-- [x] monitor and apply Text+ track style continuously
+- [x] export Text+ to .srt subtitle file
 
 ## How to run
 1. Enable external scripting in Davinci Resolve Studio (Preferences > Generael > External scripting using > Local)

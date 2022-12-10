@@ -12,12 +12,12 @@ from ..utils.errors import CancelledError
 from ..utils.settings import Settings
 
 
-class ProcessResult(Enum):
+class ActionResult(Enum):
     Done = 0
     Continue = 1
 
 
-class ProcessBase:
+class ActionBase:
     def __init__(self, input_model: Type[BaseSettings], required_resolve_status: ResolveStatus = ResolveStatus.TimelineAvail):
         self.settings = Settings.get()
         self.resolve_context = ResolveContext.get()
@@ -26,7 +26,7 @@ class ProcessBase:
 
         self.resolve_context.update()
 
-    async def run(self, use_arg_parser=False):
+    async def run(self):
         while True:
             status = self.resolve_context.update()
 
@@ -44,7 +44,7 @@ class ProcessBase:
             inputs = None
 
             try:
-                inputs = self.get_inputs(use_arg_parser)
+                inputs = self.get_inputs()
             except CancelledError:
                 terminal_io.print_warning("Cancelled")
                 return
@@ -54,16 +54,12 @@ class ProcessBase:
             else:
                 result = self.run_with_input(inputs)
 
-            if result == ProcessResult.Done:
+            if result == ActionResult.Done:
                 return
 
-
-    def get_inputs(self, use_arg_parser):
-        if use_arg_parser:
-            parser = ArgumentAndEnvParser(self.input_model)
-            return parser.parse_args_and_env()
-        else:
-            return self.input_model()
+    def get_inputs(self):
+        parser = ArgumentAndEnvParser(self.input_model)
+        return parser.parse_args_and_env()
 
     def main(self):
-        asyncio.run(self.run(use_arg_parser=True))
+        asyncio.run(self.run())
