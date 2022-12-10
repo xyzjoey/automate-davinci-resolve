@@ -15,13 +15,14 @@
 =============
 Start script!
 =============
-What do you want to do? [a/g/m/q/?]: ?
+What do you want to do? [a/e/i/m/q/?]: ?
 a - apply Text+ style from the current timeline clip to track(s)
-g - generate Text+ in a new timeline from a .srt subtitle file
+e - export all Text+ content in current timeline to a subtitle file
+i - import Text+ from a subtitle file in a new timeline
 m - monitor and apply Text+ track style continuously
 q - quit
 ? - print help
-What do you want to do? [a/g/m/q/?]:
+What do you want to do? [a/e/i/m/q/?]:
 ```
 
 Or run from command:
@@ -30,6 +31,6 @@ python -m tox -e davinci-win -- scripts/<script_name>.py
 ```
 
 ## Reference
-- C:\ProgramData\Blackmagic Design\DaVinci Resolve\Support\Developer\Scripting\README.txt
+- Davinci Resolve README.txt (win default path: `C:\ProgramData\Blackmagic Design\DaVinci Resolve\Support\Developer\Scripting\README.txt`)
 - [Davinci_Resolve_18_Reference_Manual.pdf](https://documents.blackmagicdesign.com/UserManuals/DaVinci_Resolve_18_Reference_Manual.pdf)
 - [Fusion8_Scripting_Guide.pdf](https://documents.blackmagicdesign.com/UserManuals/Fusion8_Scripting_Guide.pdf)
