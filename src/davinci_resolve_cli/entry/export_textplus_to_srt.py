@@ -59,38 +59,38 @@ class Inputs(BaseSettings):
 
 class SubtitleModeMap:
     def __init__(self, inputs: Inputs):
-        self.map = {}
+        self.color_to_mode = {}
         self.default_mode = inputs.default_mode
 
         if inputs.replace_mode_color is not None:
-            self.map[inputs.replace_mode_color.value] = SubtitleMode.Replace
+            self.color_to_mode[inputs.replace_mode_color.value] = SubtitleMode.Replace
         if inputs.merge_mode_color is not None:
-            self.map[inputs.merge_mode_color.value] = SubtitleMode.Merge
+            self.color_to_mode[inputs.merge_mode_color.value] = SubtitleMode.Merge
         if inputs.ignore_mode_color is not None:
-            self.map[inputs.ignore_mode_color.value] = SubtitleMode.Ignore
+            self.color_to_mode[inputs.ignore_mode_color.value] = SubtitleMode.Ignore
 
     def get_mode(self, clip_color: str):
-        return self.map.get(clip_color, self.default_mode)
+        return self.color_to_mode.get(clip_color, self.default_mode)
 
 
 class TextClipInfoContainer:
     def __init__(self):
-        self.list = []
-        self.map = {}
+        self.infos = []
+        self.frame_to_infos = {}
 
     def add(self, text_clip_info):
         frame = text_clip_info.start_frame
-        self.map.setdefault(frame, [])
-        self.map[frame].append(text_clip_info)
-        self.list.append(text_clip_info)
+        self.frame_to_infos.setdefault(frame, [])
+        self.frame_to_infos[frame].append(text_clip_info)
+        self.infos.append(text_clip_info)
 
     def sorted_iterate(self) -> Generator[SubtitleInfo, None, None]:
-        for frame, text_clip_infos in sorted(self.map.items()):
+        for frame, text_clip_infos in sorted(self.frame_to_infos.items()):
             for text_clip_info in text_clip_infos:
                 yield text_clip_info
 
     def get_size(self):
-        return len(self.list)
+        return len(self.infos)
 
 
 class Action(ActionBase):
