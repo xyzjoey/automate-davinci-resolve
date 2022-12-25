@@ -26,7 +26,7 @@ async def main():
     print("=============")
 
     while True:
-        choice_input = ChoiceInput.ask_for_input("What do you want to do?", choices)
+        choice_input = ChoiceInput.ask_input("What do you want to do?", choices)
         
         if choice_input.get_value() == ChoiceValue.HELP:
             choice_input.print_help()

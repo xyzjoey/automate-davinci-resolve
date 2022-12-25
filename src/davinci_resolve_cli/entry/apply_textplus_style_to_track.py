@@ -14,7 +14,7 @@ class CurrentTimelineTextPlusInput:
         return self.clip
 
     @classmethod
-    def ask_for_input(cls):
+    def ask_input(cls):
         resolve_context = ResolveContext.get()
         track_count = resolve_context.project.GetCurrentTimeline().GetTrackCount("video")
         track_index = None
@@ -82,7 +82,7 @@ class VideoTrackIndicesInput:
         return self.track_indices
 
     @classmethod
-    def ask_for_input(cls):
+    def ask_input(cls):
         resolve_context = ResolveContext.get()
         track_count = resolve_context.project.GetCurrentTimeline().GetTrackCount("video")
         track_indices = None
@@ -126,8 +126,8 @@ class VideoTrackIndicesInput:
 
 
 class Inputs(BaseSettings):
-    timeline_textplus_input: CurrentTimelineTextPlusInput = Field(env="reference_track", default_factory=lambda: CurrentTimelineTextPlusInput.ask_for_input())
-    track_indices_input: VideoTrackIndicesInput = Field(env="tracks", default_factory=lambda: VideoTrackIndicesInput.ask_for_input())
+    timeline_textplus_input: CurrentTimelineTextPlusInput = Field(env="reference_track", default_factory=lambda: CurrentTimelineTextPlusInput.ask_input())
+    track_indices_input: VideoTrackIndicesInput = Field(env="tracks", default_factory=lambda: VideoTrackIndicesInput.ask_input())
 
 
 class Action:

@@ -1,15 +1,11 @@
+from typing import Any
+
 from .input_base import InputBase
 from ..davinci.resolve_context import ResolveContext
 from ..utils import terminal_io
 
 
-class CurrentClipInput(InputBase):
-    def __init__(self, clip):
-        self.clip = clip
-
-    def get(self):
-        return self.clip
-
+class CurrentClipInput(InputBase[Any]):
     @classmethod
     def __get_validators__(cls):
         yield cls.validate

@@ -8,7 +8,7 @@ from davinci_resolve_cli.davinci import textplus_utils
 from davinci_resolve_cli.davinci.clip_color import ClipColor
 from davinci_resolve_cli.davinci.timecode import Timecode
 from davinci_resolve_cli.action.action_base import ActionBase, ActionResult
-from davinci_resolve_cli.inputs.file_path_input import SaveFilePath
+from davinci_resolve_cli.inputs.file_path_input import SaveFilePathInput
 from davinci_resolve_cli.utils import terminal_io
 
 
@@ -32,9 +32,9 @@ class SubtitleInfo(NamedTuple):
 
 
 class Inputs(BaseSettings):
-    subtitle_path: SaveFilePath = Field(
+    subtitle_path: SaveFilePathInput = Field(
         description="Path to export subtitle file",
-        default_factory=lambda: SaveFilePath.ask_for_input("subtitle export", patterns=[".srt"])
+        default_factory=lambda: SaveFilePathInput.ask_input("subtitle export", patterns=[".srt"])
     )
     default_mode: SubtitleMode = Field(
         SubtitleMode.Replace,
@@ -86,7 +86,7 @@ class TextClipInfoContainer:
         self.infos.append(text_clip_info)
 
     def sorted_iterate(self) -> Generator[SubtitleInfo, None, None]:
-        for frame, text_clip_infos in sorted(self.frame_to_infos.items()):
+        for _, text_clip_infos in sorted(self.frame_to_infos.items()):
             for text_clip_info in text_clip_infos:
                 yield text_clip_info
 
