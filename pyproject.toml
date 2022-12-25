@@ -9,26 +9,35 @@ skipsdist = true
 skip_install = true
 platform =
     win: win32
+
+[base]
 setenv = 
     PYTHONPATH={toxinidir}/src
     DATA_DIR={toxinidir}/data
     TEMP_DIR={toxinidir}/.tmp
+deps =
+    aioconsole >= 0.5.0
+    py >= 1.11.0
+    pydantic[dotenv] >= 1.9.1
+    pydantic-argparse >= 0.5.0
+    srt >= 3.5.2
 
 [testenv:davinci-{win}]
 setenv =
+    {[base]setenv}
     win: RESOLVE_SCRIPT_API={env:ProgramData}\\Blackmagic Design\\DaVinci Resolve\\Support\\Developer\\Scripting
     win: RESOLVE_SCRIPT_LIB=d:\\Programs\\Blackmagic Design\\DaVinci Resolve\\fusionscript.dll
-    win: PYTHONPATH={toxinidir}/src;{env:RESOLVE_SCRIPT_API}\\Modules\\
-    DATA_DIR={toxinidir}/data
-    TEMP_DIR={toxinidir}/.tmp
+    win: PYTHONPATH={toxinidir}/src{:}{env:RESOLVE_SCRIPT_API}\\Modules\\
 deps =
-    -rrequirements.txt
+    {[base]deps}
 commands =
     python {posargs}
 
 [testenv:test]
+setenv =
+    {[base]setenv}
 deps =
-    -rrequirements.txt
+    {[base]deps}
     pytest
 commands =
     pytest tests {posargs}
