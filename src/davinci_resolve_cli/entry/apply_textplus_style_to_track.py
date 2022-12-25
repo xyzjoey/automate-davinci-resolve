@@ -2,7 +2,6 @@ from pydantic import BaseSettings, Field
 
 from davinci_resolve_cli.utils import terminal_io
 from davinci_resolve_cli.davinci import textplus_utils
-from davinci_resolve_cli.davinci.timeline_context import TimelineContext
 from davinci_resolve_cli.davinci.resolve_context import ResolveContext, ResolveStatus
 from davinci_resolve_cli.inputs.integer_list_input import IntegerListInput
 

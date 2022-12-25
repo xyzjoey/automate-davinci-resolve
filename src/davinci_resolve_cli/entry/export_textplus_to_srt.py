@@ -6,6 +6,7 @@ import srt
 
 from davinci_resolve_cli.davinci import textplus_utils
 from davinci_resolve_cli.davinci.clip_color import ClipColor
+from davinci_resolve_cli.davinci.timecode import Timecode
 from davinci_resolve_cli.action.action_base import ActionBase, ActionResult
 from davinci_resolve_cli.inputs.file_path_input import SaveFilePath
 from davinci_resolve_cli.utils import terminal_io
@@ -148,8 +149,8 @@ class Action(ActionBase):
         for info in processed_infos:
             subtitles.append(srt.Subtitle(
                 index=None,
-                start=timecode_context.create_timecode_from_frame(info.start_frame, start_timecode_is_applied=True).get_timedelta(),
-                end=timecode_context.create_timecode_from_frame(info.end_frame, start_timecode_is_applied=True).get_timedelta(),
+                start=Timecode.from_frame(info.start_frame, timecode_context, True).get_timedelta(False),
+                end=Timecode.from_frame(info.end_frame, timecode_context, True).get_timedelta(False),
                 content=info.text,
             ))
 

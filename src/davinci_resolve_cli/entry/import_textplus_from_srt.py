@@ -10,7 +10,7 @@ import srt
 from davinci_resolve_cli.action.action_base import ActionBase, ActionResult
 from davinci_resolve_cli.davinci import textplus_utils
 from davinci_resolve_cli.davinci.clip_color import ClipColor
-from davinci_resolve_cli.davinci.timecode import TimecodeContext
+from davinci_resolve_cli.davinci.timecode import Timecode, TimecodeContext
 from davinci_resolve_cli.davinci.resolve_context import ResolveStatus
 from davinci_resolve_cli.utils import terminal_io
 from davinci_resolve_cli.inputs.file_path_input import LoadFilePath
@@ -105,8 +105,8 @@ class Action(ActionBase):
         last_frame = 0
 
         for subtitle in subtitles:
-            subtitle_start_frame = timecode_context.create_timecode_from_timedelta(subtitle.start, False).get_frame(False)
-            subtitle_end_frame = timecode_context.create_timecode_from_timedelta(subtitle.end, False).get_frame(False)
+            subtitle_start_frame = Timecode.from_timedelta(subtitle.start, timecode_context, False).get_frame(False)
+            subtitle_end_frame = Timecode.from_timedelta(subtitle.end, timecode_context, False).get_frame(False)
 
             if last_frame > subtitle_start_frame:  # there is overlap
                 skipped_subtitles.append(subtitle)

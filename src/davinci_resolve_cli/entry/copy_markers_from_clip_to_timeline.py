@@ -1,6 +1,7 @@
 from pydantic import BaseSettings, Field
 
 from davinci_resolve_cli.action.action_base import ActionBase, ActionResult
+from davinci_resolve_cli.davinci.timecode import Timecode
 from davinci_resolve_cli.inputs.current_clip_input import CurrentClipInput
 from davinci_resolve_cli.utils import terminal_io
 
@@ -21,8 +22,7 @@ class Action(ActionBase):
         timecode_context = timeline_context.get_timecode_context()
 
         item = inputs.current_clip.get()
-        start_frame_with_start_timecode = item.GetStart()
-        start_frame = timecode_context.create_timecode_from_frame(start_frame_with_start_timecode, start_timecode_is_applied=True).get_frame(apply_start_timecode=False)
+        start_frame = Timecode.from_frame(item.GetStart(), timecode_context, start_timecode_applied=True).get_frame(apply_start_timecode=False)
 
         added_markers_count = 0
 

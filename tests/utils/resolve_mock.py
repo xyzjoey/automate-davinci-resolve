@@ -1,4 +1,4 @@
-from davinci_resolve_cli.davinci.timecode import TimecodeContext
+from davinci_resolve_cli.davinci.timecode import Timecode, TimecodeContext
 from davinci_resolve_cli.davinci.timeline_context import TimelineContext
 
 
@@ -33,10 +33,10 @@ class ResolveTimelineItemMock(ResolveMockBase):
         self.timecode_context = timecode_context
 
     def GetStart(self) -> int:
-        return self.timecode_context.create_timecode_from_str(self._data["start"], True).get_frame(True)
+        return Timecode.from_str(self._data["start"], self.timecode_context, True).get_frame(True)
 
     def GetEnd(self) -> int:
-        return self.timecode_context.create_timecode_from_str(self._data["end"], True).get_frame(True)
+        return Timecode.from_str(self._data["end"], self.timecode_context, True).get_frame(True)
 
     def GetFusionCompCount(self) -> int:
         return len(self._data.get("fusion_comps", {}))

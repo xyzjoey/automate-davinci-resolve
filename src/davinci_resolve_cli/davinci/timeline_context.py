@@ -1,4 +1,4 @@
-from .timecode import TimecodeContext
+from .timecode import Timecode, TimecodeContext
 from .track_context import TrackContext
 
 
@@ -12,8 +12,7 @@ class TimelineContext:
     def get_current_item_at_track(self, track_type: str, track_index: int):
         timecode_context = self.get_timecode_context()
 
-        current_timecode = timecode_context.create_timecode_from_str(self.timeline.GetCurrentTimecode(), True)
-        current_frame = current_timecode.get_frame(True)
+        current_frame = Timecode.from_str(self.timeline.GetCurrentTimecode(), timecode_context, True).get_frame(True)
 
         for item in self.timeline.GetItemListInTrack(track_type, track_index):
             if (item.GetStart() <= current_frame) and (current_frame < item.GetEnd()):
