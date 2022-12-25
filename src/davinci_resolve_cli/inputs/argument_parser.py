@@ -13,7 +13,9 @@ class ArgumentAndEnvParser(pydantic_argparse.ArgumentParser):
         self.optional_model = types.create_optional_model(model, default_value=argparse.SUPPRESS)
         self.env_getter = types.create_env_getter(model, env_file=env_file)
 
-        super().__init__(self.optional_model, exit_on_error=False, *args, **kw)
+        kw["exit_on_error"] = False
+
+        super().__init__(self.optional_model, *args, **kw)
 
     def parse_args_and_env(self, args=None):
         envs = self.env_getter.get()

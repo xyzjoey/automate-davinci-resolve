@@ -1,5 +1,0 @@
-aioconsole >= 0.5.0
-py >= 1.11.0
-pydantic[dotenv] >= 1.9.1
-pydantic-argparse >= 0.5.0
-srt >= 3.5.2

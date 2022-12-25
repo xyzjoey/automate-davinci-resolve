@@ -42,7 +42,7 @@ class ReferenceClipOrChoiceInput(ChoiceInput):
         super().print_help()
 
     @classmethod
-    async def ask_for_input(cls) -> "ReferenceClipOrChoiceInput":
+    async def ask_input(cls) -> "ReferenceClipOrChoiceInput":
         choice_input = cls()
 
         choice_name_hint = "<int>/" + "/".join(choice_input.choices.keys())
@@ -246,7 +246,7 @@ class Action:
             return
 
         while True:
-            choice_input = await ReferenceClipOrChoiceInput.ask_for_input()
+            choice_input = await ReferenceClipOrChoiceInput.ask_input()
 
             await self.stop_maintain_track_styles()
 

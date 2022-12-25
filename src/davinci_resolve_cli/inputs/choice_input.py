@@ -38,7 +38,7 @@ class ChoiceInput:
                 print(f"{name} - {choice.description}")
 
     @classmethod
-    def ask_for_input(cls, prompt, choices) -> "ChoiceInput":
+    def ask_input(cls, prompt, choices) -> "ChoiceInput":
         choice_input = cls(choices)
 
         choice_name_hint = "/".join(choice_input.get_choice_names())

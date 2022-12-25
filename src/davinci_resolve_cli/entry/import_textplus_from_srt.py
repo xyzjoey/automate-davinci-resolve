@@ -1,6 +1,6 @@
 from contextlib import contextmanager
-import pprint
 import os
+import pprint
 import tempfile
 from typing import List, Optional, NamedTuple
 
@@ -10,44 +10,44 @@ import srt
 from davinci_resolve_cli.action.action_base import ActionBase, ActionResult
 from davinci_resolve_cli.davinci import textplus_utils
 from davinci_resolve_cli.davinci.clip_color import ClipColor
-from davinci_resolve_cli.davinci.timecode import TimecodeContext
+from davinci_resolve_cli.davinci.timecode import Timecode, TimecodeContext
 from davinci_resolve_cli.davinci.resolve_context import ResolveStatus
 from davinci_resolve_cli.utils import terminal_io
-from davinci_resolve_cli.inputs.file_path_input import LoadFilePath
+from davinci_resolve_cli.inputs.file_path_input import LoadFilePathInput
 
 
-class SubtitlesInput:
-    def __init__(self, subtitles):
-        self.subtitles: List[srt.Subtitle] = subtitles
-
-    def get(self):
-        return self.subtitles
-
+class SubtitleFileInput(LoadFilePathInput):
     @classmethod
-    def __get_validators__(cls):
-        yield LoadFilePath.validate
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v: LoadFilePath):
-        file_path = v.get()
+    def parse(cls, v: "SubtitleFileInput"):
+        if v.parsed_data is not None:
+            return v
 
         try:
-            terminal_io.print_info(f"Parsing subtitles from '{file_path}'...")
+            terminal_io.print_info(f"Parsing subtitles from '{v.get()}'...")
 
-            with open(file_path, encoding="utf-8") as f:
+            with open(v.get(), encoding="utf-8") as f:
                 subtitles = list(srt.parse("".join(f.readlines())))
 
                 terminal_io.print_info(f"Parsed {len(subtitles)} subtitles")
 
-                return cls(subtitles)
+                v.parsed_data = subtitles
+                return v
 
         except Exception as e:
             raise ValueError(f"Failed to parse subtitle file:\n{e}")
 
     @classmethod
-    def ask_for_input(cls):
-        return LoadFilePath.ask_for_input("subtitle file", [".srt"])
+    def ask_input(cls):
+        return super().ask_input("subtitle file", [".srt"])
+
+
+class Inputs(BaseSettings):
+    subtitle_file_input: SubtitleFileInput = Field(
+        alias="subtitle_path",
+        env="subtitle_import_path",
+        default_factory=lambda: SubtitleFileInput.ask_input()
+    )
+    gap_filler_clip_color: Optional[ClipColor] = None
 
 
 class SubtitleInsertInfo(NamedTuple):
@@ -58,15 +58,6 @@ class SubtitleInsertInfo(NamedTuple):
 class SubtitleInsertContext(NamedTuple):
     frame_rate: float
     infos: List[SubtitleInsertInfo]
-
-
-class Inputs(BaseSettings):
-    subtitles_input: Optional[SubtitlesInput] = Field(
-        alias="subtitle_path",
-        env="subtitle_path",
-        default_factory=lambda: SubtitlesInput.ask_for_input()
-    )
-    gap_filler_clip_color: Optional[ClipColor] = None
 
 
 class Action(ActionBase):
@@ -105,8 +96,8 @@ class Action(ActionBase):
         last_frame = 0
 
         for subtitle in subtitles:
-            subtitle_start_frame = timecode_context.create_timecode_from_timedelta(subtitle.start, False).get_frame(False)
-            subtitle_end_frame = timecode_context.create_timecode_from_timedelta(subtitle.end, False).get_frame(False)
+            subtitle_start_frame = Timecode.from_timedelta(subtitle.start, timecode_context, False).get_frame(False)
+            subtitle_end_frame = Timecode.from_timedelta(subtitle.end, timecode_context, False).get_frame(False)
 
             if last_frame > subtitle_start_frame:  # there is overlap
                 skipped_subtitles.append(subtitle)
@@ -184,7 +175,7 @@ class Action(ActionBase):
         temp_project_path = f"{self.settings.data_dir}/auto_subtitle.drp"
 
         with self.temp_project(temp_project_path, "auto_subtitle_{}"):
-            subtitle_insert_context = self.prepare_subtitle_insert_context(inputs.subtitles_input.get())
+            subtitle_insert_context = self.prepare_subtitle_insert_context(inputs.subtitle_file_input.get_parsed())
             timeline = self.create_subtitle_timeline(inputs, subtitle_insert_context)
 
             assert timeline.Export(temp_timeline_path, self.resolve_context.resolve.EXPORT_DRT, self.resolve_context.resolve.EXPORT_NONE)

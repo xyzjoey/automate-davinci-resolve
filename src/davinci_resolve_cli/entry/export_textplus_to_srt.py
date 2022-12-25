@@ -6,8 +6,9 @@ import srt
 
 from davinci_resolve_cli.davinci import textplus_utils
 from davinci_resolve_cli.davinci.clip_color import ClipColor
+from davinci_resolve_cli.davinci.timecode import Timecode
 from davinci_resolve_cli.action.action_base import ActionBase, ActionResult
-from davinci_resolve_cli.inputs.file_path_input import SaveFilePath
+from davinci_resolve_cli.inputs.file_path_input import SaveFilePathInput
 from davinci_resolve_cli.utils import terminal_io
 
 
@@ -31,9 +32,9 @@ class SubtitleInfo(NamedTuple):
 
 
 class Inputs(BaseSettings):
-    subtitle_path: SaveFilePath = Field(
+    subtitle_path: SaveFilePathInput = Field(
         description="Path to export subtitle file",
-        default_factory=lambda: SaveFilePath.ask_for_input("subtitle export", patterns=[".srt"])
+        default_factory=lambda: SaveFilePathInput.ask_input("subtitle export", patterns=[".srt"])
     )
     default_mode: SubtitleMode = Field(
         SubtitleMode.Replace,
@@ -59,38 +60,38 @@ class Inputs(BaseSettings):
 
 class SubtitleModeMap:
     def __init__(self, inputs: Inputs):
-        self.map = {}
+        self.color_to_mode = {}
         self.default_mode = inputs.default_mode
 
         if inputs.replace_mode_color is not None:
-            self.map[inputs.replace_mode_color.value] = SubtitleMode.Replace
+            self.color_to_mode[inputs.replace_mode_color.value] = SubtitleMode.Replace
         if inputs.merge_mode_color is not None:
-            self.map[inputs.merge_mode_color.value] = SubtitleMode.Merge
+            self.color_to_mode[inputs.merge_mode_color.value] = SubtitleMode.Merge
         if inputs.ignore_mode_color is not None:
-            self.map[inputs.ignore_mode_color.value] = SubtitleMode.Ignore
+            self.color_to_mode[inputs.ignore_mode_color.value] = SubtitleMode.Ignore
 
     def get_mode(self, clip_color: str):
-        return self.map.get(clip_color, self.default_mode)
+        return self.color_to_mode.get(clip_color, self.default_mode)
 
 
 class TextClipInfoContainer:
     def __init__(self):
-        self.list = []
-        self.map = {}
+        self.infos = []
+        self.frame_to_infos = {}
 
     def add(self, text_clip_info):
         frame = text_clip_info.start_frame
-        self.map.setdefault(frame, [])
-        self.map[frame].append(text_clip_info)
-        self.list.append(text_clip_info)
+        self.frame_to_infos.setdefault(frame, [])
+        self.frame_to_infos[frame].append(text_clip_info)
+        self.infos.append(text_clip_info)
 
     def sorted_iterate(self) -> Generator[SubtitleInfo, None, None]:
-        for frame, text_clip_infos in sorted(self.map.items()):
+        for _, text_clip_infos in sorted(self.frame_to_infos.items()):
             for text_clip_info in text_clip_infos:
                 yield text_clip_info
 
     def get_size(self):
-        return len(self.list)
+        return len(self.infos)
 
 
 class Action(ActionBase):
@@ -148,8 +149,8 @@ class Action(ActionBase):
         for info in processed_infos:
             subtitles.append(srt.Subtitle(
                 index=None,
-                start=timecode_context.create_timecode_from_frame(info.start_frame, start_timecode_is_applied=True).get_timedelta(),
-                end=timecode_context.create_timecode_from_frame(info.end_frame, start_timecode_is_applied=True).get_timedelta(),
+                start=Timecode.from_frame(info.start_frame, timecode_context, True).get_timedelta(False),
+                end=Timecode.from_frame(info.end_frame, timecode_context, True).get_timedelta(False),
                 content=info.text,
             ))
 
