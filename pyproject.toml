@@ -1,9 +1,6 @@
 [tool.tox]
 legacy_tox_ini = """
 
-[tox]
-envlist = davinci-{win}
-
 [testenv]
 skipsdist = true
 skip_install = true
@@ -12,9 +9,8 @@ platform =
 
 [base]
 setenv = 
-    PYTHONPATH={toxinidir}/src
-    DATA_DIR={toxinidir}/data
-    TEMP_DIR={toxinidir}/.tmp
+    DATA_DIR={toxinidir}{/}data
+    TEMP_DIR={toxinidir}{/}.tmp
 deps =
     aioconsole >= 0.5.0
     py >= 1.11.0
@@ -22,12 +18,14 @@ deps =
     pydantic-argparse >= 0.5.0
     srt >= 3.5.2
 
-[testenv:davinci-{win}]
+[testenv:cli-{win}]
 setenv =
     {[base]setenv}
-    win: RESOLVE_SCRIPT_API={env:ProgramData}\\Blackmagic Design\\DaVinci Resolve\\Support\\Developer\\Scripting
-    win: RESOLVE_SCRIPT_LIB=d:\\Programs\\Blackmagic Design\\DaVinci Resolve\\fusionscript.dll
-    win: PYTHONPATH={toxinidir}/src{:}{env:RESOLVE_SCRIPT_API}\\Modules\\
+    win: PROGRAMDATA={env:PROGRAMDATA}
+    win: PROGRAMFILES={env:PROGRAMFILES}
+    win: RESOLVE_SCRIPT_API={env:PROGRAMDATA}{/}Blackmagic Design{/}DaVinci Resolve{/}Support{/}Developer{/}Scripting
+    win: RESOLVE_SCRIPT_LIB={env:PROGRAMFILES}{/}Blackmagic Design{/}DaVinci Resolve{/}fusionscript.dll
+    win: PYTHONPATH={toxinidir}{/}src{:}{env:RESOLVE_SCRIPT_API}{/}Modules{/}
 deps =
     {[base]deps}
 commands =
@@ -36,6 +34,7 @@ commands =
 [testenv:test]
 setenv =
     {[base]setenv}
+    PYTHONPATH={toxinidir}{/}src
 deps =
     {[base]deps}
     pytest
