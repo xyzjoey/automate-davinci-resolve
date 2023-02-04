@@ -1,9 +1,9 @@
 # automate-davinci-resolve
 
 ## Feature
-- [x] generate Text+ from .srt subtitle file
-- [x] apply Text+ style to tracks
+- [x] import Text+ from .srt subtitle file
 - [x] export Text+ to .srt subtitle file
+- [x] apply Text+ style to tracks
 
 ## How to run
 1. Enable external scripting in Davinci Resolve Studio (Preferences > Generael > External scripting using > Local)
@@ -15,19 +15,20 @@
 =============
 Start script!
 =============
-What do you want to do? [a/e/i/m/q/?]: ?
+What do you want to do? [a/c/e/i/m/q/?]: ?
 a - apply Text+ style from the current timeline clip to track(s)
+c - copy markers from a clip to timeline
 e - export all Text+ content in current timeline to a subtitle file
 i - import Text+ from a subtitle file in a new timeline
 m - monitor and apply Text+ track style continuously
 q - quit
 ? - print help
-What do you want to do? [a/e/i/m/q/?]:
+What do you want to do? [a/c/e/i/m/q/?]:
 ```
 
 Or run from command:
 ```sh
-python -m tox -e davinci-win -- scripts/<script_name>.py
+python -m tox -e cli-win -- src/davinci_resolve_cli/entry/<script_name>.py
 ```
 
 ## Reference
