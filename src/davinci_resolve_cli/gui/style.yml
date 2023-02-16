@@ -1,0 +1,18 @@
+grid_columnconfigure:
+  - index: 1
+    weight: 1
+  - index: [1, 2]
+    weight: 0
+grid_rowconfigure:
+  - index: [0, 1, 2]
+    weight: 1
+
+sidebar:
+  grid:
+    row: 0
+    column: 0
+    rowspan: 4
+    sticky: nsew
+  grid_rowconfigure:
+    - index: 4
+      weight: 1
