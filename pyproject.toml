@@ -13,9 +13,7 @@ setenv =
     TEMP_DIR={toxinidir}{/}.tmp
 deps =
     customtkinter >= 5.1.2
-    py >= 1.11.0
-    pydantic-argparse >= 0.5.0
-    pydantic[dotenv] >= 1.9.1
+    pydantic >= 1.9.1
     srt >= 3.5.2
 
 [testenv:gui-{win}]
@@ -29,7 +27,7 @@ setenv =
 deps =
     {[base]deps}
 commands =
-    python src/davinci_resolve_cli/gui/main.py {posargs}
+    python {toxinidir}/main.py {posargs}
 
 [testenv:test]
 setenv =

@@ -1,7 +1,6 @@
 from typing import Any, NamedTuple, Optional
 
 from .track import Track
-from ..utils import terminal_io
 
 
 class Gradient(NamedTuple):
@@ -65,41 +64,3 @@ def set_textplus_data(timeline_item, textplus_data, exclude_data_ids=[]) -> bool
 
 def set_textplus_data_only_style(timeline_item, textplus_data):
     return set_textplus_data(timeline_item, textplus_data, exclude_data_ids=["StyledText", "GlobalIn", "GlobalOut"])
-
-
-def apply_textplus_style_to(track: Track, textplus_data, filter_if=lambda _: False, print_progress=False):
-    applied_items = []
-    skipped_items = []
-    # filtered_items = []
-
-    for i, timeline_item in enumerate(track.timeline_items):
-        if print_progress:
-            terminal_io.print_info(f"Applying Text+ style to {i + 1}/{len(track.timeline_items)} clip in video track {track.index}...", end="\r")
-
-        if not filter_if(timeline_item):
-            if set_textplus_data_only_style(timeline_item, textplus_data):
-                applied_items.append(timeline_item)
-            else:
-                skipped_items.append(timeline_item)
-        # else:
-        #     filtered_items.append(timeline_item)
-
-    if print_progress:
-        terminal_io.print_info("")
-
-    applied_count = len(applied_items)
-    skipped_count = len(skipped_items)
-
-    if skipped_count == 0:
-        terminal_io.print_info(f"Applied to {applied_count} clips in video track {track.index}.")
-    else:
-        terminal_io.print_info(f"Applied to {applied_count} clips in video track {track.index}. ({skipped_count} clips without Text+ are skipped)")
-
-    return applied_items
-
-
-# def print_textplus(textplus_data):
-#     print(f"\tText: {repr(textplus_data['StyledText'])}")
-#     print(f"\tFont: {textplus_data['Font']} ({textplus_data['Style']})")
-#     print(f"\tSize: {textplus_data['Size']}")
-#     print(f"\tColor: ({textplus_data['Red1']}, {textplus_data['Green1']}, {textplus_data['Blue1']})")
