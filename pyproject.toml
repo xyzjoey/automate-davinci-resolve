@@ -33,6 +33,7 @@ commands =
 setenv =
     {[base]setenv}
     PYTHONPATH={toxinidir}{/}src
+    RESOURCE_DIR={toxinidir}{/}test{/}resources
 deps =
     {[base]deps}
     pytest

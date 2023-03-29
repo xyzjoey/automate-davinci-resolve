@@ -23,6 +23,7 @@ class SubtitleFileInput:
         # TODO use Validator on pydantic v2 available
         # https://github.com/pydantic/pydantic/blob/main/docs/blog/pydantic-v2.md#validation-without-a-model-thumbsup
         file_path = _FilePath(file_path=v).file_path
+        file_path = file_path.resolve()
 
         try:
             # log.info(f"Parsing subtitles from '{v.get()}'...")

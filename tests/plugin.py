@@ -1,6 +1,7 @@
 import pytest
 
 from .utils.resolve_mock import ResolveAppMock
+from .utils.settings import TestSettings
 from davinci_resolve_cli.app.app import App
 from davinci_resolve_cli.app.context import InputContext
 from davinci_resolve_cli.gui.app import GuiApp
@@ -24,6 +25,11 @@ def gui_app(app):
 @pytest.fixture
 def app_settings(app):
     return app.settings
+
+
+@pytest.fixture
+def test_settings():
+    return TestSettings()
 
 
 @pytest.fixture(autouse=True)

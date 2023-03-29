@@ -1,7 +1,11 @@
 # import asyncio
 
 from .context import AppContext, InputContext
-from .actions import auto_textplus_style, import_textplus
+from .actions import (
+    auto_textplus_style,
+    export_textplus,
+    import_textplus,
+)
 from .actions.action_control import ActionControl
 from .settings import AppSettings
 from ..davinci.context import TimelineDiff, ResolveContext
@@ -16,6 +20,7 @@ class App:
     action_types = [
         auto_textplus_style.Action,
         import_textplus.Action,
+        export_textplus.Action,
     ]
 
     def __init__(self, resolve_app: ResolveApp):
