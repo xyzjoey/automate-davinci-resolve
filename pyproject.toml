@@ -30,6 +30,8 @@ commands =
     python {toxinidir}/main.py {posargs}
 
 [testenv:test]
+passenv =
+    DISPLAY
 setenv =
     {[base]setenv}
     PYTHONPATH={toxinidir}{/}src
