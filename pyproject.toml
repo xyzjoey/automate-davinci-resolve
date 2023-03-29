@@ -12,13 +12,11 @@ setenv =
     DATA_DIR={toxinidir}{/}data
     TEMP_DIR={toxinidir}{/}.tmp
 deps =
-    aioconsole >= 0.5.0
-    py >= 1.11.0
-    pydantic[dotenv] >= 1.9.1
-    pydantic-argparse >= 0.5.0
+    customtkinter >= 5.1.2
+    pydantic >= 1.9.1
     srt >= 3.5.2
 
-[testenv:cli-{win}]
+[testenv:gui-{win}]
 setenv =
     {[base]setenv}
     win: PROGRAMDATA={env:PROGRAMDATA}
@@ -29,15 +27,33 @@ setenv =
 deps =
     {[base]deps}
 commands =
-    python {posargs}
+    python {toxinidir}/main.py {posargs}
 
 [testenv:test]
+passenv =
+    DISPLAY
 setenv =
     {[base]setenv}
     PYTHONPATH={toxinidir}{/}src
+    RESOURCE_DIR={toxinidir}{/}test{/}resources
 deps =
     {[base]deps}
     pytest
 commands =
-    pytest tests {posargs}
+    pytest {toxinidir}/tests -v -ra {posargs}
+
+[testenv:check_format]
+deps =
+    black
+commands =
+    black {toxinidir} --check --color {posargs}
+
+[testenv:format]
+deps =
+    black
+commands =
+    black {toxinidir} {posargs}
 """
+
+[tool.black]
+line-length = 160

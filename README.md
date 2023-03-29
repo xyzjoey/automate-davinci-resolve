@@ -1,35 +1,17 @@
 # automate-davinci-resolve
-
-## Feature
-- [x] import Text+ from .srt subtitle file
-- [x] export Text+ to .srt subtitle file
-- [x] apply Text+ style to tracks
+- [x] Feature: Auto apply Text+ style for each track
+- [x] Feature: Import Text+ from .srt subtitle file
+- [x] Feature: Export Text+ to .srt subtitle file
+- [ ] Improve GUI look
 
 ## How to run
 1. Enable external scripting in Davinci Resolve Studio (Preferences > Generael > External scripting using > Local)
-2. run `install_requirements.bat`
-3. run `start_script_win.bat`
+2. Make sure `RESOLVE_SCRIPT_API` and `RESOLVE_SCRIPT_LIB` in `pyproject.toml` are pointing to correct path (depends on your Davinci Resolve installation)
+3. run `install_requirements.bat`
+4. run `start_script_win.bat` (for Windows)
 
-```sh
-# what it looks like
-=============
-Start script!
-=============
-What do you want to do? [a/c/e/i/m/q/?]: ?
-a - apply Text+ style from the current timeline clip to track(s)
-c - copy markers from a clip to timeline
-e - export all Text+ content in current timeline to a subtitle file
-i - import Text+ from a subtitle file in a new timeline
-m - monitor and apply Text+ track style continuously
-q - quit
-? - print help
-What do you want to do? [a/c/e/i/m/q/?]:
-```
-
-Or run from command:
-```sh
-python -m tox -e cli-win -- src/davinci_resolve_cli/entry/<script_name>.py
-```
+## How it looks
+![](images/app_screen_shot.png)
 
 ## Reference
 - Davinci Resolve README.txt (win default path: `C:\ProgramData\Blackmagic Design\DaVinci Resolve\Support\Developer\Scripting\README.txt`)

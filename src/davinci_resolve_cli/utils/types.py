@@ -1,23 +1,27 @@
-from typing import Type
+import typing
+from typing import Union
 
-from pydantic import BaseSettings
-
-
-def create_optional_model(model: Type[BaseSettings], default_value):
-    optional_model = type(f"Optional{model.__name__}", (model,), {})
-
-    for field in optional_model.__fields__.values():
-        field.default = default_value
-        field.default_factory = None
-        field.required = False
-
-    return optional_model
+from pydantic import BaseModel
+from pydantic.fields import UndefinedType
 
 
-def create_env_getter(model: Type[BaseSettings], env_file):
-    env_getter_cls = type(f"{model.__name__}EnvGetter", (model,), {
-        "__init__": lambda _: None,
-        "get": lambda self: self._build_values({}, _env_file=env_file)
-    })
+def is_union(_type):
+    return typing.get_origin(_type) is Union
 
-    return env_getter_cls()
+
+def is_optional(_type):
+    return is_union(_type) and type(None) in typing.get_args(_type)
+
+
+def get_union_underlying_types(_type):
+    return typing.get_args(_type)
+
+
+def get_pydantic_field_default(model: BaseModel, field_name: str):
+    field_info = model.__fields__[field_name].field_info
+    default = field_info.default
+
+    if isinstance(default, UndefinedType):
+        return None
+
+    return default
