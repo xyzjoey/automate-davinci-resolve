@@ -5,6 +5,8 @@ from .actions import (
     auto_textplus_style,
     export_textplus,
     import_textplus,
+    print_clip_info,
+    sync_textplus_style,
 )
 from .actions.action_control import ActionControl
 from .settings import AppSettings
@@ -19,8 +21,10 @@ from ..utils.timer import Timer
 class App:
     action_types = [
         auto_textplus_style.Action,
+        sync_textplus_style.Action,
         import_textplus.Action,
         export_textplus.Action,
+        print_clip_info.Action,
     ]
 
     def __init__(self, resolve_app: ResolveApp):

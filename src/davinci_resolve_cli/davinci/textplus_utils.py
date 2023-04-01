@@ -1,11 +1,10 @@
 from typing import Any, NamedTuple, Optional
 
-from .track import Track
 
-
-class Gradient(NamedTuple):
-    fusion_gradient: Any
-    value: dict
+class InputData(NamedTuple):
+    value: Any
+    expression: Optional[str]
+    fusion_object: Any
 
 
 def find_textplus(timeline_item):
@@ -18,7 +17,7 @@ def find_textplus(timeline_item):
     return textplus
 
 
-def get_textplus_data(timeline_item) -> Optional[dict]:
+def get_textplus_data(timeline_item) -> Optional[dict[str, InputData]]:
     textplus = find_textplus(timeline_item)
 
     if textplus is None:
@@ -31,33 +30,41 @@ def get_textplus_data(timeline_item) -> Optional[dict]:
         value = textplus.GetInput(input_id)
 
         if hasattr(value, "ID") and value.ID == "Gradient":
-            data[input_id] = Gradient(fusion_gradient=value, value=value.Value)
+            data[input_id] = InputData(value=value.Value, expression=input.GetExpression(), fusion_object=value)
         else:
-            data[input_id] = value
+            data[input_id] = InputData(value=value, expression=input.GetExpression(), fusion_object=None)
 
     return data
 
 
-def set_textplus_data(timeline_item, textplus_data, exclude_data_ids=[]) -> bool:
+def set_textplus_data(timeline_item, textplus_data: Optional[dict[str, InputData]], exclude_data_ids=[]) -> bool:
     textplus = find_textplus(timeline_item)
 
     if textplus is None:
         return False
 
-    for id, value in textplus_data.items():
-        if id in exclude_data_ids:
+    for input in textplus.GetInputList().values():
+        input_id = input.GetAttrs("INPS_ID")
+
+        if input_id in exclude_data_ids:
             continue
 
-        if isinstance(value, Gradient):
-            gradient = textplus.GetInput(id)
+        input_data = textplus_data.get(input_id)
 
-            if gradient is None:
-                textplus.SetInput(id, value.fusion_gradient)
-            elif gradient.Value != value.value:
-                gradient.Value = value.value
+        if input_data is None:
+            continue
+
+        if input_data.expression is not None:
+            input.SetExpression(input_data.expression)
         else:
-            if textplus.GetInput(id) != value:
-                textplus.SetInput(id, value)
+            if input.GetAttrs("INPS_DataType") == "Gradient":
+                gradient = textplus.GetInput(input_id)
+                if gradient is None:
+                    textplus.SetInput(input_id, input_data.fusion_object)
+                elif gradient.Value != input_data.value:
+                    gradient.Value = input_data.value
+            elif textplus.GetInput(input_id) != input_data.value:
+                textplus.SetInput(input_id, input_data.value)
 
     return True
 

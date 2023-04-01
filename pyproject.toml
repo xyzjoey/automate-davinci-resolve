@@ -29,6 +29,19 @@ deps =
 commands =
     python {toxinidir}/main.py {posargs}
 
+[testenv:cli-{win}]
+setenv =
+    {[base]setenv}
+    win: PROGRAMDATA={env:PROGRAMDATA}
+    win: PROGRAMFILES={env:PROGRAMFILES}
+    win: RESOLVE_SCRIPT_API={env:PROGRAMDATA}{/}Blackmagic Design{/}DaVinci Resolve{/}Support{/}Developer{/}Scripting
+    win: RESOLVE_SCRIPT_LIB={env:PROGRAMFILES}{/}Blackmagic Design{/}DaVinci Resolve{/}fusionscript.dll
+    win: PYTHONPATH={toxinidir}{/}src{:}{env:RESOLVE_SCRIPT_API}{/}Modules{/}
+deps =
+    {[base]deps}
+commands =
+    python {toxinidir}/main_cli.py {posargs}
+
 [testenv:test]
 passenv =
     DISPLAY

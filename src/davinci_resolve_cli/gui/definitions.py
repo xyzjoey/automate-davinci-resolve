@@ -7,6 +7,8 @@ from ..app.actions import (
     auto_textplus_style,
     export_textplus,
     import_textplus,
+    print_clip_info,
+    sync_textplus_style,
 )
 from ..app.enums import ExtraChoice
 from ..davinci.enums import ClipColor
@@ -29,6 +31,14 @@ class Definitions:
             group="Text+ Action",
             inputs={
                 "ignored_tracks": InputDefinition(
+                    widget_type=MultipleVideoTracksWidget,
+                ),
+            },
+        ),
+        sync_textplus_style.Action: ActionDefinition(
+            group="Text+ Action",
+            inputs={
+                "tracks": InputDefinition(
                     widget_type=MultipleVideoTracksWidget,
                 ),
             },
@@ -73,6 +83,14 @@ class Definitions:
                         "enum_type": Optional[Union[ExtraChoice, ClipColor]],
                         "selected": types.get_pydantic_field_default(export_textplus.Inputs, "ignore_mode_color"),
                     },
+                ),
+            },
+        ),
+        print_clip_info.Action: ActionDefinition(
+            group="Dev",
+            inputs={
+                "track": InputDefinition(
+                    widget_type=MultipleVideoTracksWidget,
                 ),
             },
         ),

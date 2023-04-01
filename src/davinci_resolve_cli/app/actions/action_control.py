@@ -95,13 +95,16 @@ class ActionControl:
         return self.status_control.should_start()
 
     def apply_inputs(self, resolve_status: ResolveStatus, input_data: dict):
-        if not self.run_in_background:
-            return
-
         can_run = resolve_status.value >= self.action.required_status.value
 
         if can_run:
-            self.input_data = self.input_model.parse_obj(input_data)
+            if self.run_in_background:
+                self.input_data = self.input_model.parse_obj(input_data)
+            else:
+                try:
+                    self.input_data = self.input_model.parse_obj(input_data)
+                except ValidationError:
+                    pass
 
     def update(
         self,
@@ -110,13 +113,7 @@ class ActionControl:
         timeline_context: Optional[TimelineContext],
         timeline_diff: Optional[TimelineDiff],
     ):
-        if not hasattr(self.action, "update"):
-            return
-
-        if utils.has_arg(self.action.update, "input_data"):
-            if self.input_data is None:
-                self.input_data = self.action.input_model()
-
+        if self.input_data is not None:
             for field_name, field_data in self.input_data:
                 if hasattr(field_data, "update"):
                     utils.call_with_partial_args(
@@ -124,6 +121,9 @@ class ActionControl:
                         timeline_context=timeline_context,
                         timeline_diff=timeline_diff,
                     )
+
+        if not hasattr(self.action, "update"):
+            return
 
         if not self.status_control.should_start():
             return
@@ -180,6 +180,7 @@ class ActionControl:
             return
 
         log.info(f"[{self.action}] Start action")
+        log.flush()
 
         with self.on_try_action():
             utils.call_with_partial_args(
