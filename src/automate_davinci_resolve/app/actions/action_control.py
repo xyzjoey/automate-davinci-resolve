@@ -119,6 +119,7 @@ class ActionControl:
 
     def update(
         self,
+        app_settings: AppSettings,
         resolve_status: ResolveStatus,
         resolve_app: ResolveApp,
         timeline_context: Optional[TimelineContext],
@@ -151,6 +152,7 @@ class ActionControl:
         if can_run:
             with self.on_try_action():
                 utils.forward_partial_args(self.action.update)(
+                    app_settings=app_settings,
                     resolve_app=resolve_app,
                     timeline_context=timeline_context,
                     timeline_diff=timeline_diff,

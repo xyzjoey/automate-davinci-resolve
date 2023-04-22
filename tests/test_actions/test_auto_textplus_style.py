@@ -45,13 +45,14 @@ class TestAutoTextplusStyle:
             }
         )
 
-    def test_basic(self, resolve_app):
+    def test_basic(self, app_settings, resolve_app):
         action = auto_textplus_style.Action()
         timeline_diff = TimelineDiff()
         timeline_diff.diff = {"added": {"video_tracks": {1: {"items": {"root": {"C"}}}}}}
         input_data = auto_textplus_style.Inputs()
 
         action.update(
+            app_settings=app_settings,
             resolve_app=resolve_app,
             timeline_diff=timeline_diff,
             input_data=input_data,
@@ -88,7 +89,7 @@ class TestAutoTextplusStyle:
             },
         }
 
-    def test_ignore_tracks(self, resolve_app):
+    def test_ignore_tracks(self, app_settings, resolve_app):
         action = auto_textplus_style.Action()
         timeline_diff = TimelineDiff()
         timeline_diff.diff = {"added": {"video_tracks": {1: {"items": {"root": {"C"}}}}}}
@@ -96,6 +97,7 @@ class TestAutoTextplusStyle:
         input_data = auto_textplus_style.Inputs(ignored_tracks=[1])
 
         action.update(
+            app_settings=app_settings,
             resolve_app=resolve_app,
             timeline_diff=timeline_diff,
             input_data=input_data,
@@ -132,7 +134,7 @@ class TestAutoTextplusStyle:
             },
         }
 
-    def test_moved_tracks(self, resolve_app):
+    def test_moved_tracks(self, app_settings, resolve_app):
         action = auto_textplus_style.Action()
         timeline_diff = TimelineDiff()
         timeline_diff.diff = {
@@ -148,6 +150,7 @@ class TestAutoTextplusStyle:
         input_data = auto_textplus_style.Inputs(ignored_tracks=[1])
 
         action.update(
+            app_settings=app_settings,
             resolve_app=resolve_app,
             timeline_diff=timeline_diff,
             input_data=input_data,

@@ -28,6 +28,8 @@ class ResolveFusionNodeInputMock(ResolveMockBase):
 
 
 class ResolveFusionNodeMock(ResolveMockBase):
+    settings = {}
+
     def GetInput(self, name: str):
         return self._data.get(name)
 
@@ -36,6 +38,15 @@ class ResolveFusionNodeMock(ResolveMockBase):
 
     def SetInput(self, name: str, value):
         self._data[name] = value
+
+    def SaveSettings(self, path):
+        self.settings[path] = self._data
+        return True
+
+    def LoadSettings(self, path):
+        self._data.clear()
+        self._data.update(**self.settings[path])
+        return True
 
 
 class ResolveFusionCompMock(ResolveMockBase):
