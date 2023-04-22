@@ -1,9 +1,9 @@
 from pydantic import BaseModel
 
-from davinci_resolve_cli.app.actions.action_base import ActionBase
-from davinci_resolve_cli.app.actions.action_control import ActionControl
-from davinci_resolve_cli.davinci.enums import ResolveStatus
-from davinci_resolve_cli.davinci.context import TimelineContext
+from automate_davinci_resolve.app.actions.action_base import ActionBase
+from automate_davinci_resolve.app.actions.action_control import ActionControl
+from automate_davinci_resolve.davinci.enums import ResolveStatus
+from automate_davinci_resolve.davinci.context import TimelineContext
 
 
 class MyInput(BaseModel):

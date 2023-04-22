@@ -1,4 +1,4 @@
-from davinci_resolve_cli.davinci.context import Diff, TimelineContext, TimelineItemContext, TimelineDiff, TrackContext
+from automate_davinci_resolve.davinci.context import Diff, TimelineContext, TimelineItemContext, TimelineDiff, TrackContext
 
 
 class TestTimelineDiff:

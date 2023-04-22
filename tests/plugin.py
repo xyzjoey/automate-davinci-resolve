@@ -2,9 +2,9 @@ import pytest
 
 from .utils.resolve_mock import ResolveAppMock
 from .utils.settings import TestSettings
-from davinci_resolve_cli.app.app import App
-from davinci_resolve_cli.app.context import InputContext
-from davinci_resolve_cli.gui.app import GuiApp
+from automate_davinci_resolve.app.app import App
+from automate_davinci_resolve.app.context import InputContext
+from automate_davinci_resolve.gui.app import GuiApp
 
 
 @pytest.fixture

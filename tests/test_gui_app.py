@@ -1,4 +1,4 @@
-from davinci_resolve_cli.gui.app import GuiApp
+from automate_davinci_resolve.gui.app import GuiApp
 
 
 class TestGuiApp:

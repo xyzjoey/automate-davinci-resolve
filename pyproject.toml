@@ -27,7 +27,7 @@ setenv =
 deps =
     {[base]deps}
 commands =
-    python {toxinidir}/main.py {posargs}
+    python {toxinidir}/main_gui.py {posargs}
 
 [testenv:cli-{win}]
 setenv =

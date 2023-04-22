@@ -1,6 +1,6 @@
-from davinci_resolve_cli.davinci.resolve_app import ResolveApp
-from davinci_resolve_cli.davinci.timecode import Timecode, TimecodeSettings
-from davinci_resolve_cli.davinci.timeline import Timeline
+from automate_davinci_resolve.davinci.resolve_app import ResolveApp
+from automate_davinci_resolve.davinci.timecode import Timecode, TimecodeSettings
+from automate_davinci_resolve.davinci.timeline import Timeline
 
 
 class ResolveMockBase:
