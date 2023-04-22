@@ -23,6 +23,9 @@ class ResolveFusionNodeInputMock(ResolveMockBase):
     def GetExpression(self):
         return self._data.get("expression")
 
+    def SetExpression(self, expression):
+        self._data["expression"] = expression
+
 
 class ResolveFusionNodeMock(ResolveMockBase):
     def GetInput(self, name: str):
