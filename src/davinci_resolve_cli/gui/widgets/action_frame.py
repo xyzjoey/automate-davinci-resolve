@@ -63,14 +63,12 @@ class ActionFrame(CTkFrame):
     def update(self, app_context: AppContext):
         self.set_button(start=(not self.action.is_starting))
 
-        if self.action.input_data is not None:
-            for field_name, input_widget in self.input_widgets.items():
-                if hasattr(input_widget, "update"):
-                    utils.forward_partial_args(input_widget.update)(
-                        timeline_context=app_context.resolve_context.timeline_context,
-                        timeline_diff=app_context.resolve_context.timeline_diff,
-                        # input_data=getattr(self.action.input_data, field_name),
-                    )
+        for field_name, input_widget in self.input_widgets.items():
+            if hasattr(input_widget, "update"):
+                utils.forward_partial_args(input_widget.update)(
+                    timeline_context=app_context.resolve_context.timeline_context,
+                    timeline_diff=app_context.resolve_context.timeline_diff,
+                )
 
     def set_button(self, start: bool):
         if start == self.is_start_button:

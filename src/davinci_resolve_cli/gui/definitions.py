@@ -86,12 +86,12 @@ class Definitions:
                 ),
             },
         ),
-        print_clip_info.Action: ActionDefinition(
-            group="Dev",
-            inputs={
-                "track": InputDefinition(
-                    widget_type=MultipleVideoTracksWidget,
-                ),
-            },
-        ),
+        # print_clip_info.Action: ActionDefinition(
+        #     group="Dev",
+        #     inputs={
+        #         "track": InputDefinition(
+        #             widget_type=MultipleVideoTracksWidget,
+        #         ),
+        #     },
+        # ),
     }

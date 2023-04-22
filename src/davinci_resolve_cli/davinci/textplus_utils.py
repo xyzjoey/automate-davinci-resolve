@@ -68,8 +68,8 @@ def set_textplus_data(timeline_item, textplus_data: Optional[dict[str, InputData
 
         if input_data is not None and input_data.expression is not None:
             input.SetExpression(input_data.expression)
-        # else:
-        #     input.SetExpression(None)
+        else:
+            input.SetExpression(None)
 
     return True
 
