@@ -35,9 +35,10 @@ class ActionSwitcherFrame(CTkFrame):
         actions_by_groups = {}
 
         for action in self.app.actions:
-            action_group_name = Definitions.actions[action.action_type].group
-            actions_by_groups.setdefault(action_group_name, [])
-            actions_by_groups[action_group_name].append(action)
+            if action.action_type in Definitions.actions:
+                action_group_name = Definitions.actions[action.action_type].group
+                actions_by_groups.setdefault(action_group_name, [])
+                actions_by_groups[action_group_name].append(action)
 
         for action_group_name, actions in actions_by_groups.items():
             tab_group_frame = CTkFrame(self.sidebar_frame)

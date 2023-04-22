@@ -20,6 +20,12 @@ class ResolveFusionNodeInputMock(ResolveMockBase):
     def GetAttrs(self, name: str):
         return self._data.get(name)
 
+    def GetExpression(self):
+        return self._data.get("expression")
+
+    def SetExpression(self, expression):
+        self._data["expression"] = expression
+
 
 class ResolveFusionNodeMock(ResolveMockBase):
     def GetInput(self, name: str):

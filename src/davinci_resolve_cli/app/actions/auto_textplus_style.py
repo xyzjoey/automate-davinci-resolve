@@ -19,7 +19,7 @@ class Action(ActionBase):
         super().__init__(
             name="auto_textplus_style",
             display_name="Auto Text+ Style",
-            description="Automatically apply style to new Text+ clips, using the style of 1st Text+ clip in the same track.",
+            description="Detect newly added Text+ clips and apply style to them, using the style of 1st Text+ clip in the same track.",
             required_status=ResolveStatus.TimelineOpened,
             input_model=Inputs,
         )

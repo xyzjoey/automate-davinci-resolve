@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Any, NamedTuple, Optional
 
 from customtkinter import CTkCheckBox
@@ -5,7 +6,8 @@ from customtkinter import CTkCheckBox
 from ..widgets.named_frame import NamedScrollableFrame
 
 
-class CheckboxOption(NamedTuple):
+@dataclass
+class CheckboxOption:
     name: str
     value: Any
     selected: bool
@@ -67,7 +69,12 @@ class CheckboxCollection(NamedScrollableFrame):
 
     def get_command(self, index):
         def command():
-            option = self.options[index]
-            self.options[index] = option._replace(selected=not option.selected)
+            selected = self.options[index].selected
+            self.options[index].selected = not selected
 
         return command
+
+    def toggle(self, value):
+        for i, option in enumerate(self.options):
+            if option.value == value:
+                self.checkboxes[i].toggle()
