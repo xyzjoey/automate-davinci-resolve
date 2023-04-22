@@ -1,4 +1,4 @@
-from davinci_resolve_cli.gui.input_widgets.radiobutton_collection import RadioButtonCollection, RadioButtonOption
+from automate_davinci_resolve.gui.input_widgets.radiobutton_collection import RadioButtonCollection, RadioButtonOption
 
 
 class TestRadioButtonCollection:

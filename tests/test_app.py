@@ -1,6 +1,6 @@
-from davinci_resolve_cli.davinci.enums import ResolveStatus
-from davinci_resolve_cli.davinci.context import TrackContext, TimelineItemContext
-from davinci_resolve_cli.app.context import InputContext
+from automate_davinci_resolve.davinci.enums import ResolveStatus
+from automate_davinci_resolve.davinci.context import TrackContext, TimelineItemContext
+from automate_davinci_resolve.app.context import InputContext
 
 
 class TestApp:

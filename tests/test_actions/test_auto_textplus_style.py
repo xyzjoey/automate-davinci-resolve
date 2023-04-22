@@ -1,8 +1,8 @@
 import pytest
 
-from davinci_resolve_cli.app.actions import auto_textplus_style
-from davinci_resolve_cli.app.context import InputContext
-from davinci_resolve_cli.davinci.context import TimelineDiff, Diff
+from automate_davinci_resolve.app.actions import auto_textplus_style
+from automate_davinci_resolve.app.context import InputContext
+from automate_davinci_resolve.davinci.context import TimelineDiff, Diff
 
 
 class TestAutoTextplusStyle:

@@ -2,7 +2,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ValidationError
 
-from davinci_resolve_cli.app.inputs.paths import SaveFilePathInput
+from automate_davinci_resolve.app.inputs.paths import SaveFilePathInput
 
 
 class Input(BaseModel):

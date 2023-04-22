@@ -1,8 +1,8 @@
 from pydantic import BaseModel, ValidationError
 
-from davinci_resolve_cli.app.inputs.tracks import MultipleVideoTracksInput
-from davinci_resolve_cli.app.context import InputContext
-from davinci_resolve_cli.davinci.context import TimelineContext, TimelineDiff, TrackContext, Diff
+from automate_davinci_resolve.app.inputs.tracks import MultipleVideoTracksInput
+from automate_davinci_resolve.app.context import InputContext
+from automate_davinci_resolve.davinci.context import TimelineContext, TimelineDiff, TrackContext, Diff
 
 
 class Input(BaseModel):

@@ -2,8 +2,8 @@ import inspect
 
 import srt
 
-from davinci_resolve_cli.app.actions import import_textplus
-from davinci_resolve_cli.app.actions.import_textplus import SubtitleInsertInfo
+from automate_davinci_resolve.app.actions import import_textplus
+from automate_davinci_resolve.app.actions.import_textplus import SubtitleInsertInfo
 
 
 class TestImportTextplus:

@@ -2,8 +2,8 @@ from datetime import timedelta
 
 import srt
 
-from davinci_resolve_cli.app.actions import export_textplus
-from davinci_resolve_cli.app.actions.export_textplus import SubtitleModeMap
+from automate_davinci_resolve.app.actions import export_textplus
+from automate_davinci_resolve.app.actions.export_textplus import SubtitleModeMap
 
 
 class TestExportTextplus:

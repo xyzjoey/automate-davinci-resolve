@@ -1,4 +1,4 @@
-from davinci_resolve_cli.gui.widgets.action_frame import ActionFrame
+from automate_davinci_resolve.gui.widgets.action_frame import ActionFrame
 
 
 class TestActionFrame:

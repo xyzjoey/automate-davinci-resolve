@@ -1,8 +1,8 @@
 from argparse import ArgumentParser
 
-from davinci_resolve_cli.app.app import App
-from davinci_resolve_cli.davinci.resolve_app import ResolveApp
-from davinci_resolve_cli.utils.log import Log
+from automate_davinci_resolve.app.app import App
+from automate_davinci_resolve.davinci.resolve_app import ResolveApp
+from automate_davinci_resolve.utils.log import Log
 
 
 if __name__ == "__main__":

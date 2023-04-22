@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 
-from davinci_resolve_cli.gui.input_widgets.enum_widgets import SingleEnumValueWidget, RadioButtonOption
+from automate_davinci_resolve.gui.input_widgets.enum_widgets import SingleEnumValueWidget, RadioButtonOption
 
 
 class MyEnum(Enum):
