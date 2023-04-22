@@ -9,7 +9,7 @@ class Input(BaseModel):
 
 
 class TestMultipleVideoTracksWidget:
-    def test_update(self):
+    def test_create_options(self):
         tracks_widget = MultipleVideoTracksWidget("name", master=None)
         timeline_context = TimelineContext(
             id="",
@@ -23,13 +23,36 @@ class TestMultipleVideoTracksWidget:
 
         assert tracks_widget.options == []
 
-        tracks_widget.update(timeline_context=timeline_context, input_data=[])
+        tracks_widget.update(timeline_context=timeline_context, timeline_diff=None)
 
         assert tracks_widget.options == [
             CheckboxOption(value=1, name="[1] ", selected=False),
             CheckboxOption(value=2, name="[2] ", selected=False),
             CheckboxOption(value=3, name="[3] ", selected=False),
         ]
+
+    def test_toggle(self):
+        tracks_widget = MultipleVideoTracksWidget("name", master=None)
+        old_timeline_context = TimelineContext(
+            id="",
+            name="",
+            video_tracks={
+                1: TrackContext(index=1, name="", items={"A": TimelineItemContext(id="A")}),
+                2: TrackContext(index=2, name="", items={"B": TimelineItemContext(id="B")}),
+                3: TrackContext(index=3, name="", items={"C": TimelineItemContext(id="C")}),
+            },
+        )
+
+        tracks_widget.update(timeline_context=old_timeline_context, timeline_diff=None)
+        tracks_widget.toggle(1)
+        tracks_widget.toggle(3)
+
+        assert tracks_widget.options == [
+            CheckboxOption(value=1, name="[1] ", selected=True),
+            CheckboxOption(value=2, name="[2] ", selected=False),
+            CheckboxOption(value=3, name="[3] ", selected=True),
+        ]
+        assert tracks_widget.get_data() == [1, 3]
 
     def test_track_added(self):
         tracks_widget = MultipleVideoTracksWidget("name", master=None)
@@ -53,18 +76,12 @@ class TestMultipleVideoTracksWidget:
             },
         )
         timeline_diff = TimelineDiff.create(old_timeline_context, new_timeline_context)
-        old_input_data = [1, 3]
-        new_input_data = old_input_data
 
-        tracks_widget.update(timeline_context=old_timeline_context, input_data=old_input_data)
-        assert tracks_widget.options == [
-            CheckboxOption(value=1, name="[1] ", selected=True),
-            CheckboxOption(value=2, name="[2] ", selected=False),
-            CheckboxOption(value=3, name="[3] ", selected=True),
-        ]
-        assert tracks_widget.get_data() == [1, 3]
+        tracks_widget.update(timeline_context=old_timeline_context, timeline_diff=None)
+        tracks_widget.toggle(1)
+        tracks_widget.toggle(3)
+        tracks_widget.update(timeline_context=new_timeline_context, timeline_diff=timeline_diff)
 
-        tracks_widget.update(timeline_context=new_timeline_context, input_data=new_input_data)
         assert tracks_widget.options == [
             CheckboxOption(value=1, name="[1] ", selected=True),
             CheckboxOption(value=2, name="[2] ", selected=False),
@@ -94,18 +111,12 @@ class TestMultipleVideoTracksWidget:
             },
         )
         timeline_diff = TimelineDiff.create(old_timeline_context, new_timeline_context)
-        old_input_data = [1, 3]
-        new_input_data = old_input_data
 
-        tracks_widget.update(timeline_context=old_timeline_context, input_data=old_input_data)
-        assert tracks_widget.options == [
-            CheckboxOption(value=1, name="[1] 1", selected=True),
-            CheckboxOption(value=2, name="[2] 2", selected=False),
-            CheckboxOption(value=3, name="[3] 3", selected=True),
-        ]
-        assert tracks_widget.get_data() == [1, 3]
+        tracks_widget.update(timeline_context=old_timeline_context, timeline_diff=None)
+        tracks_widget.toggle(1)
+        tracks_widget.toggle(3)
+        tracks_widget.update(timeline_context=new_timeline_context, timeline_diff=timeline_diff)
 
-        tracks_widget.update(timeline_context=new_timeline_context, input_data=new_input_data)
         assert tracks_widget.options == [
             CheckboxOption(value=1, name="[1] X", selected=True),
             CheckboxOption(value=2, name="[2] Y", selected=False),
@@ -113,7 +124,7 @@ class TestMultipleVideoTracksWidget:
         ]
         assert tracks_widget.get_data() == [1, 3]
 
-    def test_input_data_changed(self):
+    def test_track_removed(self):
         tracks_widget = MultipleVideoTracksWidget("name", master=None)
         old_timeline_context = TimelineContext(
             id="",
@@ -133,18 +144,12 @@ class TestMultipleVideoTracksWidget:
             },
         )
         timeline_diff = TimelineDiff.create(old_timeline_context, new_timeline_context)
-        old_input_data = [1, 3]
-        new_input_data = [2]
 
-        tracks_widget.update(timeline_context=old_timeline_context, input_data=old_input_data)
-        assert tracks_widget.options == [
-            CheckboxOption(value=1, name="[1] ", selected=True),
-            CheckboxOption(value=2, name="[2] ", selected=False),
-            CheckboxOption(value=3, name="[3] ", selected=True),
-        ]
-        assert tracks_widget.get_data() == [1, 3]
+        tracks_widget.update(timeline_context=old_timeline_context, timeline_diff=None)
+        tracks_widget.toggle(1)
+        tracks_widget.toggle(3)
+        tracks_widget.update(timeline_context=new_timeline_context, timeline_diff=timeline_diff)
 
-        tracks_widget.update(timeline_context=new_timeline_context, input_data=new_input_data)
         assert tracks_widget.options == [
             CheckboxOption(value=1, name="[1] ", selected=False),
             CheckboxOption(value=2, name="[2] ", selected=True),
@@ -169,16 +174,10 @@ class TestMultipleVideoTracksWidget:
             },
         )
         timeline_diff = TimelineDiff.create(old_timeline_context, new_timeline_context)
-        old_input_data = []
-        new_input_data = []
 
-        tracks_widget.update(timeline_context=old_timeline_context, input_data=old_input_data)
-        assert tracks_widget.options == [
-            CheckboxOption(value=1, name="[1] ", selected=False),
-        ]
-        assert tracks_widget.get_data() == []
+        tracks_widget.update(timeline_context=old_timeline_context, timeline_diff=None)
+        tracks_widget.update(timeline_context=new_timeline_context, timeline_diff=timeline_diff)
 
-        tracks_widget.update(timeline_context=new_timeline_context, input_data=new_input_data)
         assert tracks_widget.options == [
             CheckboxOption(value=1, name="[1] ", selected=False),
             CheckboxOption(value=2, name="[2] ", selected=False),

@@ -1,10 +1,13 @@
 import inspect
 
 
-def call_with_partial_args(func, **kw):
-    signature = inspect.signature(func)
-    kw = {k: v for k, v in kw.items() if k in signature.parameters}
-    func(**kw)
+def forward_partial_args(func):
+    def func_wrapper(**kw):
+        signature = inspect.signature(func)
+        kw = {k: v for k, v in kw.items() if k in signature.parameters}
+        func(**kw)
+
+    return func_wrapper
 
 
 def has_arg(func, arg_name):

@@ -94,17 +94,28 @@ class ActionControl:
     def is_starting(self):
         return self.status_control.should_start()
 
+    def _parse_input(self, input_data: dict):
+        validated_input_data = None
+
+        try:
+            validated_input_data = self.action.input_model.parse_obj(input_data)
+        except ValidationError as e:
+            log.exception(e)
+            log.error(f"[{self.action}] Invalid input: {e}")
+
+        return validated_input_data
+
     def apply_inputs(self, resolve_status: ResolveStatus, input_data: dict):
+        if not self.run_in_background:
+            return
+
         can_run = resolve_status.value >= self.action.required_status.value
 
         if can_run:
-            if self.run_in_background:
-                self.input_data = self.input_model.parse_obj(input_data)
-            else:
-                try:
-                    self.input_data = self.input_model.parse_obj(input_data)
-                except ValidationError:
-                    pass
+            validated_input_data = self._parse_input(input_data)
+
+            if validated_input_data is not None:
+                self.input_data = validated_input_data
 
     def update(
         self,
@@ -113,17 +124,18 @@ class ActionControl:
         timeline_context: Optional[TimelineContext],
         timeline_diff: Optional[TimelineDiff],
     ):
-        if self.input_data is not None:
-            for field_name, field_data in self.input_data:
-                if hasattr(field_data, "update"):
-                    utils.call_with_partial_args(
-                        field_data.update,
-                        timeline_context=timeline_context,
-                        timeline_diff=timeline_diff,
-                    )
-
-        if not hasattr(self.action, "update"):
+        if not self.run_in_background:
             return
+
+        if self.input_data is None:
+            self.input_data = self.input_model()
+
+        for field_name, field_data in self.input_data:
+            if hasattr(field_data, "update"):
+                utils.forward_partial_args(field_data.update)(
+                    timeline_context=timeline_context,
+                    timeline_diff=timeline_diff,
+                )
 
         if not self.status_control.should_start():
             return
@@ -138,8 +150,7 @@ class ActionControl:
 
         if can_run:
             with self.on_try_action():
-                utils.call_with_partial_args(
-                    self.action.update,
+                utils.forward_partial_args(self.action.update)(
                     resolve_app=resolve_app,
                     timeline_context=timeline_context,
                     timeline_diff=timeline_diff,
@@ -171,24 +182,23 @@ class ActionControl:
 
             return
 
-        try:
-            self.input_data = self.action.input_model.parse_obj(input_data)
-        except ValidationError as e:
-            log.exception(e)
-            log.error(f"[{self.action}] Invalid input: {e}")
+        validated_input_data = self._parse_input(input_data)
 
+        if validated_input_data is None:
             return
+
+        if self.run_in_background:
+            self.input_data = validated_input_data
 
         log.info(f"[{self.action}] Start action")
         log.flush()
 
         with self.on_try_action():
-            utils.call_with_partial_args(
-                self.action.start,
+            utils.forward_partial_args(self.action.start)(
                 app_settings=app_settings,
                 resolve_app=resolve_app,
                 timeline_context=timeline_context,
-                input_data=self.input_data,
+                input_data=validated_input_data,
             )
 
         if not self.run_in_background:
