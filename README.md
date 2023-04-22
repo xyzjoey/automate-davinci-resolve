@@ -2,6 +2,7 @@
 - [x] Feature: Auto apply Text+ style for each track
 - [x] Feature: Import Text+ from .srt subtitle file
 - [x] Feature: Export Text+ to .srt subtitle file
+- [ ] Improve responsiveness (async)
 - [ ] Improve GUI look
 
 ## How to run

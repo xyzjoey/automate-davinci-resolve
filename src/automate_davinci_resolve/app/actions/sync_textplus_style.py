@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field
 
 from .action_base import ActionBase
 from ..inputs.tracks import MultipleVideoTracksInput
+from ..settings import AppSettings
 from ...davinci import textplus_utils
 from ...davinci.enums import ResolveStatus
 from ...davinci.resolve_app import ResolveApp
@@ -24,6 +25,7 @@ class Action(ActionBase):
 
     def start(
         self,
+        app_settings: AppSettings,
         resolve_app: ResolveApp,
         input_data: Inputs,
     ):
@@ -31,16 +33,39 @@ class Action(ActionBase):
             log.warning(f"[{self}] No tracks are selected")
             return
 
+        textplus_settings_path = f"{app_settings.temp_dir}/{self.name}.setting"
         current_timeline = resolve_app.get_current_timeline()
 
         for track in current_timeline.iter_tracks("video"):
-            if track.index in input_data.tracks:
-                reference_textplus_data = None
+            if track.index not in input_data.tracks:
+                continue
 
-                for item in track.timeline_items:
-                    if reference_textplus_data is None:
-                        reference_textplus_data = textplus_utils.get_textplus_data(item)
-                    else:
-                        textplus_utils.set_textplus_data_only_style(item, reference_textplus_data)
+            log.info(f"[{self}] Finding Text+ in track {track.index}...")
+            log.flush()
+
+            textplus_list = []
+
+            for item in track.timeline_items:
+                textplus = textplus_utils.find_textplus(item)
+                if textplus is not None:
+                    textplus_list.append(textplus)
+
+            log.info(f"[{self}] Found {len(textplus_list)} Text+. Start sync...")
+            log.flush()
+
+            if len(textplus_list) > 0:
+                if not textplus_utils.save_settings(textplus_list[0], textplus_settings_path):
+                    log.warning(f"[{self}] Failed to save reference Text+ settings to '{textplus_settings_path}'. Skip track.")
+                    continue
+
+            for i, textplus in enumerate(textplus_list[1:]):
+                if not textplus_utils.load_settings(textplus, textplus_settings_path, exclude_data_ids=["StyledText"]):
+                    log.warning(f"[{self}] Failed to load settings for {i}-th Text+ clip")
+
+                if i > 0 and i % 50 == 0:
+                    log.info(f"[{self}] Track {track.index} sync progress {i}/{len(textplus_list) - 1}...")
+                    log.flush()
+
+            log.info(f"[{self}] Successfully synchronize Text+ style for track {track.index}!")
 
         log.info(f"[{self}] Successfully synchronize Text+ style for tracks {input_data.tracks}!")

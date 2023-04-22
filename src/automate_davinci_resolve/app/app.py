@@ -55,6 +55,7 @@ class App:
 
         for action in self.actions:
             action.update(
+                app_settings=self.settings,
                 resolve_status=self.context.resolve_context.resolve_status,
                 resolve_app=self.resolve_app,
                 timeline_context=self.context.resolve_context.timeline_context,

@@ -94,7 +94,7 @@ class TestActionControl:
     def test_update_action(self, app_settings, resolve_app):
         action_control = ActionControl(MyAction())
         common_start_args = (app_settings, ResolveStatus.TimelineOpened, resolve_app, self.dummy_timeline_context)
-        common_update_args = (ResolveStatus.TimelineOpened, resolve_app, self.dummy_timeline_context, None)
+        common_update_args = (app_settings, ResolveStatus.TimelineOpened, resolve_app, self.dummy_timeline_context, None)
 
         action_control.start(*common_start_args, input_data={"text": None})
         action_control.update(*common_update_args)
@@ -109,7 +109,7 @@ class TestActionControl:
     def test_update_background_action(self, app_settings, resolve_app):
         background_action_control = ActionControl(MyBackgroundAction())
         common_start_args = (app_settings, ResolveStatus.TimelineOpened, resolve_app, self.dummy_timeline_context)
-        common_update_args = (ResolveStatus.TimelineOpened, resolve_app, self.dummy_timeline_context, None)
+        common_update_args = (app_settings, ResolveStatus.TimelineOpened, resolve_app, self.dummy_timeline_context, None)
 
         background_action_control.start(*common_start_args, input_data={"text": None})
         background_action_control.update(*common_update_args)
