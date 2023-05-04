@@ -14,7 +14,6 @@ from ..davinci.context import TimelineDiff, ResolveContext
 from ..davinci.enums import ResolveStatus
 from ..davinci.resolve_app import ResolveApp
 from ..utils import log
-
 from ..utils.timer import Timer
 
 
@@ -106,7 +105,9 @@ class App:
                 log.info(f"Resolve status: {self.context.resolve_context.resolve_status.name} => {status.name}")
 
             if status == ResolveStatus.Unavailable and not force_load:
-                log.warning("Failed to load Resolve App. Please check if Davinci Resolve is started and settings are correct. Will retry after 10s")
+                log.warning(
+                    "Failed to load Resolve App. Please check if Davinci Resolve is started and settings are correct. Will retry after 10s. If still failing, clear virtual environment by removing '.tox/' folder"
+                )
                 self.load_resolve_cooldown.reset(10)
 
             if status != ResolveStatus.Unavailable:

@@ -1,7 +1,6 @@
 import pytest
 
 from automate_davinci_resolve.app.actions import auto_textplus_style
-from automate_davinci_resolve.app.context import InputContext
 from automate_davinci_resolve.davinci.context import TimelineDiff, Diff
 
 
@@ -14,30 +13,15 @@ class TestAutoTextplusStyle:
                     "video": {
                         1: {
                             "items": [
-                                {
-                                    "id": "A",
-                                    "fusion_comps": {1: {"TextPlus": {"StyledText": "Item A", "Size": 10}}},
-                                },
-                                {
-                                    "id": "B",
-                                    "fusion_comps": {1: {"TextPlus": {"StyledText": "Item B", "Size": 20}}},
-                                },
-                                {
-                                    "id": "C",
-                                    "fusion_comps": {1: {"TextPlus": {"StyledText": "Item C", "Size": 30}}},
-                                },
+                                {"id": "A", "fusion_comps": {1: {"TextPlus": {}}}},
+                                {"id": "B", "fusion_comps": {1: {"TextPlus": {}}}},
+                                {"id": "C", "fusion_comps": {1: {"TextPlus": {}}}},
                             ]
                         },
                         2: {
                             "items": [
-                                {
-                                    "id": "D",
-                                    "fusion_comps": {1: {"TextPlus": {"StyledText": "Item D", "Size": 40}}},
-                                },
-                                {
-                                    "id": "E",
-                                    "fusion_comps": {1: {"TextPlus": {"StyledText": "Item E", "Size": 50}}},
-                                },
+                                {"id": "D", "fusion_comps": {1: {"TextPlus": {}}}},
+                                {"id": "E", "fusion_comps": {1: {"TextPlus": {}}}},
                             ]
                         },
                     }
@@ -45,144 +29,45 @@ class TestAutoTextplusStyle:
             }
         )
 
-    def test_basic(self, app_settings, resolve_app):
+    def test_basic(self, resolve_app):
         action = auto_textplus_style.Action()
+
+        timeline = resolve_app.get_current_timeline()
         timeline_diff = TimelineDiff()
-        timeline_diff.diff = {"added": {"video_tracks": {1: {"items": {"root": {"C"}}}}}}
-        input_data = auto_textplus_style.Inputs()
+        timeline_diff.diff = {"added": {"video_tracks": {1: {"items": {"__root__": {"C"}}}}}}
 
-        action.update(
-            app_settings=app_settings,
-            resolve_app=resolve_app,
-            timeline_diff=timeline_diff,
-            input_data=input_data,
-        )
+        styling_contexts = action.get_applicable_items(timeline, timeline_diff, [])
 
-        assert resolve_app.get_mocked_current_timeline()["tracks"]["video"] == {
-            1: {
-                "items": [
-                    {
-                        "id": "A",
-                        "fusion_comps": {1: {"TextPlus": {"StyledText": "Item A", "Size": 10}}},
-                    },
-                    {
-                        "id": "B",
-                        "fusion_comps": {1: {"TextPlus": {"StyledText": "Item B", "Size": 20}}},
-                    },
-                    {
-                        "id": "C",
-                        "fusion_comps": {1: {"TextPlus": {"StyledText": "Item C", "Size": 10}}},
-                    },
-                ]
-            },
-            2: {
-                "items": [
-                    {
-                        "id": "D",
-                        "fusion_comps": {1: {"TextPlus": {"StyledText": "Item D", "Size": 40}}},
-                    },
-                    {
-                        "id": "E",
-                        "fusion_comps": {1: {"TextPlus": {"StyledText": "Item E", "Size": 50}}},
-                    },
-                ]
-            },
-        }
+        assert set(styling_contexts.keys()) == {1}
+        assert [target.item.GetUniqueId() for target in styling_contexts[1].targets] == ["C"]
 
-    def test_ignore_tracks(self, app_settings, resolve_app):
+    def test_ignore_tracks(self, resolve_app):
         action = auto_textplus_style.Action()
+
+        timeline = resolve_app.get_current_timeline()
         timeline_diff = TimelineDiff()
-        timeline_diff.diff = {"added": {"video_tracks": {1: {"items": {"root": {"C"}}}}}}
-        InputContext.set(InputContext(resolve_app.get_current_timeline().capture_context()))
-        input_data = auto_textplus_style.Inputs(ignored_tracks=[1])
+        timeline_diff.diff = {"added": {"video_tracks": {1: {"items": {"__root__": {"C"}}}}}}
 
-        action.update(
-            app_settings=app_settings,
-            resolve_app=resolve_app,
-            timeline_diff=timeline_diff,
-            input_data=input_data,
-        )
+        styling_contexts = action.get_applicable_items(timeline, timeline_diff, ignored_tracks=[1])
 
-        assert resolve_app.get_mocked_current_timeline()["tracks"]["video"] == {
-            1: {
-                "items": [
-                    {
-                        "id": "A",
-                        "fusion_comps": {1: {"TextPlus": {"StyledText": "Item A", "Size": 10}}},
-                    },
-                    {
-                        "id": "B",
-                        "fusion_comps": {1: {"TextPlus": {"StyledText": "Item B", "Size": 20}}},
-                    },
-                    {
-                        "id": "C",
-                        "fusion_comps": {1: {"TextPlus": {"StyledText": "Item C", "Size": 30}}},
-                    },
-                ]
-            },
-            2: {
-                "items": [
-                    {
-                        "id": "D",
-                        "fusion_comps": {1: {"TextPlus": {"StyledText": "Item D", "Size": 40}}},
-                    },
-                    {
-                        "id": "E",
-                        "fusion_comps": {1: {"TextPlus": {"StyledText": "Item E", "Size": 50}}},
-                    },
-                ]
-            },
-        }
+        assert len(styling_contexts) == 0
 
-    def test_moved_tracks(self, app_settings, resolve_app):
+    def test_moved_tracks(self, resolve_app):
         action = auto_textplus_style.Action()
+
+        timeline = resolve_app.get_current_timeline()
         timeline_diff = TimelineDiff()
         timeline_diff.diff = {
             "added": {
                 "video_tracks": {
-                    "root": [1],
-                    1: {"items": {"root": {"E"}}},
+                    "__root__": [1],
+                    1: {"items": {"__root__": {"E"}}},
                 }
             },
             "changed": {"video_tracks": {1: {"index": Diff(old=1, new=2)}}},
         }
-        InputContext.set(InputContext(resolve_app.get_current_timeline().capture_context()))
-        input_data = auto_textplus_style.Inputs(ignored_tracks=[1])
 
-        action.update(
-            app_settings=app_settings,
-            resolve_app=resolve_app,
-            timeline_diff=timeline_diff,
-            input_data=input_data,
-        )
+        styling_contexts = action.get_applicable_items(timeline, timeline_diff, [])
 
-        assert resolve_app.get_mocked_current_timeline()["tracks"]["video"] == {
-            1: {
-                "items": [
-                    {
-                        "id": "A",
-                        "fusion_comps": {1: {"TextPlus": {"StyledText": "Item A", "Size": 10}}},
-                    },
-                    {
-                        "id": "B",
-                        "fusion_comps": {1: {"TextPlus": {"StyledText": "Item B", "Size": 20}}},
-                    },
-                    {
-                        "id": "C",
-                        "fusion_comps": {1: {"TextPlus": {"StyledText": "Item C", "Size": 30}}},
-                    },
-                ]
-            },
-            2: {
-                "items": [
-                    {
-                        "id": "D",
-                        "fusion_comps": {1: {"TextPlus": {"StyledText": "Item D", "Size": 40}}},
-                    },
-                    {
-                        "id": "E",
-                        "fusion_comps": {1: {"TextPlus": {"StyledText": "Item E", "Size": 40}}},
-                    },
-                ]
-            },
-        }
+        assert set(styling_contexts.keys()) == {2}
+        assert [target.item.GetUniqueId() for target in styling_contexts[2].targets] == ["E"]
