@@ -1,16 +1,23 @@
+from typing import Any, NamedTuple
+
 from pydantic import BaseModel, Field
 
 from .action_base import ActionBase
 from ..inputs.tracks import MultipleVideoTracksInput
-from ..settings import AppSettings
 from ...davinci import textplus_utils
 from ...davinci.enums import ResolveStatus
+from ...davinci.timecode import Timecode
 from ...davinci.resolve_app import ResolveApp
 from ...utils import log
 
 
 class Inputs(BaseModel):
     tracks: MultipleVideoTracksInput = Field([], title="Video Tracks")
+
+
+class ItemWithTextplus(NamedTuple):
+    item: Any
+    textplus: Any
 
 
 class Action(ActionBase):
@@ -25,7 +32,6 @@ class Action(ActionBase):
 
     def start(
         self,
-        app_settings: AppSettings,
         resolve_app: ResolveApp,
         input_data: Inputs,
     ):
@@ -33,8 +39,10 @@ class Action(ActionBase):
             log.warning(f"[{self}] No tracks are selected")
             return
 
-        textplus_settings_path = f"{app_settings.temp_dir}/{self.name}.setting"
         current_timeline = resolve_app.get_current_timeline()
+        timecode_settings = current_timeline.get_timecode_settings()
+
+        as_str = lambda item, textplus: f"(start={Timecode.from_frame(item.GetStart(), timecode_settings, True).get_str(True)}, text={repr(textplus.GetInput('StyledText'))})"
 
         for track in current_timeline.iter_tracks("video"):
             if track.index not in input_data.tracks:
@@ -43,29 +51,33 @@ class Action(ActionBase):
             log.info(f"[{self}] Finding Text+ in track {track.index}...")
             log.flush()
 
-            textplus_list = []
+            items_with_textplus = []
+            reference_settings = None
 
             for item in track.timeline_items:
                 textplus = textplus_utils.find_textplus(item)
                 if textplus is not None:
-                    textplus_list.append(textplus)
+                    items_with_textplus.append(ItemWithTextplus(item, textplus))
 
-            log.info(f"[{self}] Found {len(textplus_list)} Text+. Start sync...")
+            log.info(f"[{self}] Found {len(items_with_textplus)} Text+. Start sync...")
             log.flush()
 
-            if len(textplus_list) > 0:
-                if not textplus_utils.save_settings(textplus_list[0], textplus_settings_path):
-                    log.warning(f"[{self}] Failed to save reference Text+ settings to '{textplus_settings_path}'. Skip track.")
+            if len(items_with_textplus) > 0:
+                item, reference_textplus = items_with_textplus[0]
+                reference_settings = textplus_utils.get_settings(reference_textplus)
+                if reference_settings is None:
+                    log.warning(f"[{self}] Failed to get reference Text+ settings {as_str(item, reference_textplus)}. Skip track.")
                     continue
 
-            for i, textplus in enumerate(textplus_list[1:]):
-                if not textplus_utils.load_settings(textplus, textplus_settings_path, exclude_data_ids=["StyledText"]):
-                    log.warning(f"[{self}] Failed to load settings for {i}-th Text+ clip")
+            for i, (item, textplus) in enumerate(items_with_textplus[1:]):
+                if not textplus_utils.set_settings(textplus, reference_settings, exclude=["StyledText"]):
+                    log.warning(f"[{self}] Failed to update Text+ clip {as_str(item, textplus)}")
 
                 if i > 0 and i % 50 == 0:
-                    log.info(f"[{self}] Track {track.index} sync progress {i}/{len(textplus_list) - 1}...")
+                    log.info(f"[{self}] Track {track.index} sync progress {i}/{len(items_with_textplus) - 1}...")
                     log.flush()
 
             log.info(f"[{self}] Successfully synchronize Text+ style for track {track.index}!")
 
-        log.info(f"[{self}] Successfully synchronize Text+ style for tracks {input_data.tracks}!")
+        if len(input_data.tracks) > 1:
+            log.info(f"[{self}] Successfully synchronize Text+ style for tracks {input_data.tracks}!")

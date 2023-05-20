@@ -58,7 +58,7 @@ class TestTracksInput:
                     3: {"index": Diff(old=3, new=2)},
                 }
             },
-            "removed": {"video_tracks": {"root": [1]}},
+            "removed": {"video_tracks": {"__root__": [1]}},
         }
 
         tracks_input.update(diff)

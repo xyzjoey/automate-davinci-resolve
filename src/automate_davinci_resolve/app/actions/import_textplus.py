@@ -131,9 +131,7 @@ class Action(ActionBase):
 
         media_pool = resolve_app.get_media_pool()
         media_pool_textplus = media_pool.find_item(lambda item: item.GetClipProperty("Clip Name") == "Text+" and item.GetClipProperty("Type") == "Generator")
-        media_pool_gapfiller = media_pool.find_item(
-            lambda item: item.GetClipProperty("Clip Name") == "GapFiller" and item.GetClipProperty("Type") == "Generator"
-        )
+        media_pool_gapfiller = media_pool.find_item(lambda item: item.GetClipProperty("Clip Name") == "GapFiller" and item.GetClipProperty("Type") == "Generator")
         # media_pool_gapfiller.SetClipColor(input_data.gap_filler_clip_color.value)  # no effect
 
         log.info(f"[{self}] Creating subtitle timeline with {clip_count} clips...")

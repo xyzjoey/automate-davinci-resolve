@@ -5,7 +5,7 @@ import sys
 class Log:
     logger = logging.getLogger()
     formatter = logging.Formatter(
-        fmt="%(asctime)s %(levelname)-8s %(message)s",
+        fmt="%(asctime)s.%(msecs)03d %(levelname)-8s %(message)s",
         datefmt="%H:%M:%S",
     )
 

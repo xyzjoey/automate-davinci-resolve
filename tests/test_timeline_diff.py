@@ -64,7 +64,7 @@ class TestTimelineDiff:
         diff = TimelineDiff.create(old, new)
 
         assert diff.diff == {
-            "added": {"video_tracks": {"root": [1, 3, 5]}},
+            "added": {"video_tracks": {"__root__": [1, 3, 5]}},
             "changed": {
                 "video_tracks": {
                     1: {"index": Diff(1, 2)},
@@ -103,7 +103,7 @@ class TestTimelineDiff:
                     4: {"index": Diff(4, 2)},
                 },
             },
-            "removed": {"video_tracks": {"root": [1, 3, 5]}},
+            "removed": {"video_tracks": {"__root__": [1, 3, 5]}},
         }
 
     def test_moved_tracks(self):
@@ -157,9 +157,7 @@ class TestTimelineDiff:
             id="x",
             name="x",
             video_tracks={
-                1: TrackContext(
-                    index=1, name="", items={"A": TimelineItemContext(id="A"), "B1": TimelineItemContext(id="B1"), "B2": TimelineItemContext(id="B2")}
-                ),
+                1: TrackContext(index=1, name="", items={"A": TimelineItemContext(id="A"), "B1": TimelineItemContext(id="B1"), "B2": TimelineItemContext(id="B2")}),
                 2: TrackContext(index=2, name="", items={}),
                 3: TrackContext(index=3, name="", items={}),
                 4: TrackContext(index=4, name="", items={"C1": TimelineItemContext(id="C1"), "C2": TimelineItemContext(id="C2")}),
@@ -173,11 +171,11 @@ class TestTimelineDiff:
         assert diff.diff == {
             "added": {
                 "video_tracks": {
-                    "root": [
+                    "__root__": [
                         3,
                         6,
                     ],
-                    1: {"items": {"root": {"B1", "B2"}}},
+                    1: {"items": {"__root__": {"B1", "B2"}}},
                 }
             },
             "changed": {
@@ -187,9 +185,9 @@ class TestTimelineDiff:
             },
             "removed": {
                 "video_tracks": {
-                    "root": [4],
-                    2: {"items": {"root": {"B1", "B2"}}},
-                    5: {"items": {"root": {"E2"}}},
+                    "__root__": [4],
+                    2: {"items": {"__root__": {"B1", "B2"}}},
+                    5: {"items": {"__root__": {"E2"}}},
                 }
             },
         }

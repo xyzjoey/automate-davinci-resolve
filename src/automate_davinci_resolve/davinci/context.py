@@ -53,8 +53,8 @@ class TimelineDiff:
 
         for old_index, new_index in old_to_new_tracks.items():
             if new_index is None:
-                diff_dict.setdefault("removed", {}).setdefault("video_tracks", {}).setdefault("root", [])
-                diff_dict["removed"]["video_tracks"]["root"].append(old_index)
+                diff_dict.setdefault("removed", {}).setdefault("video_tracks", {}).setdefault("__root__", [])
+                diff_dict["removed"]["video_tracks"]["__root__"].append(old_index)
                 continue
 
             if old_index != new_index:
@@ -72,17 +72,17 @@ class TimelineDiff:
             new_item_ids = set(new_track_context.items.keys())
 
             for item_id in new_item_ids - old_item_ids:
-                diff_dict.setdefault("added", {}).setdefault("video_tracks", {}).setdefault(old_index, {}).setdefault("items", {}).setdefault("root", set())
-                diff_dict["added"]["video_tracks"][old_index]["items"]["root"].add(item_id)
+                diff_dict.setdefault("added", {}).setdefault("video_tracks", {}).setdefault(old_index, {}).setdefault("items", {}).setdefault("__root__", set())
+                diff_dict["added"]["video_tracks"][old_index]["items"]["__root__"].add(item_id)
 
             for item_id in old_item_ids - new_item_ids:
-                diff_dict.setdefault("removed", {}).setdefault("video_tracks", {}).setdefault(old_index, {}).setdefault("items", {}).setdefault("root", set())
-                diff_dict["removed"]["video_tracks"][old_index]["items"]["root"].add(item_id)
+                diff_dict.setdefault("removed", {}).setdefault("video_tracks", {}).setdefault(old_index, {}).setdefault("items", {}).setdefault("__root__", set())
+                diff_dict["removed"]["video_tracks"][old_index]["items"]["__root__"].add(item_id)
 
         # should track indices be sorted list?
         for new_index in sorted(set(new_timeline_context.video_tracks.keys()) - set(old_to_new_tracks.values())):
-            diff_dict.setdefault("added", {}).setdefault("video_tracks", {}).setdefault("root", [])
-            diff_dict["added"]["video_tracks"]["root"].append(new_index)
+            diff_dict.setdefault("added", {}).setdefault("video_tracks", {}).setdefault("__root__", [])
+            diff_dict["added"]["video_tracks"]["__root__"].append(new_index)
 
         return diff
 
@@ -139,7 +139,7 @@ class TimelineDiff:
         return {i: old_to_new_tracks[i] for i in sorted(old_to_new_tracks)}
 
     def get_new_track_index(self, old_track_index):
-        if old_track_index in self.diff.get("removed", {}).get("video_tracks", {}).get("root", []):
+        if old_track_index in self.diff.get("removed", {}).get("video_tracks", {}).get("__root__", []):
             return None
 
         index_diff = self.diff.get("changed", {}).get("video_tracks", {}).get(old_track_index, {}).get("index")
