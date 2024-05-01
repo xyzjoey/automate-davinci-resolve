@@ -117,7 +117,7 @@ class Action(ActionBase):
             name="export_textplus",
             display_name="Export Text+",
             description="Export Text+ from current timeline to .srt file",
-            required_status=ResolveStatus.TimelineOpened,
+            required_status=ResolveStatus.TimelineOpen,
             input_model=Inputs,
         )
 

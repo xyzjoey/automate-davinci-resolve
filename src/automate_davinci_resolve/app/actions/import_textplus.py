@@ -37,7 +37,7 @@ class Action(ActionBase):
             name="import_textplus",
             display_name="Import Text+",
             description="Import Text+ from .srt file to a new timeline",
-            required_status=ResolveStatus.TimelineOpened,
+            required_status=ResolveStatus.ProjectOpen,
             input_model=Inputs,
         )
 

@@ -18,7 +18,7 @@ class TestApp:
 
         app.update()
 
-        assert app.context.resolve_context.resolve_status == ResolveStatus.TimelineOpened
+        assert app.context.resolve_context.resolve_status == ResolveStatus.TimelineOpen
 
     def test_update_context(self, resolve_app, app):
         resolve_app.mock_current_timeline({"tracks": {"video": {1: {"items": [{"id": "A"}]}}}})
