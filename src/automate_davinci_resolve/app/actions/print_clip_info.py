@@ -21,7 +21,7 @@ class Action(ActionBase):
             name="print_clip_info",
             display_name="Print Clip Info",
             description="Print information of the clip in chosen track and at current playhead position",
-            required_status=ResolveStatus.TimelineOpened,
+            required_status=ResolveStatus.TimelineOpen,
             input_model=Inputs,
         )
 

@@ -19,7 +19,7 @@ class Action(ActionBase):
             name="sync_textplus_style",
             display_name="Sync Text+ Style",
             description="Synchronize Text+ style of selected track(s), using the style of 1st Text+ clip in the same track.",
-            required_status=ResolveStatus.TimelineOpened,
+            required_status=ResolveStatus.TimelineOpen,
             input_model=Inputs,
         )
 

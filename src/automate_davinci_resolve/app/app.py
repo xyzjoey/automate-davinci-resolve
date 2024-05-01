@@ -115,7 +115,7 @@ class App:
             timeline_context = None
             timeline_diff = None
 
-            if status == ResolveStatus.TimelineOpened:
+            if status == ResolveStatus.TimelineOpen:
                 timeline_context = self.resolve_app.get_current_timeline().capture_context()
                 timeline_diff = TimelineDiff.create(self.context.resolve_context.timeline_context, timeline_context)
 

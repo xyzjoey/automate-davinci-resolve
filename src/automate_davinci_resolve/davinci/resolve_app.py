@@ -35,15 +35,15 @@ class ResolveApp:
         self.media_pool = None
 
         if self.project is None:
-            return ResolveStatus.ProjectManagerOpened
+            return ResolveStatus.ProjectManagerOpen
 
         self.media_pool = self.project.GetMediaPool()
         self.timeline = self.project.GetCurrentTimeline()
 
         if self.timeline is None:
-            return ResolveStatus.ProjectOpened
+            return ResolveStatus.ProjectOpen
         else:
-            return ResolveStatus.TimelineOpened
+            return ResolveStatus.TimelineOpen
 
     def get_current_timeline(self):
         return Timeline(self.project.GetCurrentTimeline())

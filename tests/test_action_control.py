@@ -16,7 +16,7 @@ class MyAction(ActionBase):
             name="",
             display_name="test",
             description="",
-            required_status=ResolveStatus.TimelineOpened,
+            required_status=ResolveStatus.TimelineOpen,
             input_model=MyInput,
         )
 
@@ -41,7 +41,7 @@ class TestActionControl:
     def test_status(self, app_settings, resolve_app):
         action_control = ActionControl(MyAction())
         background_action_control = ActionControl(MyBackgroundAction())
-        common_args = (app_settings, ResolveStatus.TimelineOpened, resolve_app, self.dummy_timeline_context, {})
+        common_args = (app_settings, ResolveStatus.TimelineOpen, resolve_app, self.dummy_timeline_context, {})
 
         assert not action_control.is_starting
         assert background_action_control.is_starting
@@ -69,21 +69,21 @@ class TestActionControl:
         background_action_control = ActionControl(MyBackgroundAction())
         common_args = (resolve_app, self.dummy_timeline_context, {})
 
-        action_control.start(app_settings, ResolveStatus.ProjectOpened, *common_args)
-        background_action_control.start(app_settings, ResolveStatus.ProjectOpened, *common_args)
+        action_control.start(app_settings, ResolveStatus.ProjectOpen, *common_args)
+        background_action_control.start(app_settings, ResolveStatus.ProjectOpen, *common_args)
 
         assert action_control.action.start_count == 0
         assert background_action_control.action.start_count == 0
 
-        action_control.start(app_settings, ResolveStatus.TimelineOpened, *common_args)
-        background_action_control.start(app_settings, ResolveStatus.TimelineOpened, *common_args)
+        action_control.start(app_settings, ResolveStatus.TimelineOpen, *common_args)
+        background_action_control.start(app_settings, ResolveStatus.TimelineOpen, *common_args)
 
         assert action_control.action.start_count == 1
         assert background_action_control.action.start_count == 1
 
     def test_validate_input(self, app_settings, resolve_app):
         action_control = ActionControl(MyAction())
-        common_args = (app_settings, ResolveStatus.TimelineOpened, resolve_app, self.dummy_timeline_context)
+        common_args = (app_settings, ResolveStatus.TimelineOpen, resolve_app, self.dummy_timeline_context)
 
         action_control.start(*common_args, input_data={"text": None})
         assert action_control.action.last_input_data == None
@@ -93,8 +93,8 @@ class TestActionControl:
 
     def test_update_action(self, app_settings, resolve_app):
         action_control = ActionControl(MyAction())
-        common_start_args = (app_settings, ResolveStatus.TimelineOpened, resolve_app, self.dummy_timeline_context)
-        common_update_args = (app_settings, ResolveStatus.TimelineOpened, resolve_app, self.dummy_timeline_context, None)
+        common_start_args = (app_settings, ResolveStatus.TimelineOpen, resolve_app, self.dummy_timeline_context)
+        common_update_args = (app_settings, ResolveStatus.TimelineOpen, resolve_app, self.dummy_timeline_context, None)
 
         action_control.start(*common_start_args, input_data={"text": None})
         action_control.update(*common_update_args)
@@ -108,8 +108,8 @@ class TestActionControl:
 
     def test_update_background_action(self, app_settings, resolve_app):
         background_action_control = ActionControl(MyBackgroundAction())
-        common_start_args = (app_settings, ResolveStatus.TimelineOpened, resolve_app, self.dummy_timeline_context)
-        common_update_args = (app_settings, ResolveStatus.TimelineOpened, resolve_app, self.dummy_timeline_context, None)
+        common_start_args = (app_settings, ResolveStatus.TimelineOpen, resolve_app, self.dummy_timeline_context)
+        common_update_args = (app_settings, ResolveStatus.TimelineOpen, resolve_app, self.dummy_timeline_context, None)
 
         background_action_control.start(*common_start_args, input_data={"text": None})
         background_action_control.update(*common_update_args)

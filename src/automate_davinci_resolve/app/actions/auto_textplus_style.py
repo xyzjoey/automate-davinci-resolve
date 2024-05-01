@@ -22,7 +22,7 @@ class Action(ActionBase):
             name="auto_textplus_style",
             display_name="Auto Text+ Style",
             description="Detect newly added Text+ clips and apply style to them, using the style of 1st Text+ clip in the same track.",
-            required_status=ResolveStatus.TimelineOpened,
+            required_status=ResolveStatus.TimelineOpen,
             input_model=Inputs,
         )
 

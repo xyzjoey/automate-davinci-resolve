@@ -3,9 +3,9 @@ from enum import Enum
 
 class ResolveStatus(Enum):
     Unavailable = 0
-    ProjectManagerOpened = 1
-    ProjectOpened = 2
-    TimelineOpened = 3
+    ProjectManagerOpen = 1
+    ProjectOpen = 2
+    TimelineOpen = 3
 
 
 class ClipColor(Enum):
