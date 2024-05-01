@@ -13,7 +13,7 @@ setenv =
     TEMP_DIR={toxinidir}{/}.tmp
 deps =
     customtkinter >= 5.1.2
-    pydantic >= 1.9.1
+    pydantic < 2.0.0
     srt >= 3.5.2
 
 [testenv:gui-{win}]
@@ -22,7 +22,7 @@ setenv =
     win: PROGRAMDATA={env:PROGRAMDATA}
     win: PROGRAMFILES={env:PROGRAMFILES}
     win: RESOLVE_SCRIPT_API={env:PROGRAMDATA}{/}Blackmagic Design{/}DaVinci Resolve{/}Support{/}Developer{/}Scripting
-    win: RESOLVE_SCRIPT_LIB={env:PROGRAMFILES}{/}Blackmagic Design{/}DaVinci Resolve{/}fusionscript.dll
+    win: RESOLVE_SCRIPT_LIB=d:/Programs{/}Blackmagic Design{/}DaVinci Resolve{/}fusionscript.dll
     win: PYTHONPATH={toxinidir}{/}src{:}{env:RESOLVE_SCRIPT_API}{/}Modules{/}
 deps =
     {[base]deps}
@@ -35,7 +35,7 @@ setenv =
     win: PROGRAMDATA={env:PROGRAMDATA}
     win: PROGRAMFILES={env:PROGRAMFILES}
     win: RESOLVE_SCRIPT_API={env:PROGRAMDATA}{/}Blackmagic Design{/}DaVinci Resolve{/}Support{/}Developer{/}Scripting
-    win: RESOLVE_SCRIPT_LIB={env:PROGRAMFILES}{/}Blackmagic Design{/}DaVinci Resolve{/}fusionscript.dll
+    win: RESOLVE_SCRIPT_LIB=D:{/}Programs{/}Blackmagic Design{/}DaVinci Resolve{/}fusionscript.dll
     win: PYTHONPATH={toxinidir}{/}src{:}{env:RESOLVE_SCRIPT_API}{/}Modules{/}
 deps =
     {[base]deps}
