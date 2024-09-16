@@ -12,8 +12,14 @@ class Track:
         return f"Track({self.type}, {self.index}, {self.name})"
 
     def capture_context(self):
+        items_context = {}
+
+        for item in self.timeline_items:
+            item_id = item.GetUniqueId()
+            items_context[item_id] = TimelineItemContext(id=item_id)
+
         return TrackContext(
             index=self.index,
             name=self.name,
-            items={item.GetUniqueId(): TimelineItemContext(id=item.GetUniqueId()) for item in self.timeline_items},
+            items=items_context,
         )
