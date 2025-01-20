@@ -32,6 +32,8 @@ class SubtitleInsertContext(NamedTuple):
 
 
 class Action(ActionBase):
+    frame_rate: float = 60
+
     def __init__(self):
         super().__init__(
             name="import_textplus",
@@ -82,7 +84,7 @@ class Action(ActionBase):
         os.remove(temp_timeline_path)
 
     def prepare_subtitle_insert_context(self, resolve_app: ResolveApp, subtitles: list[srt.Subtitle]):
-        timecode_settings = TimecodeSettings("01:00:00:00", resolve_app.project.GetSetting("timelineFrameRate"))
+        timecode_settings = TimecodeSettings("01:00:00:00", self.frame_rate)
 
         subtitle_insert_context = SubtitleInsertContext(frame_rate=timecode_settings.frame_rate, infos=[])
         skipped_subtitles = []
@@ -104,11 +106,12 @@ class Action(ActionBase):
                         frames=(subtitle_start_frame - last_frame),
                     )
                 )
+                last_frame = subtitle_start_frame
 
             subtitle_insert_context.infos.append(
                 SubtitleInsertInfo(
                     text_content=subtitle.content,
-                    frames=(subtitle_end_frame - subtitle_start_frame),
+                    frames=(subtitle_end_frame - last_frame),
                 )
             )
 
@@ -130,17 +133,16 @@ class Action(ActionBase):
         clip_count = len(subtitle_insert_context.infos)
 
         media_pool = resolve_app.get_media_pool()
-        media_pool_textplus = media_pool.find_item(lambda item: item.GetClipProperty("Clip Name") == "Text+" and item.GetClipProperty("Type") == "Generator")
-        media_pool_gapfiller = media_pool.find_item(
-            lambda item: item.GetClipProperty("Clip Name") == "GapFiller" and item.GetClipProperty("Type") == "Generator"
-        )
+        media_pool_textplus = media_pool.find_item(lambda item: item.GetClipProperty("Clip Name") == f"Text+{self.frame_rate}fps")
+        media_pool_gapfiller = media_pool.find_item(lambda item: item.GetClipProperty("Clip Name") == f"GapFiller{self.frame_rate}fps")
         # media_pool_gapfiller.SetClipColor(input_data.gap_filler_clip_color.value)  # no effect
 
         log.info(f"[{self}] Creating subtitle timeline with {clip_count} clips...")
         log.flush()
 
+        timeline_to_copy = resolve_app.fine_timeline(f"Timeline{self.frame_rate}fps")
         timeline_name = f"AutoSubtitle_{datetime.now().strftime('%Y%m%d%H%M%S')}"
-        timeline = resolve_app.media_pool.CreateEmptyTimeline(timeline_name)
+        timeline = timeline_to_copy.DuplicateTimeline(timeline_name)
 
         if timeline is None:
             log.error(f"[{self}] Failed to create timeline '{timeline_name}'")
@@ -154,7 +156,7 @@ class Action(ActionBase):
                 {
                     "mediaPoolItem": media_pool_textplus if insert_info.text_content is not None else media_pool_gapfiller,
                     "startFrame": 0,
-                    "endFrame": insert_info.frames - 1,
+                    "endFrame": insert_info.frames,
                 }
                 for insert_info in subtitle_insert_context.infos
             ]
