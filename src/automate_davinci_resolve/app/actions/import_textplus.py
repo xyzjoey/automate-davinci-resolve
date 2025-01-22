@@ -18,7 +18,6 @@ from ...utils import log
 
 class Inputs(BaseModel):
     subtitle_file: SubtitleFileInput = Field(title="Subtitle File")
-    gap_filler_clip_color: Optional[ClipColor] = Field(None, title="GapFiller Clip Color")
 
 
 class SubtitleInsertInfo(NamedTuple):
@@ -121,7 +120,7 @@ class Action(ActionBase):
         subtitle_clip_count = sum(1 for info in subtitle_insert_context.infos if info.text_content is not None)
         gap_filler_count = clip_count - subtitle_clip_count
 
-        log.info(f"[{self}] Will insert ({subtitle_clip_count} Text+) + ({gap_filler_count} GapFiller) = {clip_count} clips")
+        log.info(f"[{self}] Will insert {subtitle_clip_count} clips")
 
         if len(skipped_subtitles) > 0:
             log.info(f"[{self}] {len(skipped_subtitles)} subtitles will be skipped because of overlapping")
@@ -130,14 +129,13 @@ class Action(ActionBase):
         return subtitle_insert_context
 
     def create_subtitle_timeline(self, resolve_app: ResolveApp, input_data: Inputs, subtitle_insert_context: SubtitleInsertContext):
-        clip_count = len(subtitle_insert_context.infos)
+        text_clip_count = sum(info.text_content is not None for info in subtitle_insert_context.infos)
 
         media_pool = resolve_app.get_media_pool()
         media_pool_textplus = media_pool.find_item(lambda item: item.GetClipProperty("Clip Name") == f"Text+{self.frame_rate}fps")
         media_pool_gapfiller = media_pool.find_item(lambda item: item.GetClipProperty("Clip Name") == f"GapFiller{self.frame_rate}fps")
-        # media_pool_gapfiller.SetClipColor(input_data.gap_filler_clip_color.value)  # no effect
 
-        log.info(f"[{self}] Creating subtitle timeline with {clip_count} clips...")
+        log.info(f"[{self}] Creating subtitle timeline...")
         log.flush()
 
         timeline_to_copy = resolve_app.fine_timeline(f"Timeline{self.frame_rate}fps")
@@ -148,8 +146,8 @@ class Action(ActionBase):
             log.error(f"[{self}] Failed to create timeline '{timeline_name}'")
             return None
 
-        # below line has no effect, use project frame rate ("timelineFrameRate" is read-only?)
-        # timeline.SetSetting("timelineFrameRate", str(subtitle_insert_context.frame_rate))
+        log.info(f"[{self}] Adding clips...")
+        log.flush()
 
         timeline_items = resolve_app.media_pool.AppendToTimeline(
             [
@@ -162,13 +160,13 @@ class Action(ActionBase):
             ]
         )
 
-        # below line does not work. CreateTimelineFromClips cannot add same clip twice?
-        # timeline = resolve_app.media_pool.CreateTimelineFromClips("AutoSubtitle", clip_infos)
+        gap_fillter_items = [item for item in timeline_items if item.GetName() == "GapFiller"]
+        final_text_clip_count = len(timeline_items) - len(gap_fillter_items)
 
-        if clip_count != len(timeline_items):
-            log.warning(f"[{self}] Unexpected result when inserting clips. Expect {clip_count} clips added, get {len(timeline_items)}")
+        if text_clip_count != final_text_clip_count:
+            log.warning(f"[{self}] Unexpected result when inserting clips. Expect {text_clip_count} clips added, get {final_text_clip_count}")
 
-        log.info(f"[{self}] Setting {len(timeline_items)} clips content...")
+        log.info(f"[{self}] Setting {text_clip_count} clips content...")
 
         for i, (insert_info, timeline_item) in enumerate(zip(subtitle_insert_context.infos, timeline_items)):
             # log.info(f"[{self}] Setting clip content ({i + 1}/{len(timeline_items)})...", end="\r")
@@ -176,7 +174,7 @@ class Action(ActionBase):
             if insert_info.text_content is not None:
                 textplus = textplus_utils.find_textplus(timeline_item)
                 textplus.SetInput("StyledText", insert_info.text_content)
-            elif input_data.gap_filler_clip_color is not None:
-                timeline_item.SetClipColor(input_data.gap_filler_clip_color.value)
+
+        timeline.DeleteClips(gap_fillter_items)
 
         return timeline

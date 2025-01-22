@@ -50,10 +50,6 @@ class Definitions:
                     widget_type=LoadFileWidget,
                     args={"file_types": [(".srt", ".srt")]},
                 ),
-                "gap_filler_clip_color": InputDefinition(
-                    widget_type=SingleEnumValueWidget,
-                    args={"enum_type": Optional[ClipColor]},
-                ),
             },
         ),
         export_textplus.Action: ActionDefinition(
