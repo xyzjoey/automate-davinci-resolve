@@ -51,7 +51,7 @@ class ResolveApp:
     def get_media_pool(self):
         return MediaPool(self.media_pool)
 
-    def fine_timeline(self, timeline_name):
+    def find_timeline(self, timeline_name):
         for i in range(1, self.project.GetTimelineCount() + 1):
             timeline = self.project.GetTimelineByIndex(i)
             if timeline.GetName() == timeline_name:

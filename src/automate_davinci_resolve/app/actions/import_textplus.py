@@ -8,11 +8,10 @@ import srt
 from .action_base import ActionBase
 from ..inputs.subtitles import SubtitleFileInput
 from ..settings import AppSettings
-from ...davinci.enums import ClipColor
 from ...davinci import textplus_utils
 from ...davinci.enums import ResolveStatus
 from ...davinci.resolve_app import ResolveApp
-from ...davinci.timecode import Timecode, TimecodeSettings
+from ...davinci.timecode import TimecodeUtils
 from ...utils import log
 
 
@@ -20,18 +19,14 @@ class Inputs(BaseModel):
     subtitle_file: SubtitleFileInput = Field(title="Subtitle File")
 
 
-class SubtitleInsertInfo(NamedTuple):
+class SubtitleInfo(NamedTuple):
     text_content: Optional[str]
-    frames: int
-
-
-class SubtitleInsertContext(NamedTuple):
-    frame_rate: float
-    infos: list[SubtitleInsertInfo]
+    start_frame: int
+    end_frame: int
 
 
 class Action(ActionBase):
-    frame_rate: float = 60
+    frame_rate: float = 60.0
 
     def __init__(self):
         super().__init__(
@@ -60,8 +55,8 @@ class Action(ActionBase):
             if project is None:
                 return
 
-            subtitle_insert_context = self.prepare_subtitle_insert_context(resolve_app, input_data.subtitle_file.parsed)
-            timeline = self.create_subtitle_timeline(resolve_app, input_data, subtitle_insert_context)
+            subtitle_infos = self.prepare_subtitle_infos(input_data.subtitle_file.parsed)
+            timeline = self.create_subtitle_timeline(resolve_app, subtitle_infos)
 
             if timeline is None:
                 return
@@ -82,65 +77,51 @@ class Action(ActionBase):
 
         os.remove(temp_timeline_path)
 
-    def prepare_subtitle_insert_context(self, resolve_app: ResolveApp, subtitles: list[srt.Subtitle]):
-        timecode_settings = TimecodeSettings("01:00:00:00", self.frame_rate)
-
-        subtitle_insert_context = SubtitleInsertContext(frame_rate=timecode_settings.frame_rate, infos=[])
+    def prepare_subtitle_infos(self, subtitles: list[srt.Subtitle]):
+        subtitle_infos = []
         skipped_subtitles = []
 
         last_frame = 0
 
         for subtitle in subtitles:
-            subtitle_start_frame = Timecode.from_timedelta(subtitle.start, timecode_settings, False).get_frame(False)
-            subtitle_end_frame = Timecode.from_timedelta(subtitle.end, timecode_settings, False).get_frame(False)
+            subtitle_start_frame = TimecodeUtils.timedelta_to_frame(subtitle.start, self.frame_rate)
+            subtitle_end_frame = TimecodeUtils.timedelta_to_frame(subtitle.end, self.frame_rate)
 
             if last_frame > subtitle_start_frame:  # skip overlap
                 skipped_subtitles.append(subtitle)
                 continue
 
-            if last_frame < subtitle_start_frame:  # there is gap
-                subtitle_insert_context.infos.append(
-                    SubtitleInsertInfo(
-                        text_content=None,
-                        frames=(subtitle_start_frame - last_frame),
-                    )
-                )
-                last_frame = subtitle_start_frame
-
-            subtitle_insert_context.infos.append(
-                SubtitleInsertInfo(
+            subtitle_infos.append(
+                SubtitleInfo(
                     text_content=subtitle.content,
-                    frames=(subtitle_end_frame - last_frame),
+                    start_frame=subtitle_start_frame,
+                    end_frame=subtitle_end_frame,
                 )
             )
 
             last_frame = subtitle_end_frame
 
-        clip_count = len(subtitle_insert_context.infos)
-        subtitle_clip_count = sum(1 for info in subtitle_insert_context.infos if info.text_content is not None)
-        gap_filler_count = clip_count - subtitle_clip_count
-
-        log.info(f"[{self}] Will insert {subtitle_clip_count} clips")
+        log.info(f"[{self}] Will insert {len(subtitle_infos)} clips")
 
         if len(skipped_subtitles) > 0:
             log.info(f"[{self}] {len(skipped_subtitles)} subtitles will be skipped because of overlapping")
             log.debug(f"[{self}] Skipped subtitles: {[subtitle.index for subtitle in skipped_subtitles]}")
 
-        return subtitle_insert_context
+        return subtitle_infos
 
-    def create_subtitle_timeline(self, resolve_app: ResolveApp, input_data: Inputs, subtitle_insert_context: SubtitleInsertContext):
-        text_clip_count = sum(info.text_content is not None for info in subtitle_insert_context.infos)
+    def create_subtitle_timeline(self, resolve_app: ResolveApp, subtitle_infos: list[SubtitleInfo]):
+        frame_rate_name = str(self.frame_rate).rstrip("0").rstrip(".")
 
         media_pool = resolve_app.get_media_pool()
-        media_pool_textplus = media_pool.find_item(lambda item: item.GetClipProperty("Clip Name") == f"Text+{self.frame_rate}fps")
-        media_pool_gapfiller = media_pool.find_item(lambda item: item.GetClipProperty("Clip Name") == f"GapFiller{self.frame_rate}fps")
+        media_pool_textplus = media_pool.find_item(lambda item: item.GetClipProperty("Clip Name") == f"Text+{frame_rate_name}fps")
 
         log.info(f"[{self}] Creating subtitle timeline...")
         log.flush()
 
-        timeline_to_copy = resolve_app.fine_timeline(f"Timeline{self.frame_rate}fps")
+        timeline_to_copy = resolve_app.find_timeline(f"Timeline{frame_rate_name}fps")
         timeline_name = f"AutoSubtitle_{datetime.now().strftime('%Y%m%d%H%M%S')}"
         timeline = timeline_to_copy.DuplicateTimeline(timeline_name)
+        start_timecode_frame = TimecodeUtils.str_to_frame(timeline.GetStartTimecode(), self.frame_rate)
 
         if timeline is None:
             log.error(f"[{self}] Failed to create timeline '{timeline_name}'")
@@ -152,29 +133,25 @@ class Action(ActionBase):
         timeline_items = resolve_app.media_pool.AppendToTimeline(
             [
                 {
-                    "mediaPoolItem": media_pool_textplus if insert_info.text_content is not None else media_pool_gapfiller,
+                    "mediaPoolItem": media_pool_textplus,
                     "startFrame": 0,
-                    "endFrame": insert_info.frames,
+                    "endFrame": subtitle_info.end_frame - subtitle_info.start_frame,
+                    "recordFrame": start_timecode_frame + subtitle_info.start_frame,
                 }
-                for insert_info in subtitle_insert_context.infos
+                for subtitle_info in subtitle_infos
             ]
         )
 
-        gap_fillter_items = [item for item in timeline_items if item.GetName() == "GapFiller"]
-        final_text_clip_count = len(timeline_items) - len(gap_fillter_items)
+        expected_clip_count = len(subtitle_infos)
+        clip_count = len(timeline_items)
 
-        if text_clip_count != final_text_clip_count:
-            log.warning(f"[{self}] Unexpected result when inserting clips. Expect {text_clip_count} clips added, get {final_text_clip_count}")
+        if expected_clip_count != clip_count:
+            log.warning(f"[{self}] Unexpected result when inserting clips. Expect {expected_clip_count} clips added, get {clip_count}")
 
-        log.info(f"[{self}] Setting {text_clip_count} clips content...")
+        log.info(f"[{self}] Setting {clip_count} clips content...")
 
-        for i, (insert_info, timeline_item) in enumerate(zip(subtitle_insert_context.infos, timeline_items)):
-            # log.info(f"[{self}] Setting clip content ({i + 1}/{len(timeline_items)})...", end="\r")
-
-            if insert_info.text_content is not None:
-                textplus = textplus_utils.find_textplus(timeline_item)
-                textplus.SetInput("StyledText", insert_info.text_content)
-
-        timeline.DeleteClips(gap_fillter_items)
+        for subtitle_info, timeline_item in zip(subtitle_infos, timeline_items):
+            textplus = textplus_utils.find_textplus(timeline_item)
+            textplus.SetInput("StyledText", subtitle_info.text_content)
 
         return timeline
