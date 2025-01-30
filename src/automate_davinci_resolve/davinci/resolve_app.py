@@ -64,36 +64,35 @@ class ResolveApp:
         self,
         project_file_path: str,
         project_name: str,
-        log_prefix="",  # TODO use logger
     ):
         current_project_name = self.project.GetName()
 
-        log.info(f"{log_prefix}Importing temporary project '{project_name}'...")
+        log.info(f"Importing temporary project '{project_name}'...")
         log.flush()
 
         if not self.project_manager.ImportProject(project_file_path, project_name):
-            log.error(f"{log_prefix}Failed to import project '{project_name}' from {project_file_path}")
+            log.error(f"Failed to import project '{project_name}' from {project_file_path}")
             yield None
 
         project = self.project_manager.LoadProject(project_name)
 
         if project is None:
-            log.error(f"{log_prefix}Failed to load project '{project_name}'")
+            log.error(f"Failed to load project '{project_name}'")
             yield None
 
         self.update()
 
         yield project
 
-        log.info(f"{log_prefix}Loading back previous project '{current_project_name}'...")
+        log.info(f"Loading back previous project '{current_project_name}'...")
         log.flush()
 
         if self.project_manager.LoadProject(current_project_name) is None:
-            log.error(f"{log_prefix}Failed to load project '{current_project_name}'")
+            log.error(f"Failed to load project '{current_project_name}'")
 
         if not self.project_manager.DeleteProject(project_name):
-            log.error(f"{log_prefix}Failed to delete temp project '{project_name}'")
+            log.error(f"Failed to delete temp project '{project_name}'")
 
-        log.info(f"{log_prefix}Removed temporary project '{project_name}'")
+        log.info(f"Removed temporary project '{project_name}'")
 
         self.update()

@@ -1,5 +1,6 @@
 import logging
 import sys
+from contextlib import contextmanager
 
 
 class Log:
@@ -8,6 +9,11 @@ class Log:
         fmt="%(asctime)s %(levelname)-8s %(message)s",
         datefmt="%H:%M:%S",
     )
+    prefixes = []
+
+    @classmethod
+    def _format_msg(cls, msg):
+        return " ".join([*cls.prefixes, str(msg)])
 
     @classmethod
     def init(cls):
@@ -24,24 +30,24 @@ class Log:
         cls.logger.addHandler(handler)
 
     @classmethod
-    def debug(cls, *args, **kw):
-        cls.logger.debug(*args, **kw)
+    def debug(cls, msg, *args, **kw):
+        cls.logger.debug(cls._format_msg(msg), *args, **kw)
 
     @classmethod
-    def info(cls, *args, **kw):
-        cls.logger.info(*args, **kw)
+    def info(cls, msg, *args, **kw):
+        cls.logger.info(cls._format_msg(msg), *args, **kw)
 
     @classmethod
-    def warning(cls, *args, **kw):
-        cls.logger.warning(*args, **kw)
+    def warning(cls, msg, *args, **kw):
+        cls.logger.warning(cls._format_msg(msg), *args, **kw)
 
     @classmethod
-    def error(cls, *args, **kw):
-        cls.logger.error(*args, **kw)
+    def error(cls, msg, *args, **kw):
+        cls.logger.error(cls._format_msg(msg), *args, **kw)
 
     @classmethod
-    def critical(cls, *args, **kw):
-        cls.logger.critical(*args, **kw)
+    def critical(cls, msg, *args, **kw):
+        cls.logger.critical(cls._format_msg(msg), *args, **kw)
 
     @classmethod
     def exception(cls, error, *args, **kw):
@@ -52,30 +58,19 @@ class Log:
         for handler in cls.logger.handlers:
             handler.flush()
 
-
-def debug(*args, **kw):
-    Log.debug(*args, **kw)
-
-
-def info(*args, **kw):
-    Log.info(*args, **kw)
-
-
-def warning(*args, **kw):
-    Log.warning(*args, **kw)
+    @classmethod
+    @contextmanager
+    def prefix(cls, text):
+        cls.prefixes.append(text)
+        yield
+        cls.prefixes.pop()
 
 
-def error(*args, **kw):
-    Log.error(*args, **kw)
-
-
-def critical(*args, **kw):
-    Log.critical(*args, **kw)
-
-
-def exception(*args, **kw):
-    Log.exception(*args, **kw)
-
-
-def flush(*args, **kw):
-    Log.flush(*args, **kw)
+debug = Log.debug
+info = Log.info
+warning = Log.warning
+error = Log.error
+critical = Log.critical
+exception = Log.exception
+flush = Log.flush
+prefix = Log.prefix
