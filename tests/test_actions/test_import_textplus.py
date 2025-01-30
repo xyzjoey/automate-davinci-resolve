@@ -3,7 +3,7 @@ import inspect
 import srt
 
 from automate_davinci_resolve.app.actions import import_textplus
-from automate_davinci_resolve.app.actions.import_textplus import SubtitleInsertInfo
+from automate_davinci_resolve.app.actions.import_textplus import SubtitleInfo
 
 
 class TestImportTextplus:
@@ -11,15 +11,14 @@ class TestImportTextplus:
         resolve_app.mock_current_project({"setting": {"timelineFrameRate": 60.0}})
         action = import_textplus.Action()
 
-        assert action.prepare_subtitle_insert_context(resolve_app, []).infos == []
+        assert action.prepare_subtitle_infos([]) == []
 
     def test_basic(self, resolve_app):
         resolve_app.mock_current_project({"setting": {"timelineFrameRate": 60.0}})
         action = import_textplus.Action()
 
         assert (
-            action.prepare_subtitle_insert_context(
-                resolve_app,
+            action.prepare_subtitle_infos(
                 srt.parse(
                     inspect.cleandoc(  # from pypi.org/project/srt/
                         """
@@ -37,13 +36,11 @@ class TestImportTextplus:
             """
                     )
                 ),
-            ).infos
+            )
             == [
-                SubtitleInsertInfo(text_content=None, frames=2031),
-                SubtitleInsertInfo(text_content="地球上只有3%的水是淡水", frames=255),
-                SubtitleInsertInfo(text_content="可是这些珍贵的淡水中却充满了惊奇", frames=395),
-                SubtitleInsertInfo(text_content=None, frames=793),
-                SubtitleInsertInfo(text_content="所有陆地生命归根结底都依赖於淡水", frames=331),
+                SubtitleInfo(text_content="地球上只有3%的水是淡水", record_frame=218031, frames=255),
+                SubtitleInfo(text_content="可是这些珍贵的淡水中却充满了惊奇", record_frame=218286, frames=395),
+                SubtitleInfo(text_content="所有陆地生命归根结底都依赖於淡水", record_frame=219474, frames=331),
             ]
         )
 
@@ -53,8 +50,7 @@ class TestImportTextplus:
 
         # skip overlapping subtitles
         assert (
-            action.prepare_subtitle_insert_context(
-                resolve_app,
+            action.prepare_subtitle_infos(
                 srt.parse(
                     inspect.cleandoc(
                         """
@@ -72,11 +68,9 @@ class TestImportTextplus:
             """
                     )
                 ),
-            ).infos
+            )
             == [
-                SubtitleInsertInfo(text_content=None, frames=2031),
-                SubtitleInsertInfo(text_content="地球上只有3%的水是淡水", frames=255),
-                SubtitleInsertInfo(text_content=None, frames=1188),
-                SubtitleInsertInfo(text_content="所有陆地生命归根结底都依赖於淡水", frames=331),
+                SubtitleInfo(text_content="地球上只有3%的水是淡水", record_frame=218031, frames=255),
+                SubtitleInfo(text_content="所有陆地生命归根结底都依赖於淡水", record_frame=219474, frames=331),
             ]
         )

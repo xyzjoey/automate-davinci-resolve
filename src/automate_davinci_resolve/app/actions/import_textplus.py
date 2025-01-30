@@ -11,7 +11,7 @@ from ..settings import AppSettings
 from ...davinci import textplus_utils
 from ...davinci.enums import ResolveStatus
 from ...davinci.resolve_app import ResolveApp
-from ...davinci.timecode import TimecodeUtils
+from ...davinci.timecode import Timecode, TimecodeSettings
 from ...utils import log
 
 
@@ -21,12 +21,12 @@ class Inputs(BaseModel):
 
 class SubtitleInfo(NamedTuple):
     text_content: Optional[str]
-    start_frame: int
-    end_frame: int
+    record_frame: int
+    frames: int
 
 
 class Action(ActionBase):
-    frame_rate: float = 60.0
+    timecode_settings = TimecodeSettings("01:00:00:00", 60.0)
 
     def __init__(self):
         super().__init__(
@@ -78,14 +78,14 @@ class Action(ActionBase):
             os.remove(temp_timeline_path)
 
     def prepare_subtitle_infos(self, subtitles: list[srt.Subtitle]):
-        subtitle_infos = []
+        subtitle_infos: list[SubtitleInfo] = []
         skipped_subtitles = []
 
         last_frame = 0
 
         for subtitle in subtitles:
-            subtitle_start_frame = TimecodeUtils.timedelta_to_frame(subtitle.start, self.frame_rate)
-            subtitle_end_frame = TimecodeUtils.timedelta_to_frame(subtitle.end, self.frame_rate)
+            subtitle_start_frame = Timecode.from_timedelta(subtitle.start, self.timecode_settings, False).get_frame(True)
+            subtitle_end_frame = Timecode.from_timedelta(subtitle.end, self.timecode_settings, False).get_frame(True)
 
             if last_frame > subtitle_start_frame:  # skip overlap
                 skipped_subtitles.append(subtitle)
@@ -94,8 +94,8 @@ class Action(ActionBase):
             subtitle_infos.append(
                 SubtitleInfo(
                     text_content=subtitle.content,
-                    start_frame=subtitle_start_frame,
-                    end_frame=subtitle_end_frame,
+                    record_frame=subtitle_start_frame,
+                    frames=subtitle_end_frame - subtitle_start_frame,
                 )
             )
 
@@ -110,7 +110,7 @@ class Action(ActionBase):
         return subtitle_infos
 
     def create_subtitle_timeline(self, resolve_app: ResolveApp, subtitle_infos: list[SubtitleInfo]):
-        frame_rate_name = str(self.frame_rate).rstrip("0").rstrip(".")
+        frame_rate_name = str(self.timecode_settings.frame_rate).rstrip("0").rstrip(".")
 
         media_pool = resolve_app.get_media_pool()
         media_pool_textplus = media_pool.find_item(lambda item: item.GetClipProperty("Clip Name") == f"Text+{frame_rate_name}fps")
@@ -121,7 +121,6 @@ class Action(ActionBase):
         timeline_to_copy = resolve_app.find_timeline(f"Timeline{frame_rate_name}fps")
         timeline_name = f"AutoSubtitle_{datetime.now().strftime('%Y%m%d%H%M%S')}"
         timeline = timeline_to_copy.DuplicateTimeline(timeline_name)
-        start_timecode_frame = TimecodeUtils.str_to_frame(timeline.GetStartTimecode(), self.frame_rate)
 
         if timeline is None:
             log.error(f"Failed to create timeline '{timeline_name}'")
@@ -135,8 +134,8 @@ class Action(ActionBase):
                 {
                     "mediaPoolItem": media_pool_textplus,
                     "startFrame": 0,
-                    "endFrame": subtitle_info.end_frame - subtitle_info.start_frame,
-                    "recordFrame": start_timecode_frame + subtitle_info.start_frame,
+                    "endFrame": subtitle_info.frames,
+                    "recordFrame": subtitle_info.record_frame,
                 }
                 for subtitle_info in subtitle_infos
             ]
