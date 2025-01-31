@@ -25,7 +25,7 @@ class TestTracksInput:
             )
         )
 
-        assert Input.parse_obj({"tracks": [1, 3]}).tracks == [1, 3]
+        assert Input.model_validate({"tracks": [1, 3]}).tracks == [1, 3]
 
     def test_invalid_input(self):
         InputContext.set(
@@ -42,7 +42,7 @@ class TestTracksInput:
         )
 
         try:
-            Input.parse_obj({"tracks": [1, 3]})
+            Input.model_validate({"tracks": [1, 3]})
             assert False
         except ValidationError:
             assert True

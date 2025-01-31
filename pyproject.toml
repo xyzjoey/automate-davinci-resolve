@@ -12,9 +12,11 @@ setenv =
     DATA_DIR={toxinidir}{/}data
     TEMP_DIR={toxinidir}{/}.tmp
 deps =
-    customtkinter >= 5.1.2
-    pydantic < 2.0.0
-    srt >= 3.5.2
+    setuptools ~= 75.0.0
+    customtkinter ~= 5.1.2
+    pydantic ~= 2.0.0
+    pydantic-settings ~= 2.0.0
+    srt ~= 3.5.2
 
 [testenv:gui-{win}]
 setenv =

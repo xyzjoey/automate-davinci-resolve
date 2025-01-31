@@ -1,28 +1,14 @@
 from pathlib import Path
+from typing import Annotated
 
-from pydantic import BaseModel
-
-
-class _Path(BaseModel):
-    path: Path
+from pydantic import AfterValidator
 
 
-class SaveFilePathInput(type(Path())):
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
+def validate_save_file_path(path):
+    if path.exists() and not path.is_file():
+        raise ValueError(f"{path.name} is a non file path")
 
-    @classmethod
-    def validate(cls, v):
-        if isinstance(v, cls):
-            return v
+    return path.resolve()
 
-        # TODO use Validator on pydantic v2 available
-        # https://github.com/pydantic/pydantic/blob/main/docs/blog/pydantic-v2.md#validation-without-a-model-thumbsup
-        path = _Path(path=v).path
-        path = path.resolve()
 
-        if path.is_dir():
-            raise ValueError(f"{path.name} is a directory")
-
-        return cls(path)
+SaveFilePathInput = Annotated[Path, AfterValidator(validate_save_file_path)]

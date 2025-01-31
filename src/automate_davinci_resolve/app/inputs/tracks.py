@@ -1,5 +1,7 @@
 from typing import Optional
 
+from pydantic_core.core_schema import no_info_after_validator_function
+
 from ..context import InputContext
 from ...davinci.context import TimelineDiff
 
@@ -24,8 +26,8 @@ class VideoTrackValidator:
 
 class MultipleVideoTracksInput(list[int]):
     @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
+    def __get_pydantic_core_schema__(cls, source_type, handler):
+        return no_info_after_validator_function(cls.validate, handler(list[int]))
 
     @classmethod
     def validate(cls, v):

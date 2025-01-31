@@ -27,13 +27,13 @@ class ActionFrame(CTkFrame):
 
         self.input_widgets = {}
 
-        for field_name, field in self.action.input_model.__fields__.items():
+        for field_name, field_info in self.action.input_model.model_fields.items():
             input_definition = Definitions.actions[action.action_type].inputs[field_name]
             widget_type = input_definition.widget_type
             args = input_definition.args
 
             input_widget = widget_type(
-                name=field.field_info.title,
+                name=field_info.title,
                 **args,
                 master=self.input_form_frame.content_frame,
             )

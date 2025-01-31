@@ -98,7 +98,7 @@ class ActionControl:
         validated_input_data = None
 
         try:
-            validated_input_data = self.action.input_model.parse_obj(input_data)
+            validated_input_data = self.action.input_model.model_validate(input_data)
         except ValidationError as e:
             log.exception(e)
             log.error(f"[{self.action}] Invalid input: {e}")

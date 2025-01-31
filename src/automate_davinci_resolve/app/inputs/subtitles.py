@@ -1,9 +1,10 @@
-from pydantic import BaseModel, FilePath
+from pathlib import Path
+from typing import Annotated
+
+from pydantic import FilePath, AfterValidator
+from pydantic_core.core_schema import no_info_after_validator_function
+from pydantic.types import PathType
 import srt
-
-
-class _FilePath(BaseModel):
-    file_path: FilePath
 
 
 class SubtitleFileInput:
@@ -12,26 +13,26 @@ class SubtitleFileInput:
         self.parsed: list[srt.Subtitle] = None
 
     @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
+    def __get_pydantic_core_schema__(cls, source_type, handler):
+        return no_info_after_validator_function(
+            Annotated[
+                Path,
+                PathType("file"),
+                AfterValidator(cls.validate),
+            ],
+            handler(Path),
+        )
 
     @classmethod
     def validate(cls, v):
         if isinstance(v, cls):
             return v
 
-        # TODO use Validator on pydantic v2 available
-        # https://github.com/pydantic/pydantic/blob/main/docs/blog/pydantic-v2.md#validation-without-a-model-thumbsup
-        file_path = _FilePath(file_path=v).file_path
-        file_path = file_path.resolve()
+        file_path = v.resolve()
 
         try:
-            # log.info(f"Parsing subtitles from '{v.get()}'...")
-
             with file_path.open(encoding="utf-8") as f:
                 subtitles = list(srt.parse(f.read()))
-
-                # log.info(f"Parsed {len(subtitles)} subtitles")
 
                 result_data = cls(file_path)
                 result_data.parsed = subtitles

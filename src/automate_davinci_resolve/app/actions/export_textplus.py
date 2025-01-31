@@ -1,7 +1,7 @@
 from typing import Optional, NamedTuple, Union
 from enum import Enum
 
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field, model_validator
 import srt
 
 from .action_base import ActionBase
@@ -37,23 +37,23 @@ class Inputs(BaseModel):
         title="Ignore Mode Clip Color",
     )
 
-    @root_validator
-    def count_any(cls, values):
+    @model_validator(mode="after")
+    def count_any(self):
         count = 0
 
-        if values["replace_mode_color"] == ExtraChoice.Any:
+        if self.replace_mode_color == ExtraChoice.Any:
             count += 1
 
-        if values["merge_mode_color"] == ExtraChoice.Any:
+        if self.merge_mode_color == ExtraChoice.Any:
             count += 1
 
-        if values["ignore_mode_color"] == ExtraChoice.Any:
+        if self.ignore_mode_color == ExtraChoice.Any:
             count += 1
 
         if count > 1:
             raise ValueError(f"At most 1 mode can be Any, get {count} modes being Any")
 
-        return values
+        return self
 
 
 class SubtitleMode(Enum):
