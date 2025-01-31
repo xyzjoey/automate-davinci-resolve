@@ -2,8 +2,8 @@ from typing import Optional
 
 from pydantic_core.core_schema import no_info_after_validator_function
 
-from ..context import InputContext
 from ...davinci.context import TimelineDiff
+from ..context import InputContext
 
 
 class VideoTrackValidator:

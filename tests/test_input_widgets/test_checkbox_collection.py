@@ -1,4 +1,7 @@
-from automate_davinci_resolve.gui.input_widgets.checkbox_collection import CheckboxCollection, CheckboxOption
+from automate_davinci_resolve.gui.input_widgets.checkbox_collection import (
+    CheckboxCollection,
+    CheckboxOption,
+)
 
 
 class TestCheckboxCollection:

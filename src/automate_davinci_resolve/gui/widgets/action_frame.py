@@ -1,11 +1,11 @@
 from customtkinter import CTkButton, CTkFrame, CTkTextbox, ThemeManager
 
-from .named_frame import NamedFrame
-from ..definitions import Definitions
+from ... import utils
+from ...app.actions.action_control import ActionControl
 from ...app.app import App
 from ...app.context import AppContext
-from ...app.actions.action_control import ActionControl
-from ... import utils
+from ..definitions import Definitions
+from .named_frame import NamedFrame
 
 
 class ActionFrame(CTkFrame):

@@ -1,7 +1,10 @@
 from enum import Enum
 from typing import Optional
 
-from automate_davinci_resolve.gui.input_widgets.enum_widgets import SingleEnumValueWidget, RadioButtonOption
+from automate_davinci_resolve.gui.input_widgets.enum_widgets import (
+    RadioButtonOption,
+    SingleEnumValueWidget,
+)
 
 
 class MyEnum(Enum):

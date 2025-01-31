@@ -1,21 +1,18 @@
-from typing import Optional, NamedTuple, Union
 from enum import Enum
+from typing import NamedTuple, Optional, Union
 
-from pydantic import BaseModel, Field, model_validator
 import srt
+from pydantic import BaseModel, Field, model_validator
 
-from .action_base import ActionBase
-from ..enums import ExtraChoice
-
-from ..inputs.paths import SaveFilePathInput
-from ...davinci.enums import ClipColor
 from ...davinci import textplus_utils
-from ...davinci.enums import ResolveStatus
+from ...davinci.enums import ClipColor, ResolveStatus
 from ...davinci.resolve_app import ResolveApp
-from ...davinci.timeline import Timeline
 from ...davinci.timecode import Timecode, TimecodeSettings
+from ...davinci.timeline import Timeline
 from ...utils import log
-
+from ..enums import ExtraChoice
+from ..inputs.paths import SaveFilePathInput
+from .action_base import ActionBase
 
 # limitations:
 # - does not support clips in compound clip / fusion clip / nested timeline

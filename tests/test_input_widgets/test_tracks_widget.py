@@ -1,7 +1,16 @@
 from pydantic import BaseModel
+
 from automate_davinci_resolve.app.inputs.tracks import MultipleVideoTracksInput
-from automate_davinci_resolve.gui.input_widgets.track_widgets import MultipleVideoTracksWidget, CheckboxOption
-from automate_davinci_resolve.davinci.context import TimelineContext, TimelineDiff, TimelineItemContext, TrackContext
+from automate_davinci_resolve.davinci.context import (
+    TimelineContext,
+    TimelineDiff,
+    TimelineItemContext,
+    TrackContext,
+)
+from automate_davinci_resolve.gui.input_widgets.track_widgets import (
+    CheckboxOption,
+    MultipleVideoTracksWidget,
+)
 
 
 class Input(BaseModel):

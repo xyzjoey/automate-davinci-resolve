@@ -1,8 +1,5 @@
 from typing import Any, NamedTuple, Optional, Union
 
-from .input_widgets.enum_widgets import SingleEnumValueWidget
-from .input_widgets.file_widgets import LoadFileWidget, SaveFileWidget
-from .input_widgets.track_widgets import MultipleVideoTracksWidget
 from ..app.actions import (
     auto_textplus_style,
     export_textplus,
@@ -13,6 +10,9 @@ from ..app.actions import (
 from ..app.enums import ExtraChoice
 from ..davinci.enums import ClipColor
 from ..utils import types
+from .input_widgets.enum_widgets import SingleEnumValueWidget
+from .input_widgets.file_widgets import LoadFileWidget, SaveFileWidget
+from .input_widgets.track_widgets import MultipleVideoTracksWidget
 
 
 class InputDefinition(NamedTuple):

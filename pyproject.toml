@@ -12,11 +12,11 @@ setenv =
     DATA_DIR={toxinidir}{/}data
     TEMP_DIR={toxinidir}{/}.tmp
 deps =
-    setuptools ~= 75.0.0
-    customtkinter ~= 5.1.2
-    pydantic ~= 2.0.0
-    pydantic-settings ~= 2.0.0
-    srt ~= 3.5.2
+    customtkinter ~= 5.2.2
+    pydantic ~= 2.10.6
+    pydantic-settings ~= 2.7.1
+    setuptools ~= 75.8.0
+    srt ~= 3.5.3
 
 [testenv:gui-{win}]
 setenv =
@@ -57,18 +57,26 @@ deps =
 commands =
     pytest {toxinidir}/tests -v -ra {posargs}
 
+
 [testenv:check_format]
 deps =
     black
+    isort
 commands =
     black {toxinidir} --check --color {posargs}
+    isort --diff {toxinidir}
 
 [testenv:format]
 deps =
     black
+    isort
 commands =
     black {toxinidir} {posargs}
+    isort {toxinidir}
 """
 
 [tool.black]
 line-length = 160
+
+[tool.isort]
+profile = "black"

@@ -1,6 +1,6 @@
+from .context import TimelineContext
 from .timecode import Timecode, TimecodeSettings
 from .track import Track
-from .context import TimelineContext
 
 
 class Timeline:

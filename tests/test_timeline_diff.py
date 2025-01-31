@@ -1,4 +1,10 @@
-from automate_davinci_resolve.davinci.context import Diff, TimelineContext, TimelineItemContext, TimelineDiff, TrackContext
+from automate_davinci_resolve.davinci.context import (
+    Diff,
+    TimelineContext,
+    TimelineDiff,
+    TimelineItemContext,
+    TrackContext,
+)
 
 
 class TestTimelineDiff:

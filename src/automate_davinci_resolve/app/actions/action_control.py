@@ -4,15 +4,15 @@ from typing import Optional
 
 from pydantic import ValidationError
 
-from .action_base import ActionBase
-from .action_status import ActionStatus
-from ..settings import AppSettings
+from ... import utils
 from ...davinci.context import TimelineContext, TimelineDiff
 from ...davinci.enums import ResolveStatus
 from ...davinci.resolve_app import ResolveApp
 from ...utils import log
 from ...utils.timer import Timer
-from ... import utils
+from ..settings import AppSettings
+from .action_base import ActionBase
+from .action_status import ActionStatus
 
 
 class StatusControlResult(Enum):

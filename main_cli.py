@@ -4,7 +4,6 @@ from automate_davinci_resolve.app.app import App
 from automate_davinci_resolve.davinci.resolve_app import ResolveApp
 from automate_davinci_resolve.utils.log import Log
 
-
 if __name__ == "__main__":
     argparser = ArgumentParser()
     argparser.add_argument("action", type=str)

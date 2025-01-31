@@ -1,8 +1,13 @@
 from pydantic import BaseModel, ValidationError
 
-from automate_davinci_resolve.app.inputs.tracks import MultipleVideoTracksInput
 from automate_davinci_resolve.app.context import InputContext
-from automate_davinci_resolve.davinci.context import TimelineContext, TimelineDiff, TrackContext, Diff
+from automate_davinci_resolve.app.inputs.tracks import MultipleVideoTracksInput
+from automate_davinci_resolve.davinci.context import (
+    Diff,
+    TimelineContext,
+    TimelineDiff,
+    TrackContext,
+)
 
 
 class Input(BaseModel):

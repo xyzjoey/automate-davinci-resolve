@@ -1,10 +1,10 @@
 from pathlib import Path
 from typing import Annotated
 
-from pydantic import FilePath, AfterValidator
-from pydantic_core.core_schema import no_info_after_validator_function
-from pydantic.types import PathType
 import srt
+from pydantic import AfterValidator, FilePath
+from pydantic.types import PathType
+from pydantic_core.core_schema import no_info_after_validator_function
 
 
 class SubtitleFileInput:

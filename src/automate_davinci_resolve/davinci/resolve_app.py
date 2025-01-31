@@ -2,10 +2,10 @@ from contextlib import contextmanager
 
 import DaVinciResolveScript
 
+from ..utils import log
 from .enums import ResolveStatus
 from .media_pool import MediaPool
 from .timeline import Timeline
-from ..utils import log
 
 
 class ResolveApp:

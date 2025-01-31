@@ -2,7 +2,7 @@ import pytest
 
 from automate_davinci_resolve.app.actions import auto_textplus_style
 from automate_davinci_resolve.app.context import InputContext
-from automate_davinci_resolve.davinci.context import TimelineDiff, Diff
+from automate_davinci_resolve.davinci.context import Diff, TimelineDiff
 
 
 class TestAutoTextplusStyle:
