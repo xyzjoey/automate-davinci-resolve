@@ -1,9 +1,9 @@
 from customtkinter import CTk, CTkFont, CTkTextbox
 
+from ..app.app import App
+from .log_handler import TextboxLogHandler
 from .widgets.action_switcher_frame import ActionSwitcherFrame
 from .widgets.named_frame import NamedFrame
-from .log_handler import TextboxLogHandler
-from ..app.app import App
 
 
 class GuiApp:

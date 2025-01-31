@@ -1,6 +1,6 @@
-from automate_davinci_resolve.davinci.enums import ResolveStatus
-from automate_davinci_resolve.davinci.context import TrackContext, TimelineItemContext
 from automate_davinci_resolve.app.context import InputContext
+from automate_davinci_resolve.davinci.context import TimelineItemContext, TrackContext
+from automate_davinci_resolve.davinci.enums import ResolveStatus
 
 
 class TestApp:

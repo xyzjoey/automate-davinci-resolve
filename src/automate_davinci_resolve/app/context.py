@@ -1,6 +1,6 @@
 from typing import NamedTuple, Optional
 
-from ..davinci.context import TimelineContext, ResolveContext
+from ..davinci.context import ResolveContext, TimelineContext
 
 
 class AppContext(NamedTuple):

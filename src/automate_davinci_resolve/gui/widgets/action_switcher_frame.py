@@ -2,11 +2,10 @@ from typing import NamedTuple
 
 from customtkinter import CTkButton, CTkFont, CTkFrame, CTkLabel
 
-from .action_frame import ActionFrame
-
-from ..definitions import Definitions
 from ...app.app import App
 from ...app.context import AppContext
+from ..definitions import Definitions
+from .action_frame import ActionFrame
 
 
 class ActionUI(NamedTuple):

@@ -1,21 +1,18 @@
-from typing import Optional, NamedTuple, Union
 from enum import Enum
+from typing import NamedTuple, Optional, Union
 
-from pydantic import BaseModel, Field, root_validator
 import srt
+from pydantic import BaseModel, Field, model_validator
 
-from .action_base import ActionBase
-from ..enums import ExtraChoice
-
-from ..inputs.paths import SaveFilePathInput
-from ...davinci.enums import ClipColor
 from ...davinci import textplus_utils
-from ...davinci.enums import ResolveStatus
+from ...davinci.enums import ClipColor, ResolveStatus
 from ...davinci.resolve_app import ResolveApp
-from ...davinci.timeline import Timeline
 from ...davinci.timecode import Timecode, TimecodeSettings
+from ...davinci.timeline import Timeline
 from ...utils import log
-
+from ..enums import ExtraChoice
+from ..inputs.paths import SaveFilePathInput
+from .action_base import ActionBase
 
 # limitations:
 # - does not support clips in compound clip / fusion clip / nested timeline
@@ -37,23 +34,23 @@ class Inputs(BaseModel):
         title="Ignore Mode Clip Color",
     )
 
-    @root_validator
-    def count_any(cls, values):
+    @model_validator(mode="after")
+    def count_any(self):
         count = 0
 
-        if values["replace_mode_color"] == ExtraChoice.Any:
+        if self.replace_mode_color == ExtraChoice.Any:
             count += 1
 
-        if values["merge_mode_color"] == ExtraChoice.Any:
+        if self.merge_mode_color == ExtraChoice.Any:
             count += 1
 
-        if values["ignore_mode_color"] == ExtraChoice.Any:
+        if self.ignore_mode_color == ExtraChoice.Any:
             count += 1
 
         if count > 1:
             raise ValueError(f"At most 1 mode can be Any, get {count} modes being Any")
 
-        return values
+        return self
 
 
 class SubtitleMode(Enum):

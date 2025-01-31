@@ -1,8 +1,8 @@
 import typing
 from typing import Union
 
-from .radiobutton_collection import RadioButtonCollection, RadioButtonOption
 from ...utils import types
+from .radiobutton_collection import RadioButtonCollection, RadioButtonOption
 
 
 class SingleEnumValueWidget(RadioButtonCollection):

@@ -1,4 +1,4 @@
-from .context import TrackContext, TimelineItemContext
+from .context import TimelineItemContext, TrackContext
 
 
 class Track:

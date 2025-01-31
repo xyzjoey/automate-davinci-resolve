@@ -1,6 +1,10 @@
 # import asyncio
 
-from .context import AppContext, InputContext
+from ..davinci.context import ResolveContext, TimelineDiff
+from ..davinci.enums import ResolveStatus
+from ..davinci.resolve_app import ResolveApp
+from ..utils import log
+from ..utils.timer import Timer
 from .actions import (
     auto_textplus_style,
     export_textplus,
@@ -9,13 +13,8 @@ from .actions import (
     sync_textplus_style,
 )
 from .actions.action_control import ActionControl
+from .context import AppContext, InputContext
 from .settings import AppSettings
-from ..davinci.context import TimelineDiff, ResolveContext
-from ..davinci.enums import ResolveStatus
-from ..davinci.resolve_app import ResolveApp
-from ..utils import log
-
-from ..utils.timer import Timer
 
 
 class App:

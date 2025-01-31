@@ -1,18 +1,18 @@
-from datetime import datetime
 import os
-from typing import Optional, NamedTuple
+from datetime import datetime
+from typing import NamedTuple, Optional
 
-from pydantic import BaseModel, Field
 import srt
+from pydantic import BaseModel, Field
 
-from .action_base import ActionBase
-from ..inputs.subtitles import SubtitleFileInput
-from ..settings import AppSettings
 from ...davinci import textplus_utils
 from ...davinci.enums import ResolveStatus
 from ...davinci.resolve_app import ResolveApp
 from ...davinci.timecode import Timecode, TimecodeSettings
 from ...utils import log
+from ..inputs.subtitles import SubtitleFileInput
+from ..settings import AppSettings
+from .action_base import ActionBase
 
 
 class Inputs(BaseModel):

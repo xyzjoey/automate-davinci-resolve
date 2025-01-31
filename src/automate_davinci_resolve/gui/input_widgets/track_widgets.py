@@ -1,8 +1,7 @@
 from typing import Optional
 
-from .checkbox_collection import CheckboxCollection, CheckboxOption
-
 from ...davinci.context import TimelineContext, TimelineDiff
+from .checkbox_collection import CheckboxCollection, CheckboxOption
 
 
 class MultipleVideoTracksWidget(CheckboxCollection):

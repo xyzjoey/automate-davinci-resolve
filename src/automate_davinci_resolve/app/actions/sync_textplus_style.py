@@ -1,12 +1,12 @@
 from pydantic import BaseModel, Field
 
-from .action_base import ActionBase
-from ..inputs.tracks import MultipleVideoTracksInput
-from ..settings import AppSettings
 from ...davinci import textplus_utils
 from ...davinci.enums import ResolveStatus
 from ...davinci.resolve_app import ResolveApp
 from ...utils import log
+from ..inputs.tracks import MultipleVideoTracksInput
+from ..settings import AppSettings
+from .action_base import ActionBase
 
 
 class Inputs(BaseModel):

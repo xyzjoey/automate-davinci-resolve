@@ -1,8 +1,13 @@
 from pydantic import BaseModel, ValidationError
 
-from automate_davinci_resolve.app.inputs.tracks import MultipleVideoTracksInput
 from automate_davinci_resolve.app.context import InputContext
-from automate_davinci_resolve.davinci.context import TimelineContext, TimelineDiff, TrackContext, Diff
+from automate_davinci_resolve.app.inputs.tracks import MultipleVideoTracksInput
+from automate_davinci_resolve.davinci.context import (
+    Diff,
+    TimelineContext,
+    TimelineDiff,
+    TrackContext,
+)
 
 
 class Input(BaseModel):
@@ -25,7 +30,7 @@ class TestTracksInput:
             )
         )
 
-        assert Input.parse_obj({"tracks": [1, 3]}).tracks == [1, 3]
+        assert Input.model_validate({"tracks": [1, 3]}).tracks == [1, 3]
 
     def test_invalid_input(self):
         InputContext.set(
@@ -42,7 +47,7 @@ class TestTracksInput:
         )
 
         try:
-            Input.parse_obj({"tracks": [1, 3]})
+            Input.model_validate({"tracks": [1, 3]})
             assert False
         except ValidationError:
             assert True
