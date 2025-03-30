@@ -1,5 +1,6 @@
 import importlib
 import sys
+import traceback
 from types import ModuleType
 
 
@@ -26,6 +27,7 @@ class ModuleUtils:
         try:
             return importlib.reload(module)
         except:
+            traceback.print_exc()
             return None
 
     @classmethod

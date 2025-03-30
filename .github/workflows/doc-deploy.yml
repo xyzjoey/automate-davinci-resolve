@@ -26,8 +26,8 @@ jobs:
       - name: Deploy Documentation for Tagged Versions
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          mike deploy ${GITHUB_REF#refs/tags/} latest --push --update-aliases
-          mike set-default latest
+          mike deploy ${GITHUB_REF#refs/tags/} latest --update-aliases
+          mike set-default latest --push
 
       - name: Deploy Documentation for Master
         if: github.ref == 'refs/heads/master'

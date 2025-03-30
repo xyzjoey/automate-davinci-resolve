@@ -1,4 +1,4 @@
-import pkg_resources
+import importlib.metadata
 
 from ..extended_resolve import davinci_resolve_module
 from ..smart_edit.constants import SnapMode
@@ -31,7 +31,7 @@ class FunctionalCallbacks:
 
 
 def smart_edit_menu():
-    version = pkg_resources.get_distribution("dvr_smart_edit").version
+    version = importlib.metadata.version("dvr_smart_edit")
 
     ui_dispatcher = davinci_resolve_module.create_ui_dispatcher()
     ui = ui_dispatcher._ui_manager

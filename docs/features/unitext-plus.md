@@ -6,7 +6,7 @@
 
 ## How to Use
 1. **Open Menu**:
-    - Go to `Scripts > SmartEdit > Menu > General`.
+    - Go to `Workspace > Scripts > SmartEdit > Menu > General`.
 
 2. **Import SmartEdit Bin**:
     - press **"Import SmartEdit Bin"**.
@@ -33,7 +33,7 @@
     - Enable the target subtitle track in timeline.
 
 2. **Open Menu**:
-    - Go to `Scripts > SmartEdit > Menu > UniText+`.
+    - Go to `Workspace > Scripts > SmartEdit > Menu > UniText+`.
 
 3. **Generate UniText+**:
     - select desired options (hover for tooltips).
@@ -46,5 +46,5 @@
 
 ## Explore Other Features
 
-- See **Menu** (`Scripts > SmartEdit > Menu > UniText+`) and **UniText+ Inspector**.
+- See **Menu** (`Workspace > Scripts > SmartEdit > Menu > UniText+`) and **UniText+ Inspector**.
 - Hover for tooltips to learn about each feature.

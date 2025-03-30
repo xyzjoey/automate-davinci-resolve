@@ -1,3 +1,5 @@
+MAX_ADJUST_CONTROL_COUNT = 30
+
 FuRegisterClass("AdjustFusion", CT_Tool, {
 	REGS_Name             = "AdjustFusion",
 	REGS_Category         = "SmartEdit",
@@ -15,7 +17,7 @@ FuRegisterClass("AdjustFusion", CT_Tool, {
 })
 
 function Create()
-	self:BeginControlNest("Copy Targets for Underneath Tracks", "CopyLabel", true, {});
+	self:BeginControlNest("Copy Values to Underneath Tracks", "CopyLabel", true, {});
 
 	InReload = self:AddInput("This Clip", "Copy", {
 		LINKID_DataType    = "Number",
@@ -27,7 +29,7 @@ function Create()
 		INP_Passive        = true,
 	})
 
-	InReloadForAll = self:AddInput("All AdjustFusion", "CopyForAll", {
+	InReloadForAll = self:AddInput("All CopyFusion", "CopyForAll", {
 		LINKID_DataType    = "Number",
 		INPID_InputControl = "ButtonControl",
 		-- BTNCS_Execute      =
@@ -37,7 +39,7 @@ function Create()
 		INP_Passive        = true,
 	})
 
-	InTrackNum = self:AddInput("#Tracks Underneath", "NumberOfTracks", {
+	InTrackNum = self:AddInput("Number of Tracks", "NumberOfTracks", {
 		LINKID_DataType = "Number",
 		INPID_InputControl = "SliderControl",
 		INP_Integer = true,
@@ -47,28 +49,9 @@ function Create()
 	})
 
 	self:EndControlNest()
+	self:BeginControlNest("Add Control", "AddControlLabel", true, {});
 
-	self:BeginControlNest("Targets", "TargetLabel", true, {});
-
-	InSourceInputs = self:AddInput("Source Inputs", "SourceInputs", {
-		LINKID_DataType        = "Text",
-		INPID_InputControl     = "TextEditControl",
-		TEC_Lines              = 10,
-		-- INP_DoNotifyChanged = true,
-		INP_External           = false,
-		INP_InteractivePassive = true,
-	})
-
-	InTargetTools = self:AddInput("Target Tools", "TargetTools", {
-		LINKID_DataType        = "Text",
-		INPID_InputControl     = "TextEditControl",
-		TEC_Lines              = 5,
-		-- INP_DoNotifyChanged = true,
-		INP_External           = false,
-		INP_InteractivePassive = true,
-	})
-
-	InAddSourceInput = self:AddInput("Add Target Input", "AddSourceInput", {
+	InAddSourceInput = self:AddInput("Add Control", "AddSourceInput", {
 		LINKID_DataType     = "Text",
 		INPID_InputControl  = "TextEditControl",
 		TEC_Lines           = 1,
@@ -78,35 +61,82 @@ function Create()
 	})
 
 	self:EndControlNest()
+	self:BeginControlNest("Adjust Controls", "AdjustControlsLabel", true, {});
 
-	-- self:RemoveControlPage("Controls")
-	-- self:AddControlPage("UniText+")
+	InAdjustControlLabels = {}
+	InUseNodes = {}
+	InUseInputIds = {}
+	InDestinationNodes = {}
+	InDestinationInputIds = {}
+	InAdjustControls = {}
 
-	-- InFitToTextArea = self:AddInput("Fit To TextArea", "FitToTextArea", {
-	-- 	LINKID_DataType        = "Number",
-	-- 	INPID_InputControl     = "CheckboxControl",
-	-- 	INP_Default            = 1.0,
-	-- 	INP_DoNotifyChanged    = true,
-	-- 	INP_External           = false,
-	-- 	INP_InteractivePassive = true,
-	-- })
+	for i = 1, MAX_ADJUST_CONTROL_COUNT do
+		table.insert(InAdjustControlLabels, self:AddInput("Adjust Control " .. i, "AdjustControlLabel" .. i, {
+			LINKID_DataType    = "Text",
+			INPID_InputControl = "LabelControl",
+			IC_Visible         = false,
+			INP_External       = false,
+			INP_Passive        = true,
+		}))
+		table.insert(InUseNodes, self:AddInput("Use Node", "UseNode" .. i, {
+			LINKID_DataType        = "Number",
+			INPID_InputControl     = "CheckboxControl",
+			INP_Default            = i == 1 and 1 or 0,
+			IC_Visible             = false,
+			INP_External           = false,
+			INP_InteractivePassive = true,
+			ICD_Width              = 0.5,
+		}))
+		table.insert(InUseInputIds, self:AddInput("Use Input Id", "UseInputId" .. i, {
+			LINKID_DataType        = "Number",
+			INPID_InputControl     = "CheckboxControl",
+			INP_Default            = false,
+			IC_Visible             = false,
+			INP_External           = false,
+			INP_InteractivePassive = true,
+			ICD_Width              = 0.5,
+		}))
+		table.insert(InDestinationNodes, self:AddInput("Destination Node", "DestinationNode" .. i, {
+			LINKID_DataType        = "Text",
+			INPID_InputControl     = "TextEditControl",
+			TEC_Lines              = 1,
+			INPS_DefaultText       = "",
+			IC_Visible             = false,
+			INP_External           = false,
+			INP_InteractivePassive = true,
+		}))
+		table.insert(InDestinationInputIds, self:AddInput("Destination Input Id", "DestinationInputId" .. i, {
+			LINKID_DataType        = "Text",
+			INPID_InputControl     = "TextEditControl",
+			TEC_Lines              = 1,
+			INPS_DefaultText       = "",
+			IC_Visible             = false,
+			INP_External           = false,
+			INP_InteractivePassive = true,
+		}))
+		table.insert(InAdjustControls, self:AddInput("", "AdjustControl" .. i, {
+			INP_InitialNotify = false,
+			IC_Visible        = false,
+			INP_External      = false,
+			INP_Passive       = true,
+		}))
+	end
 
-	-- self:EndControlNest()
+	self:EndControlNest()
 
-	-- InTextPlus = self:AddInput("Text+", "TextPlus", {
-	-- 	LINKID_DataType = "Image",
-	-- 	LINK_Main       = 1,
-	-- })
+	InNewControlAttrs = self:AddInput("NewControlAttrs", "NewControlAttrs", {
+		LINKID_DataType     = "Text",
+		INPID_InputControl  = "TextEditControl",
+		INP_DoNotifyChanged = true,
+		IC_Visible          = false,
+		INP_External        = false,
+		INP_Passive         = true,
+	})
 
-	-- InDataWindowRef = self:AddInput("DataWindowReference", "DataWindowReference", {
-	-- 	LINKID_DataType = "Image",
-	-- 	LINK_Main       = 2,
-	-- })
-
-	-- InTextArea = self:AddInput("TextArea", "TextArea", {
-	-- 	LINKID_DataType = "Image",
-	-- 	LINK_Main       = 3,
-	-- })
+	-- target input
+	-- (warning: same target)
+	-- (keyword)
+	-- remove button
 
 	OutImage = self:AddOutput("Output", "Output", {
 		LINKID_DataType = "Image",
@@ -118,20 +148,11 @@ function NotifyChanged(inp, param, time)
 	if inp ~= nil and param ~= nil then
 		if inp == InAddSourceInput then
 			self:GetComp():Execute(
-				"!Py: from dvr_smart_edit.entrypoints import setup_module; setup_module(bmd, resolve, fusion); from dvr_smart_edit.entrypoints import adjust_fusion_clip; adjust_fusion_clip.on_add_source_input(comp, '" ..
+				"!Py: from dvr_smart_edit.entrypoints import setup_module; setup_module(bmd, resolve, fusion); from dvr_smart_edit.entrypoints import adjust_fusion_clip; adjust_fusion_clip.on_add_control(comp, '" ..
 				self.Name .. "')")
+		elseif inp == InNewControlAttrs then
+			SetNewControl(param.Value)
 		end
-		-- if inp == InFitToTextArea then
-		-- 	if param.Value == 1.0 then
-		-- 		self:GetComp():Execute(
-		-- 			"!Py: from dvr_smart_edit.entrypoints import setup_module; setup_module(bmd, resolve, fusion); from dvr_smart_edit.entrypoints import uni_textplus_clip; uni_textplus_clip.on_enable_fit_to_textarea(comp, '" ..
-		-- 			self.Name .. "')")
-		-- 	else
-		-- 		self:GetComp():Execute(
-		-- 			"!Py: from dvr_smart_edit.entrypoints import setup_module; setup_module(bmd, resolve, fusion); from dvr_smart_edit.entrypoints import uni_textplus_clip; uni_textplus_clip.on_disable_fit_to_textarea(comp, '" ..
-		-- 			self.Name .. "')")
-		-- 	end
-		-- end
 	end
 end
 
@@ -142,4 +163,127 @@ function Process(req)
 	out:Fill(p)
 
 	OutImage:Set(req, out)
+end
+
+function SetNewControl(attrsText)
+	if attrsText == "" then
+		return
+	end
+
+	local success, result = pcall(function()
+		return load("return " .. attrsText)()
+	end)
+
+	if not success then
+		print("Error during parsing: " .. result)
+		return
+	end
+
+	print("Parsing successful!")
+	local count = GetAddedControlCount()
+
+	if count < MAX_ADJUST_CONTROL_COUNT then
+		local nextControlIndex = count + 1
+		local attrs = ConvertToFuseAttrs(result)
+
+		InAdjustControls[nextControlIndex]:SetAttrs(attrs)
+		LinkPreviewControls()
+
+		InAdjustControlLabels[nextControlIndex]:SetAttrs({ IC_Visible = true })
+		if nextControlIndex ~= 1 then
+			InUseNodes[nextControlIndex]:SetAttrs({ IC_Visible = true })
+		end
+		InUseInputIds[nextControlIndex]:SetAttrs({ IC_Visible = true })
+		if nextControlIndex == 1 then
+			InDestinationNodes[nextControlIndex]:SetAttrs({ IC_Visible = true })
+		end
+		InAdjustControls[nextControlIndex]:SetAttrs({ IC_Visible = true })
+
+		InNewControlAttrs:SetSource(Text(""), 0)
+		-- self:GetComp():Execute(
+		-- 	"!Py: from dvr_smart_edit.entrypoints import setup_module; setup_module(bmd, resolve, fusion); from dvr_smart_edit.entrypoints import adjust_fusion_clip; adjust_fusion_clip.on_set_control(comp, '" ..
+		-- 	self.Name .. "', " .. count .. ")")
+	end
+end
+
+function ConvertToFuseAttrs(attrs)
+	local newAttrs = {}
+
+	newAttrs.INPS_ID = attrs.INPS_ID
+
+	newAttrs.LINKS_Name = attrs.INPS_Name
+	newAttrs.LINKID_DataType = attrs.INPS_DataType
+	newAttrs.INPID_InputControl = attrs.INPID_InputControl
+
+	if attrs.INPN_ICD_Width > 0 then
+		newAttrs.ICD_Width = attrs.INPN_ICD_Width
+	end
+
+	newAttrs.IC_Visible = true
+	newAttrs.INP_External = true
+	newAttrs.INP_Passive = false
+	newAttrs.INP_InteractivePassive = true
+
+	if newAttrs.LINKID_DataType == "Number" then
+		newAttrs.INP_Default = attrs.INPN_Default
+	end
+
+	if attrs.INPID_PreviewControl ~= nil then
+		newAttrs.INPID_PreviewControl = attrs.INPID_PreviewControl
+		newAttrs.PC_ControlGroup      = attrs.INPI_PC_ControlGroup
+		newAttrs.PC_ControlID         = attrs.INPI_PC_ControlID
+	end
+
+	-- MultiButtonControl
+	if attrs.INPST_MultiButtonControl_String then
+		for _, buttonName in ipairs(attrs.INPST_MultiButtonControl_String) do
+			table.insert(newAttrs, { MBTNC_AddButton = buttonName })
+		end
+		-- newAttrs.MBTNC_ShowName = attrs.INPB_MultiButtonControl_ShowName
+	end
+
+	-- MultiButtonIDControl
+	if attrs.INPIDT_MultiButtonControl_ID then
+		for _, buttonName in ipairs(attrs.INPIDT_MultiButtonControl_ID) do
+			table.insert(newAttrs, { MBTNC_AddButton = buttonName })
+		end
+	end
+
+	return newAttrs
+end
+
+function LinkPreviewControls()
+	local last = GetAddedControlCount()
+	local previewControl = InAdjustControls[last]:GetAttr("INPID_PreviewControl")
+
+	if previewControl == "RectangleControl" then
+		for i = last - 1, 1, -1 do
+			if InAdjustControls[i]:GetAttr("INPID_PreviewControl") == "CrosshairControl" then
+				InAdjustControls[last]:SetAttrs({
+					RCP_Center = InAdjustControls[i]
+				})
+				break
+			end
+		end
+	elseif previewControl == "CrosshairControl" then
+		for i = last - 1, 1, -1 do
+			if InAdjustControls[i]:GetAttr("INPID_PreviewControl") == "RectangleControl" and InAdjustControls[i]:GetAttr("RCP_Center") == nil then
+				InAdjustControls[i]:SetAttrs({
+					RCP_Center = InAdjustControls[last]
+				})
+			end
+		end
+	end
+end
+
+function GetAddedControlCount()
+	for i, control in ipairs(InAdjustControls) do
+		local visible = control:GetAttr("IC_Visible")
+
+		if not visible then
+			return i - 1
+		end
+	end
+
+	return MAX_ADJUST_CONTROL_COUNT
 end
