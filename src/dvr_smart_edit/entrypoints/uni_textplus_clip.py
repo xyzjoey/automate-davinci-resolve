@@ -88,28 +88,22 @@ def on_import_srt_for_track(composition: PyRemoteComposition):  # TODO: preserve
         UniTextPlus.import_srt_for_track(timeline_item, Path(file_path))
 
 
-def on_enable_fit_to_textarea(composition: PyRemoteComposition, tool_name: str):
-    if composition is None:
-        return
-
-    if composition.FindTool is None:
-        # happen when drag in the clip to where not shown in preview (e.g. composition=<nil> [App: 'Resolve' on 127.0.0.1, UUID: 08934f92-4270-467a-bb2d-1148505d8e26])
-        return
-
-    tool = composition.FindTool(tool_name)
+def on_enable_fit_to_textarea(composition: PyRemoteComposition, fuse_name: str):
+    tool = ScriptUtils.get_tool_from_fuse_name(composition, fuse_name)
 
     if tool is not None:
         UniTextPlusControl.enable_fit_to_textarea(tool)
 
 
-def on_disable_fit_to_textarea(composition: PyRemoteComposition, tool_name: str):
-    if composition is None:
-        return
-
-    if composition.FindTool is None:
-        return
-
-    tool = composition.FindTool(tool_name)
+def on_disable_fit_to_textarea(composition: PyRemoteComposition, fuse_name: str):
+    tool = ScriptUtils.get_tool_from_fuse_name(composition, fuse_name)
 
     if tool is not None:
         UniTextPlusControl.disable_fit_to_textarea(tool)
+
+
+def on_created(composition: PyRemoteComposition, fuse_name: str):
+    tool = ScriptUtils.get_tool_from_fuse_name(composition, fuse_name)
+
+    if tool is not None:
+        UniTextPlusControl.reset_resolution(composition, tool)

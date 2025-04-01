@@ -7,12 +7,12 @@ import srt
 from ..extended_resolve import davinci_resolve_module
 from ..extended_resolve.media_pool_item import MediaPoolItem
 from ..extended_resolve.resolve import MediaPoolItemInsertInfo
-from ..extended_resolve.textplus import TextPlusSettings
+from ..extended_resolve.textplus import TextPlusComposition, TextPlusSettings
 from ..extended_resolve.timecode import Timecode
 from ..extended_resolve.timeline import Timeline
 from ..extended_resolve.timeline_item import TimelineItem
 from ..extended_resolve.track import TrackHandle
-from ..resolve_types import PyRemoteOperator
+from ..resolve_types import PyRemoteComposition, PyRemoteOperator
 from ..utils.math import FrameRange
 from .constants import GeneratedTrackName, SnapMode
 from .errors import UserError
@@ -62,6 +62,22 @@ class UniTextPlusControl:
         textplus.LineSizeX.SetExpression()
         textplus.SetInput("LayoutSize", uni_control_tool.GetInput("SavedLayoutSize"))
         textplus.SetInput("LineSizeX", uni_control_tool.GetInput("SavedLineSizeX"))
+
+    @classmethod
+    def reset_resolution(cls, composition: PyRemoteComposition, uni_control_tool: PyRemoteOperator):
+        width = composition.GetPrefs("Comp.FrameFormat.Width")
+        height = composition.GetPrefs("Comp.FrameFormat.Height")
+
+        out1 = uni_control_tool.TextPlus.GetConnectedOutput()
+        textplus = out1.GetTool() if out1 is not None else None
+
+        out2 = uni_control_tool.DataWindowReference.GetConnectedOutput()
+        dod_ref = out2.GetTool() if out2 is not None else None
+
+        textplus.SetInput("Width", width)
+        textplus.SetInput("Height", height)
+        dod_ref.SetInput("Width", width)
+        dod_ref.SetInput("Height", height)
 
 
 class UniTextPlus:
@@ -244,40 +260,39 @@ class UniTextPlus:
 
     @classmethod
     def _copy_style(cls, src_item: TimelineItem, dst_items: Iterable[TimelineItem]):
-        src_comp = src_item._item.GetFusionCompByIndex(1)
-        src_tool = src_comp.Template
-        src_settings = src_comp.CopySettings(src_tool)
+        src_comp = TextPlusComposition(src_item._item.GetFusionCompByIndex(1))
+        src_settings = src_comp.get_settings("UniTextControl", "TextArea")
 
         cls._copy_style_from_settings(src_settings, dst_items)
 
     @classmethod
-    def _copy_style_from_settings(cls, src_settings: dict, dst_items: Iterable[TimelineItem]):
-        new_settings = TextPlusSettings(src_settings)
+    def _copy_style_from_settings(cls, src_settings: TextPlusSettings, dst_items: Iterable[TimelineItem]):
+        new_settings = src_settings
 
         for i, dst_item in enumerate(dst_items):
             LoadingWindow.set_message(f"Setting {i + 1}/{len(dst_items)} Text+ content...", dispatch_log=False)
 
-            dst_comp = dst_item._item.GetFusionCompByIndex(1)
-            dst_tool = dst_comp.Template
-            old_settings = TextPlusSettings(dst_comp.CopySettings(dst_tool))
-            new_tool_settings = new_settings.get_textplus_tool()
-            old_tool_settings = old_settings.get_textplus_tool()
+            dst_comp = TextPlusComposition(dst_item._item.GetFusionCompByIndex(1))
+            old_settings = dst_comp.get_settings()
+            new_textplus_settings = new_settings.get_textplus_tool()
+            old_textplus_settings = old_settings.get_textplus_tool()
 
             new_text = old_settings.get_text_input()._settings["Value"]
 
             new_settings.get_text_input()._settings["Value"] = new_text
-            new_tool_settings._settings["Inputs"]["GlobalOut"] = old_tool_settings._settings["Inputs"]["GlobalOut"]
+            new_textplus_settings._settings["Inputs"]["GlobalOut"] = old_textplus_settings._settings["Inputs"]["GlobalOut"]
 
             character_level_settings = new_settings.find_character_level_styling()
             if character_level_settings is not None:
                 new_style_array = cls._map_style_array_to_lines(character_level_settings.style_array, new_text)
                 character_level_settings.style_array = new_style_array
 
-            dst_tool.LoadSettings(new_settings._settings)
+            dst_comp.set_settings(new_settings)
 
-            uni_control_tool = dst_comp.UniTextControl
+            new_settings_has_uni_control = new_settings.get_tool("UniTextControl") is not None
+            uni_control_tool = dst_comp._composition.UniTextControl
 
-            if uni_control_tool is not None:
+            if not new_settings_has_uni_control and uni_control_tool is not None:
                 fit = uni_control_tool.GetInput("FitToTextArea")
 
                 if fit:

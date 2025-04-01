@@ -146,7 +146,7 @@ end
 
 function NotifyChanged(inp, param, time)
 	if inp ~= nil and param ~= nil then
-		if inp == InFitToTextArea then
+		if inp == InFitToTextArea and self:GetComp() ~= nil then -- comp is nil when LoadSettings
 			if param.Value == 1.0 then
 				self:GetComp():Execute(
 					"!Py: from dvr_smart_edit.entrypoints import setup_module; setup_module(bmd, resolve, fusion); from dvr_smart_edit.entrypoints import uni_textplus_clip; uni_textplus_clip.on_enable_fit_to_textarea(comp, '" ..
@@ -158,6 +158,12 @@ function NotifyChanged(inp, param, time)
 			end
 		end
 	end
+end
+
+function OnAddToFlow()
+	self:GetComp():Execute(
+		"!Py: from dvr_smart_edit.entrypoints import setup_module; setup_module(bmd, resolve, fusion); from dvr_smart_edit.entrypoints import uni_textplus_clip; uni_textplus_clip.on_created(comp, '" ..
+		self.Name .. "')")
 end
 
 function Process(req)

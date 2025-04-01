@@ -1,3 +1,6 @@
+from ..resolve_types import PyRemoteComposition
+
+
 class InputSettings:
     def __init__(self, _settings: dict):
         self._settings = _settings
@@ -31,6 +34,9 @@ class TextPlusSettings:
     def __init__(self, _settings: dict):
         self._settings = _settings
 
+    def get_tool(self, name):
+        return self._settings["Tools"].get(name)
+
     def get_textplus_tool(self):
         _tool = next((tool for tool in self._settings["Tools"].values() if tool["__ctor"] == "TextPlus"))
         return TextPlusToolSettings(_tool)
@@ -47,3 +53,32 @@ class TextPlusSettings:
             return character_level_styling_tool.get_text_input()
         else:
             return textplus_tool.get_text_input()
+
+    def is_uni_textplus(self):
+        return True
+
+
+class TextPlusComposition:
+    def __init__(self, _composition: PyRemoteComposition):
+        self._composition = _composition
+
+    def get_settings(self, *other_tool_names) -> TextPlusSettings:
+        tools = [self._composition.Template]
+
+        for tool_name in other_tool_names:
+            tool = self._composition.FindTool(tool_name)
+
+            if tool is not None:
+                tools.append(tool)
+
+        return TextPlusSettings(self._composition.CopySettings(tools))
+
+    def set_settings(self, settings: TextPlusSettings):
+        ordered_dict_type = type(settings._settings["Tools"])
+
+        for tool_name, tool_settings in settings._settings["Tools"].items():
+            tool = self._composition.FindTool(tool_name)
+
+            if tool is not None:
+                sub_settings = {"Tools": ordered_dict_type([(tool_name, tool_settings)])}
+                tool.LoadSettings(sub_settings)
