@@ -6,8 +6,8 @@ from pathlib import Path
 
 class InstallFiles:
     @staticmethod
-    def get_src_dir(name):
-        return Path(__file__).parent.parent / "src" / "dvr_smart_edit" / "data" / name
+    def get_data_dir():
+        return Path(__file__).parent.parent / "src" / "dvr_smart_edit" / "data"
 
     @staticmethod
     def get_dvr_program_data_dir():
@@ -33,33 +33,43 @@ class Main:
     def install_files(self):
         print(f"[dvr_smart_edit] Installing DaVinci Resolve plugin files")
 
-        self.create_symlink(
-            InstallFiles.get_src_dir("fuses"),
+        self.create_dir_symlink(
+            InstallFiles.get_data_dir() / "fuses",
             InstallFiles.get_dvr_program_data_dir() / "Fusion" / "Fuses" / "SmartEdit",
         )
-        self.create_symlink(
-            InstallFiles.get_src_dir("scripts"),
+        self.create_dir_symlink(
+            InstallFiles.get_data_dir() / "scripts" / "Edit",
             InstallFiles.get_dvr_program_data_dir() / "Fusion" / "Scripts" / "Edit" / "SmartEdit",
         )
-        self.create_symlink(
-            InstallFiles.get_src_dir("macros/Generators"),
+        self.create_file_symlink(
+            InstallFiles.get_data_dir() / "scripts" / "root" / "SmartEdit.scriptlib",
+            InstallFiles.get_dvr_program_data_dir() / "Fusion" / "Scripts" / "SmartEdit.scriptlib",
+        )
+        self.create_dir_symlink(
+            InstallFiles.get_data_dir() / "macros" / "Generators",
             InstallFiles.get_dvr_program_data_dir() / "Fusion" / "Templates" / "Edit" / "Generators" / "SmartEdit",
         )
-        self.create_symlink(
-            InstallFiles.get_src_dir("macros/Titles"),
+        self.create_dir_symlink(
+            InstallFiles.get_data_dir() / "macros" / "Titles",
             InstallFiles.get_dvr_program_data_dir() / "Fusion" / "Templates" / "Edit" / "Titles" / "SmartEdit",
         )
 
-    def create_symlink(self, src_dir, dst_dir):
-        if not dst_dir.exists() and not dst_dir.is_symlink():
-            dst_dir.symlink_to(src_dir, target_is_directory=True)
-            print(f"[dvr_smart_edit] Created link `{dst_dir}`")
+    def create_dir_symlink(self, src_path, dst_path):
+        self.create_symlink(src_path, dst_path, target_is_directory=True)
+
+    def create_file_symlink(self, src_path, dst_path):
+        self.create_symlink(src_path, dst_path, target_is_directory=False)
+
+    def create_symlink(self, src_path, dst_path, **kw):
+        if not dst_path.exists() and not dst_path.is_symlink():
+            dst_path.symlink_to(src_path, **kw)
+            print(f"[dvr_smart_edit] Created link `{dst_path}`")
         elif self.force:
-            dst_dir.unlink()
-            dst_dir.symlink_to(src_dir, target_is_directory=True)
-            print(f"[dvr_smart_edit] Created link `{dst_dir}`")
+            dst_path.unlink()
+            dst_path.symlink_to(src_path, **kw)
+            print(f"[dvr_smart_edit] Created link `{dst_path}`")
         else:
-            print(f"[dvr_smart_edit] Cannot create link `{dst_dir}` (already exists)")
+            print(f"[dvr_smart_edit] Cannot create link `{dst_path}` (already exists)")
 
 
 if __name__ == "__main__":

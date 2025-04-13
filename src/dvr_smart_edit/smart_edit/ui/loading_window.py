@@ -4,6 +4,7 @@ from contextlib import ContextDecorator
 from ...extended_resolve import davinci_resolve_module
 from ...utils import log
 from ..errors import UserError
+from .error_window import ErrorWindow
 
 
 class LoadingWindow(ContextDecorator):
@@ -16,6 +17,8 @@ class LoadingWindow(ContextDecorator):
         self.ui_dispatcher = davinci_resolve_module.create_ui_dispatcher()
         self._window = None
 
+        self._context = ErrorWindow.pop_on_error()
+
     def __enter__(self):
         ui = self.ui_dispatcher._ui_manager
         disp = self.ui_dispatcher._ui_dispatcher
@@ -24,56 +27,69 @@ class LoadingWindow(ContextDecorator):
             {
                 "WindowTitle": f"Smart Edit - {self.title}",
                 "ID": "SmartEditLoading",
-                "Geometry": [500, 500, 500, 100],
+                "WindowFlags": {"CoverWindow": True},
+                # "WindowModality": "WindowModal",  # it also block api call e.g. open page, insert clip to timeline
+                "Margin": 0,
+                "Spacing": 0,
             },
             [
-                ui.Label(
-                    {
-                        "ID": "Message",
-                        "Text": self.message,
-                        "Alignment": {
-                            "AlignVCenter": True,
-                            "AlignHCenter": True,
-                        },
-                        "WordWrap": True,
-                    }
+                ui.VGroup(
+                    {"Spacing": 20},
+                    [
+                        ui.VGap(0, 10),
+                        ui.Label(
+                            {
+                                "ID": "Message",
+                                "Text": self.message,
+                                "Alignment": {
+                                    "AlignVCenter": True,
+                                    "AlignHCenter": True,
+                                },
+                                "WordWrap": True,
+                            }
+                        ),
+                        ui.VGap(0, 10),
+                    ],
                 ),
             ],
         )
-        window.On.SmartEditLoading.Close = lambda ev: disp.ExitLoop()
+
+        def on_close(event):
+            disp.ExitLoop()
+            window.Hide()
+
+        window.On.SmartEditLoading.Close = on_close
+
+        window.Resize((500, 200))
         window.Show()
-        disp.StepLoop()
 
         self._window = window
         self.instances.append(self)
+
+        self._context.__enter__()
 
         return self
 
     def __exit__(self, exc_type, exc, exc_tb):
         if exc_type is None:
             self._set_message("Finish")
-            self.ui_dispatcher._ui_dispatcher.ExitLoop()
-        elif issubclass(exc_type, UserError):
-            log.error(exc)
-            self._set_message(f"Error:\n{exc}")
-            self.ui_dispatcher._ui_dispatcher.RunLoop()
-        else:
-            traceback.print_exc()
-            self._set_message(f"Unexpected error. Check console for details.")
-            self.ui_dispatcher._ui_dispatcher.RunLoop()
 
-        self.instances.remove(self)
         self._window.Hide()
+        self.instances.remove(self)
+
+        self._context.__exit__(exc_type, exc, exc_tb)
 
         return True
 
     def _set_message(self, message: str):
         items = self._window.GetItems()
         items["Message"]["Text"] = message
-        self.ui_dispatcher._ui_dispatcher.StepLoop()
 
     @classmethod
     def set_message(cls, message: str, dispatch_log: bool = True):
+        if len(cls.instances) == 0:
+            return
+
         if dispatch_log:
             log.info(f"{cls.instances[-1].title} - {message}")
 

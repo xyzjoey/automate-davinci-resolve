@@ -68,6 +68,10 @@ class Timeline:
 
         return None
 
+    def has_track(self, track_handle: TrackHandle):
+        count = self._timeline.GetTrackCount(track_handle.type)
+        return count >= track_handle.index
+
     def add_track(self, track_type: str, track_index=None):
         result = False
 

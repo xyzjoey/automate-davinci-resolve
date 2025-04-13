@@ -1,4 +1,4 @@
-from dvr_smart_edit.smart_edit.uni_textplus import UniTextPlus
+from dvr_smart_edit.smart_edit.textplus_utilities import TextPlusUtilities
 
 
 class TestSnapRanges:

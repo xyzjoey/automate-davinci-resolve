@@ -1,6 +1,6 @@
 import itertools
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, NamedTuple
 
 import srt
 
@@ -22,77 +22,112 @@ from .ui.loading_window import LoadingWindow
 LineRange = tuple[int, int]
 
 
-class UniTextPlusControl:
+# class UniTextPlusControl:
+#     @classmethod
+#     def fit_to_textbox_for_clip(cls, composition: PyRemoteComposition):
+#         textplus = composition.Template
+
+#         if textplus is None:
+#             return
+
+#         dod = textplus.Output.GetDod()
+
+#         print(dod)
+
+#         # get line direction
+#         # get textbox width height
+#         # change font size
+#         # change line X/Y
+
+#     @classmethod
+#     def fit_to_textbox_for_all(cls):
+#         pass
+
+#     @classmethod
+#     def enable_fit_to_textbox(cls, uni_control_tool: PyRemoteOperator):
+#         in1 = uni_control_tool.TextPlus.GetConnectedOutput()
+#         textplus = in1.GetTool() if in1 is not None else None
+
+#         in2 = uni_control_tool.DataWindowReference.GetConnectedOutput()
+#         dod_ref = in2.GetTool() if in2 is not None else None
+
+#         in3 = uni_control_tool.TextBox.GetConnectedOutput()
+#         textbox = in3.GetTool() if in3 is not None else None
+
+#         if textplus is None or dod_ref is None or textbox is None:
+#             return
+
+#         textbox_width = f"({textplus.Name}.Width * {textbox.Name}.Width)"
+#         textbox_height = f"({textplus.Name}.Height * {textbox.Name}.Height)"
+#         dod_width = f"({dod_ref.Name}.Output.DataWindow[3] - {dod_ref.Name}.Output.DataWindow[1])"
+#         dod_height = f"({dod_ref.Name}.Output.DataWindow[4] - {dod_ref.Name}.Output.DataWindow[2])"
+
+#         if textplus.LayoutSize.GetExpression() is None:
+#             uni_control_tool.SetInput("SavedLayoutSize", textplus.GetInput("LayoutSize"))
+#         if textplus.LineSizeX.GetExpression() is None:
+#             uni_control_tool.SetInput("SavedLineSizeX", textplus.GetInput("LineSizeX"))
+
+#         textplus.LayoutSize.SetExpression(f"iif({dod_height} ~= 0, {textbox_height} / {dod_height}, 1.0)")
+#         textplus.LineSizeX.SetExpression(f"iif({dod_width} ~= 0, min(1.0, {textbox_width} * {dod_height} / ({dod_width} * {textbox_height})), 1.0)")
+
+#     @classmethod
+#     def disable_fit_to_textbox(cls, uni_control_tool: PyRemoteOperator):
+#         in1 = uni_control_tool.TextPlus.GetConnectedOutput()
+#         textplus = in1.GetTool() if in1 is not None else None
+
+#         if textplus is None:
+#             return
+
+#         textplus.LayoutSize.SetExpression()
+#         textplus.LineSizeX.SetExpression()
+#         textplus.SetInput("LayoutSize", uni_control_tool.GetInput("SavedLayoutSize"))
+#         textplus.SetInput("LineSizeX", uni_control_tool.GetInput("SavedLineSizeX"))
+
+#     @classmethod
+#     def reset_resolution(cls, composition: PyRemoteComposition, uni_control_tool: PyRemoteOperator):
+#         width = composition.GetPrefs("Comp.FrameFormat.Width")
+#         height = composition.GetPrefs("Comp.FrameFormat.Height")
+
+#         in1 = uni_control_tool.TextPlus.GetConnectedOutput()
+#         textplus = in1.GetTool() if in1 is not None else None
+
+#         in2 = uni_control_tool.DataWindowReference.GetConnectedOutput()
+#         dod_ref = in2.GetTool() if in2 is not None else None
+
+#         textplus.SetInput("Width", width)
+#         textplus.SetInput("Height", height)
+#         dod_ref.SetInput("Width", width)
+#         dod_ref.SetInput("Height", height)
+
+
+class SubtitleInfo(NamedTuple):
+    content: str
+    frame_range: FrameRange
+
+
+class TextPlusUtilities:
     @classmethod
-    def enable_fit_to_textarea(cls, uni_control_tool: PyRemoteOperator):
-        out1 = uni_control_tool.TextPlus.GetConnectedOutput()
-        textplus = out1.GetTool() if out1 is not None else None
-
-        out2 = uni_control_tool.DataWindowReference.GetConnectedOutput()
-        dod_ref = out2.GetTool() if out2 is not None else None
-
-        out3 = uni_control_tool.TextArea.GetConnectedOutput()
-        textarea = out3.GetTool() if out3 is not None else None
-
-        if textplus is None or dod_ref is None or textarea is None:
-            return
-
-        textarea_width = f"({textplus.Name}.Width * {textarea.Name}.Width)"
-        textarea_height = f"({textplus.Name}.Height * {textarea.Name}.Height)"
-        dod_width = f"({dod_ref.Name}.Output.DataWindow[3] - {dod_ref.Name}.Output.DataWindow[1])"
-        dod_height = f"({dod_ref.Name}.Output.DataWindow[4] - {dod_ref.Name}.Output.DataWindow[2])"
-
-        if textplus.LayoutSize.GetExpression() is None:
-            uni_control_tool.SetInput("SavedLayoutSize", textplus.GetInput("LayoutSize"))
-        if textplus.LineSizeX.GetExpression() is None:
-            uni_control_tool.SetInput("SavedLineSizeX", textplus.GetInput("LineSizeX"))
-
-        textplus.LayoutSize.SetExpression(f"iif({dod_height} ~= 0, {textarea_height} / {dod_height}, 1.0)")
-        textplus.LineSizeX.SetExpression(f"iif({dod_width} ~= 0, min(1.0, {textarea_width} * {dod_height} / ({dod_width} * {textarea_height})), 1.0)")
-
-    @classmethod
-    def disable_fit_to_textarea(cls, uni_control_tool: PyRemoteOperator):
-        out1 = uni_control_tool.TextPlus.GetConnectedOutput()
-        textplus = out1.GetTool() if out1 is not None else None
-
-        if textplus is None:
-            return
-
-        textplus.LayoutSize.SetExpression()
-        textplus.LineSizeX.SetExpression()
-        textplus.SetInput("LayoutSize", uni_control_tool.GetInput("SavedLayoutSize"))
-        textplus.SetInput("LineSizeX", uni_control_tool.GetInput("SavedLineSizeX"))
-
-    @classmethod
-    def reset_resolution(cls, composition: PyRemoteComposition, uni_control_tool: PyRemoteOperator):
-        width = composition.GetPrefs("Comp.FrameFormat.Width")
-        height = composition.GetPrefs("Comp.FrameFormat.Height")
-
-        out1 = uni_control_tool.TextPlus.GetConnectedOutput()
-        textplus = out1.GetTool() if out1 is not None else None
-
-        out2 = uni_control_tool.DataWindowReference.GetConnectedOutput()
-        dod_ref = out2.GetTool() if out2 is not None else None
-
-        textplus.SetInput("Width", width)
-        textplus.SetInput("Height", height)
-        dod_ref.SetInput("Width", width)
-        dod_ref.SetInput("Height", height)
-
-
-class UniTextPlus:
-    @classmethod
-    def generate_textplus_clips(cls, snap_mode: SnapMode):
+    def generate_textplus_clips(
+        cls,
+        subtitle_track_index=None,
+        srt_file_path=None,
+        snap_mode: SnapMode = SnapMode.NONE,
+    ):
         resolve = davinci_resolve_module.get_resolve()
         timeline = resolve.get_current_timeline()
-        media_pool_item = SmartEditBin.get_or_import_uni_textplus()
-        active_subtitle_track_handle = next((e for e in timeline.iter_tracks("subtitle") if timeline.get_track_enabled(e)), None)
+        media_pool_item = SmartEditBin.get_or_import_textplus()
 
-        if active_subtitle_track_handle is None:
-            raise UserError("Failed to find enabled subtitle track")
+        if timeline is None:
+            raise UserError("No active timeline")
 
-        subtitle_timeline_items = list(timeline.iter_items_in_track(active_subtitle_track_handle))
-        subtitle_ranges = cls._compute_subtitle_insert_ranges(timeline, subtitle_timeline_items, snap_mode)
+        if subtitle_track_index is not None:
+            subtitle_infos = cls._get_subtitle_infos_from_subtitle_track(timeline, subtitle_track_index)
+        elif srt_file_path is not None:
+            subtitle_infos = cls._get_subtitle_infos_from_srt(timeline, srt_file_path)
+        else:
+            raise Exception("Missing subtitle source")
+
+        subtitle_ranges = cls._compute_subtitle_insert_ranges(timeline, subtitle_infos, snap_mode)
 
         track_handle = timeline.get_or_add_track_by_name("video", GeneratedTrackName.TEXT)
 
@@ -115,9 +150,10 @@ class UniTextPlus:
             )
 
             LoadingWindow.set_message(f"Setting {len(textplus_timeline_items)} Text+ content...")
-            for textplus_item, subtitle_item in zip(textplus_timeline_items, subtitle_timeline_items):
-                textplus_tool = textplus_item._item.GetFusionCompByIndex(1).Template
-                textplus_tool.SetInput("StyledText", subtitle_item._item.GetName())
+            for textplus_item, subtitle_info in zip(textplus_timeline_items, subtitle_infos):
+                comp = textplus_item.get_last_fusion_composition()
+                textplus_tool = comp.Template
+                textplus_tool.SetInput("StyledText", subtitle_info.content)
 
         timeline.set_track_locked(track_handle, True)
 
@@ -125,7 +161,7 @@ class UniTextPlus:
     def copy_style_for_all(cls, source_item: MediaPoolItem):
         resolve = davinci_resolve_module.get_resolve()
         timeline = resolve.get_current_timeline()
-        dst_timeline_items = list(timeline.iter_items(lambda item: cls._is_uni_textplus_clip(item), track_type="video"))
+        dst_timeline_items = list(timeline.iter_items(lambda item: cls._is_textplus_clip(item), track_type="video"))
 
         LoadingWindow.set_message(f"Copying Style to {len(dst_timeline_items)} clips...")
         cls.copy_style_for_clips(dst_timeline_items, source_item)
@@ -134,7 +170,7 @@ class UniTextPlus:
     def copy_style_for_track(cls, track_handle: TrackHandle, source_item: MediaPoolItem):
         resolve = davinci_resolve_module.get_resolve()
         timeline = resolve.get_current_timeline()
-        dst_timeline_items = list(timeline.iter_items_in_track(track_handle, lambda item: cls._is_uni_textplus_clip(item)))
+        dst_timeline_items = list(timeline.iter_items_in_track(track_handle, lambda item: cls._is_textplus_clip(item)))
 
         LoadingWindow.set_message(f"Copying Style to {len(dst_timeline_items)} clips at track {track_handle.get_short_name()}...")
         cls.copy_style_for_clips(dst_timeline_items, source_item)
@@ -161,7 +197,7 @@ class UniTextPlus:
 
         LoadingWindow.set_message(f"Collecting subtitle content...")
 
-        subtitle_timeline_items = timeline.iter_items_in_track(track_handle, lambda item: cls._is_uni_textplus_clip(item))
+        subtitle_timeline_items = timeline.iter_items_in_track(track_handle, lambda item: cls._is_textplus_clip(item))
         subtitles = cls._transform_to_subtitles(timeline, subtitle_timeline_items)
 
         LoadingWindow.set_message(f"Exporting {len(subtitles)} subtitles to file `{file_path}` ...")
@@ -170,53 +206,84 @@ class UniTextPlus:
         file_path.write_text(file_content, encoding="utf-8")
 
     @classmethod
-    def import_srt_for_track(cls, source_timeline_item: TimelineItem, file_path: Path):
-        LoadingWindow.set_message(f"Reading srt file `{file_path}`...")
+    def fit_textbox_for_clip(cls, timeline_item: TimelineItem):
+        if not cls._is_textplus_clip(timeline_item):
+            return
 
-        file_content = file_path.read_text(encoding="utf-8")
+        comp = timeline_item.get_last_fusion_composition()
+        textplus_tool = comp.Template
+        dod = textplus_tool.Output.GetDoD()
+
+        textplus_tool.SetInput("LayoutType", 1)  # set Type to Text Box
+
+        width = textplus_tool.GetInput("Width")
+        height = textplus_tool.GetInput("Height")
+        textbox_width = width * textplus_tool.GetInput("LayoutWidth")
+        textbox_height = height * textplus_tool.GetInput("LayoutHeight")
+        dod_width = dod[3] - dod[1]
+        dod_height = dod[4] - dod[2]
+
+        if dod_height != 0:
+            size = textbox_height / dod_height
+            size *= textplus_tool.GetInput("Size")
+            textplus_tool.SetInput("Size", size)
+
+            if dod_width != 0 and textbox_height != 0:
+                dod_ratio = dod_width / dod_height
+                textbox_ratio = textbox_width / textbox_height
+
+                line_size_x = textbox_ratio / dod_ratio
+                line_size_x *= textplus_tool.GetInput("LineSizeX")
+                line_size_x = min(1, line_size_x)
+                textplus_tool.SetInput("LineSizeX", line_size_x)
+
+    @classmethod
+    def _get_subtitle_infos_from_subtitle_track(cls, timeline: Timeline, track_index) -> list[SubtitleInfo]:
+        track_handle = TrackHandle("subtitle", track_index)
+
+        if not timeline.has_track(track_handle):
+            raise UserError(f"Invalid subtitle track (index={track_index})")
+
+        subtitle_infos = []
+
+        for item in timeline.iter_items_in_track(track_handle):
+            subtitle_infos.append(
+                SubtitleInfo(
+                    content=item._item.GetName(),
+                    frame_range=item.get_frame_range(),
+                )
+            )
+
+        return subtitle_infos
+
+    @classmethod
+    def _get_subtitle_infos_from_srt(cls, timeline: Timeline, srt_file_path: str) -> list[SubtitleInfo]:
+        path = Path(srt_file_path)
+
+        if not path.is_file():
+            raise UserError(f"Invalid file path: '{srt_file_path}'")
+
+        file_content = path.read_text(encoding="utf-8")
 
         try:
             subtitles = list(srt.parse(file_content))
-        except:
-            raise UserError(f"Failed to parse srt file `{file_path}`. See console for details.")
+        except Exception as e:
+            raise UserError(f"Failed to parse srt file `{srt_file_path}`. See console for details.", detailed_error=e)
 
-        resolve = davinci_resolve_module.get_resolve()
-        timeline = resolve.get_current_timeline()
-        track_handle = source_timeline_item.get_track_handle()
+        subtitle_infos = []
 
-        src_comp = source_timeline_item._item.GetFusionCompByIndex(1)
-        src_tool = src_comp.Template
-        src_settings = src_comp.CopySettings(src_tool)
-
-        old_items = list(timeline.iter_items_in_track(track_handle))
-        LoadingWindow.set_message(f"Deleting {len(old_items)} clips...")
-        timeline.delete_items(old_items)
-
-        media_pool_item = SmartEditBin.get_or_import_uni_textplus()
-        if media_pool_item is None:
-            raise Exception(f"Failed to import clip `{SmartEditBin.ClipName.UNI_TEXTPLUS}`")
-
-        LoadingWindow.set_message(f"Inserting {len(subtitles)} clips...")
-        insert_infos = [
-            MediaPoolItemInsertInfo(
-                media_pool_item=media_pool_item,
-                start_frame=Timecode.from_timedelta(subtitle.start, timeline.get_timecode_settings(), False).get_frame(True),
-                end_frame=Timecode.from_timedelta(subtitle.end, timeline.get_timecode_settings(), False).get_frame(True),
-                track_handle=track_handle,
+        for subtitle in subtitles:
+            subtitle_infos.append(
+                SubtitleInfo(
+                    content=subtitle.content,
+                    frame_range=FrameRange(
+                        start=Timecode.from_timedelta(subtitle.start, timeline.get_timecode_settings(), False).get_frame(True),
+                        end=Timecode.from_timedelta(subtitle.end, timeline.get_timecode_settings(), False).get_frame(True),
+                    ),
+                )
             )
-            for subtitle in subtitles
-        ]
-        inserted_items = resolve.insert_to_timeline(insert_infos)
 
-        LoadingWindow.set_message(f"Setting {len(subtitles)} clips content...")
-        for i, item in enumerate(inserted_items):
-            if item is None:
-                raise UserError(f"Failed to insert clip `{SmartEditBin.ClipName.UNI_TEXTPLUS}` with info {insert_infos[i]}")
-
-            tool = item._item.GetFusionCompByIndex(1).Template
-            tool.SetInput("StyledText", subtitles[i].content)
-
-        cls._copy_style_from_settings(src_settings, inserted_items)
+        return subtitle_infos
 
     @classmethod
     def _transform_to_subtitles(cls, timeline: Timeline, timeline_items: Iterable[TimelineItem]):
@@ -228,7 +295,7 @@ class UniTextPlus:
                     index=None,
                     start=timeline.get_item_start_timecode(item).get_timedelta(False),
                     end=timeline.get_item_end_timecode(item).get_timedelta(False),
-                    content=item._item.GetFusionCompByIndex(1).Template.GetInput("StyledText"),  # TODO: support character level styling
+                    content=item.get_last_fusion_composition().Template.GetInput("StyledText"),  # TODO: support character level styling
                 )
             )
 
@@ -236,32 +303,18 @@ class UniTextPlus:
 
     @classmethod
     def _is_textplus_clip(cls, item: TimelineItem):
-        if item._item.GetFusionCompCount() == 0:
+        comp = item.get_last_fusion_composition()
+        tool = comp.Template if comp is not None else None
+
+        if tool is None:
             return False
 
-        comp = item._item.GetFusionCompByIndex(1)
-
-        if comp.Template is None:
-            return False
-
-        return comp.Template.GetAttrs("TOOLS_RegID") == "TextPlus"
-
-    @classmethod
-    def _is_uni_textplus_clip(cls, item: TimelineItem):
-        if item._item.GetFusionCompCount() == 0:
-            return False
-
-        comp = item._item.GetFusionCompByIndex(1)
-
-        if comp.UniText is None:
-            return False
-
-        return True
+        return tool.GetAttrs("TOOLS_RegID") == "TextPlus"
 
     @classmethod
     def _copy_style(cls, src_item: TimelineItem, dst_items: Iterable[TimelineItem]):
-        src_comp = TextPlusComposition(src_item._item.GetFusionCompByIndex(1))
-        src_settings = src_comp.get_settings("UniTextControl", "TextArea")
+        src_comp = TextPlusComposition(src_item.get_last_fusion_composition())
+        src_settings = src_comp.get_settings("UniTextControl", "TextBox")
 
         cls._copy_style_from_settings(src_settings, dst_items)
 
@@ -270,9 +323,10 @@ class UniTextPlus:
         new_settings = src_settings
 
         for i, dst_item in enumerate(dst_items):
-            LoadingWindow.set_message(f"Setting {i + 1}/{len(dst_items)} Text+ content...", dispatch_log=False)
+            if i % 5 == 4:
+                LoadingWindow.set_message(f"Setting {i + 1}/{len(dst_items)} Text+ content...", dispatch_log=False)
 
-            dst_comp = TextPlusComposition(dst_item._item.GetFusionCompByIndex(1))
+            dst_comp = TextPlusComposition(dst_item.get_last_fusion_composition())
             old_settings = dst_comp.get_settings()
             new_textplus_settings = new_settings.get_textplus_tool()
             old_textplus_settings = old_settings.get_textplus_tool()
@@ -289,14 +343,14 @@ class UniTextPlus:
 
             dst_comp.set_settings(new_settings)
 
-            new_settings_has_uni_control = new_settings.get_tool("UniTextControl") is not None
-            uni_control_tool = dst_comp._composition.UniTextControl
+            # new_settings_has_uni_control = new_settings.get_tool("UniTextControl") is not None
+            # uni_control_tool = dst_comp._composition.UniTextControl
 
-            if not new_settings_has_uni_control and uni_control_tool is not None:
-                fit = uni_control_tool.GetInput("FitToTextArea")
+            # if not new_settings_has_uni_control and uni_control_tool is not None:
+            #     fit = uni_control_tool.GetInput("FitToTextBox")
 
-                if fit:
-                    UniTextPlusControl.enable_fit_to_textarea(uni_control_tool)
+            #     if fit:
+            #         UniTextPlusControl.enable_fit_to_textbox(uni_control_tool)
 
     @classmethod
     def _map_style_array_to_lines(cls, style_array: dict, text: str):
@@ -347,8 +401,8 @@ class UniTextPlus:
             return textplus_tool["Inputs"]["StyledText"]
 
     @classmethod
-    def _compute_subtitle_insert_ranges(cls, timeline: Timeline, subtitle_timeline_items: list[TimelineItem], snap_mode: SnapMode):
-        subtitle_ranges = [FrameRange(item._item.GetStart(), item._item.GetEnd()) for item in subtitle_timeline_items]
+    def _compute_subtitle_insert_ranges(cls, timeline: Timeline, subtitle_infos: list[SubtitleInfo], snap_mode: SnapMode):
+        subtitle_ranges = [subtitle_info.frame_range for subtitle_info in subtitle_infos]
 
         if not subtitle_ranges or snap_mode == SnapMode.NONE:
             return subtitle_ranges

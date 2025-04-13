@@ -1,8 +1,8 @@
 from contextlib import contextmanager
 from typing import NamedTuple
 
-from ..extended_resolve.track import TrackHandle
 from ..extended_resolve.constants import MediaPoolItemType
+from ..extended_resolve.track import TrackHandle
 from ..resolve_types import PyRemoteResolve
 from .media_pool import MediaPool
 from .media_pool_item import MediaPoolItem
@@ -25,14 +25,14 @@ class Resolve:
         self._resolve = _resolve
         self._project_manager = self._resolve.GetProjectManager()
 
-    def _get_current_project(self):
+    def get_current_project(self):
         return self._project_manager.GetCurrentProject()
 
     def get_current_timeline(self):
-        return Timeline(self._get_current_project().GetCurrentTimeline())
+        return Timeline(self.get_current_project().GetCurrentTimeline())
 
     def get_media_pool(self):
-        return MediaPool(self._get_current_project().GetMediaPool())
+        return MediaPool(self.get_current_project().GetMediaPool())
 
     def get_ui_manager(self):
         pass

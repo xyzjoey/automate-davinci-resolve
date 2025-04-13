@@ -3,7 +3,7 @@ from enum import Enum
 
 class SnapMode(Enum):
     NONE = 0
-    AUDIO = 1
+    AUTO = 1
 
 
 class EffectType(Enum):

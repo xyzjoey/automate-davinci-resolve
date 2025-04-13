@@ -9,8 +9,8 @@ from setuptools.command.install import install
 
 class InstallFiles:
     @staticmethod
-    def get_src_dir(name):
-        return Path(__file__).parent / "src" / "dvr_smart_edit" / "data" / name
+    def get_data_dir():
+        return Path(__file__).parent / "src" / "dvr_smart_edit" / "data"
 
     @staticmethod
     def get_dvr_program_data_dir():
@@ -33,12 +33,20 @@ class PostInstallCommand(install):
         print(f"[dvr_smart_edit] Installing DaVinci Resolve plugin files")
 
         self.copy_folder(
-            InstallFiles.get_src_dir("fuses"),
+            InstallFiles.get_data_dir() / "fuses",
             InstallFiles.get_dvr_program_data_dir() / "Fusion" / "Fuses" / "SmartEdit",
         )
         self.copy_folder(
-            InstallFiles.get_src_dir("scripts"),
+            InstallFiles.get_data_dir() / "scripts" / "Edit",
             InstallFiles.get_dvr_program_data_dir() / "Fusion" / "Scripts" / "Edit" / "SmartEdit",
+        )
+        self.copy_folder(
+            InstallFiles.get_data_dir() / "fusion_configs",
+            InstallFiles.get_dvr_program_data_dir() / "Fusion" / "Config" / "SmartEdit",
+        )
+        self.copy_file(
+            InstallFiles.get_data_dir() / "scripts" / "root" / "SmartEdit.scriptlib",
+            InstallFiles.get_dvr_program_data_dir() / "Fusion" / "Scripts" / "SmartEdit.scriptlib",
         )
 
     def copy_folder(self, src_dir, dst_dir):
@@ -51,6 +59,14 @@ class PostInstallCommand(install):
             shutil.copy(path, dst_dir / path.name)
 
         print(f"[dvr_smart_edit] Copied {src_dir} -> `{dst_dir}`")
+
+    def copy_file(self, src_path, dst_path):
+        if dst_path.exists():
+            dst_path.unlink()
+
+        shutil.copy(src_path, dst_path)
+
+        print(f"[dvr_smart_edit] Copied {src_path} -> `{dst_path}`")
 
 
 setup(

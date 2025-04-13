@@ -1,0 +1,1 @@
+fusion:Execute("!Py: from importlib.resources import files; SCRIPT_PATH = str(files('dvr_smart_edit.data').joinpath('internal_scripts/init_fusion.py')); fusion.RunScript(SCRIPT_PATH)")

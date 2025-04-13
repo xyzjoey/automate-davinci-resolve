@@ -17,8 +17,8 @@ from ..utils.math import FrameRange
 from .constants import EFFECT_TRACK_MAP, EffectType, GeneratedTrackName
 from .errors import UserError
 from .smart_edit_bin import SmartEditBin
+from .textplus_utilities import TextPlusUtilities
 from .ui.loading_window import LoadingWindow
-from .uni_textplus import UniTextPlus
 
 
 class KeywordMatcher:
@@ -256,7 +256,7 @@ class EffectControl:
                 textplus_map[key]["destinated_items"].extend(dst_items)
 
         for map in textplus_map.values():
-            UniTextPlus.copy_style_for_clips(map["destinated_items"], map["media_pool_item"])
+            TextPlusUtilities.copy_style_for_clips(map["destinated_items"], map["media_pool_item"])
 
     @classmethod
     def _get_or_add_generated_tracks(cls, timeline: Timeline) -> dict[EffectType, TrackHandle | None]:
@@ -372,7 +372,7 @@ class EffectControl:
         if item._item.GetFusionCompCount() == 0:
             return False
 
-        comp = item._item.GetFusionCompByIndex(1)
+        comp = item.get_last_fusion_composition()
         tool = comp.Template
 
         if tool is None:
@@ -408,7 +408,7 @@ class EffectControl:
 
     @classmethod
     def _get_keywords(cls, effect_control_item: TimelineItem):
-        comp = effect_control_item._item.GetFusionCompByIndex(1)
+        comp = effect_control_item.get_last_fusion_composition()
         tool = comp.Template
 
         keywords_text = tool.GetInput("Keywords")
@@ -419,7 +419,7 @@ class EffectControl:
 
     @classmethod
     def _set_keywords(cls, effect_control_item: TimelineItem, keywords: list[str]):
-        comp = effect_control_item._item.GetFusionCompByIndex(1)
+        comp = effect_control_item.get_last_fusion_composition()
         tool = comp.Template
 
         keywords = cls._normalize_keywords(keywords)

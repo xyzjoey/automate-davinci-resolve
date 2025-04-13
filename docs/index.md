@@ -10,7 +10,7 @@
 ---
 
 ## Features
-- **[UniText+](features/unitext-plus.md)**: Copy Text+ styles, generate text, import/export subtitles.
+- **[Text+ Utilities](features/textplus-utilities.md)**: Copy Text+ styles, generate text, import/export subtitles.
 - **[Effect Control](features/effect-control.md)**: Apply effects based on keywords.
 
 ---

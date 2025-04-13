@@ -54,9 +54,6 @@ class TextPlusSettings:
         else:
             return textplus_tool.get_text_input()
 
-    def is_uni_textplus(self):
-        return True
-
 
 class TextPlusComposition:
     def __init__(self, _composition: PyRemoteComposition):

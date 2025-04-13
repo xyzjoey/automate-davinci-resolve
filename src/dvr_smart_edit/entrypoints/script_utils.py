@@ -7,30 +7,47 @@ class ScriptUtils:
     def get_timeline_item_from_composition(cls, composition: PyRemoteComposition):
         resolve = davinci_resolve_module.get_resolve()
         timeline = resolve.get_current_timeline()
-        timeline_item = timeline.find_item(lambda item: str(item._item.GetFusionCompByIndex(1)) == str(composition), track_type="video")
 
-        return timeline_item
+        # def get_uuid(comp):
+        #     return str(comp).split("UUID: ")[-1].split("]")[0]
+
+        # uuid = get_uuid(composition)
+
+        timeline_item = timeline.find_item(lambda item: str(item.get_last_fusion_composition()) == str(composition), track_type="video")
+        comp = timeline_item and timeline_item.get_last_fusion_composition()
+
+        return timeline_item, comp
 
     @classmethod
     def get_tool_from_fuse_name(cls, composition: PyRemoteComposition, fuse_name: str):
         if composition is None:
-            return None
+            return None, None
 
-        if composition.FindTool is None:
-            # happen rarely when dragged bin clip to non playhead time (e.g. composition=<nil> [App: 'Resolve' on 127.0.0.1, UUID: 08934f92-4270-467a-bb2d-1148505d8e26])
-            print("DEBUG!!!! composition.FindTool None")
-            timelineItem = ScriptUtils.get_timeline_item_from_composition(composition)
+        if composition.FindTool is None:  # happen rarely (e.g. composition=<nil> [App: 'Resolve' on 127.0.0.1, UUID: 08934f92-4270-467a-bb2d-1148505d8e26])
+            print("DEBUG!!!! composition.FindTool is None")
+            _, comp = ScriptUtils.get_timeline_item_from_composition(composition)
+            # print(f"DEBUG!!!! comp={comp}")
 
-            if timelineItem is not None:
-                print(f"DEBUG!!!! timelineItem={timelineItem} {timelineItem.get_track_handle()} {timelineItem.get_frame_range()}")
-            else:
-                print(f"DEBUG!!!! timelineItem=None")
-                resolve = davinci_resolve_module.get_resolve()
-                timeline = resolve.get_current_timeline()
-                for item in timeline.iter_items(track_type="video"):
-                    comp = item._item.GetFusionCompByIndex(1)
-                    print(comp)
+            if comp is not None:
+                return comp, comp.FindTool(fuse_name)
 
-            return timelineItem
+            return None, None
 
-        return composition.FindTool(fuse_name)
+        return composition, composition.FindTool(fuse_name)
+
+    @classmethod
+    def find_fuse_in_timeline(cls, composition: PyRemoteComposition, fuse_name: str):
+        print(f"find_fuse_in_timeline!!!! comp={composition}")
+        # print(f"COMPS_Name={composition.GetAttrs()["COMPS_Name"]}")
+        # print(f"COMPS_FileName={composition.GetAttrs()["COMPS_FileName"]}")
+        # print(f"MediaOut1={composition.MediaOut1}")
+        timeline_item, comp = ScriptUtils.get_timeline_item_from_composition(composition)
+
+        if comp is not None:
+            tool = comp.FindTool(fuse_name)
+
+            print(f"found!!!! timeline_item={timeline_item} ({timeline_item.get_track_handle()}, {timeline_item.get_frame_range()}) comp={comp}")
+
+        #     return timeline_item, comp, tool
+
+        # return timeline_item, comp, None

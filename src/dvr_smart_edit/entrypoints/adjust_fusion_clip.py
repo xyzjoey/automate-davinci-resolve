@@ -8,14 +8,11 @@ from ..smart_edit.ui.loading_window import LoadingWindow
 from .script_utils import ScriptUtils
 
 
-def on_add_control(composition: PyRemoteComposition, tool_name: str):
-    if composition is None:
-        return
-
-    tool = composition.FindTool(tool_name)
+def on_add_control(composition: PyRemoteComposition, fuse_name: str):
+    comp, tool = ScriptUtils.get_tool_from_fuse_name(composition, fuse_name)
 
     if tool is not None:
-        AdjustFusion.add_control(composition, tool)
+        AdjustFusion.add_control(comp, tool)
 
 
 # def on_set_control_value(composition: PyRemoteComposition, tool_name: str):
@@ -30,6 +27,6 @@ def on_add_control(composition: PyRemoteComposition, tool_name: str):
 
 def on_copy_for_clip(composition: PyRemoteComposition):
     with LoadingWindow("Adjust Fusion", "Copying..."):
-        curr_item = ScriptUtils.get_timeline_item_from_composition(composition)
+        curr_item, _ = ScriptUtils.get_timeline_item_from_composition(composition)
 
         AdjustFusion.copy_for_clip(curr_item)

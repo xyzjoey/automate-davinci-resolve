@@ -50,7 +50,7 @@ nav:
       - First Steps: getting-started/first-steps.md
       - Requirement: getting-started/requirement.md
   - Features:
-      - UniText+: features/unitext-plus.md
+      - Text+ Utilities: features/textplus-utilities.md
       - Effect Control: features/effect-control.md
   - Developer:
       - Install Dev Version: developer/installation.md

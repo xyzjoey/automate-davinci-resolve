@@ -11,7 +11,7 @@ def on_reload_for_all():
 
 def on_reload_for_clip(composition: PyRemoteComposition):
     with LoadingWindow("EffectControl", "Reloading Template..."):
-        timeline_item = ScriptUtils.get_timeline_item_from_composition(composition)
+        timeline_item, _ = ScriptUtils.get_timeline_item_from_composition(composition)
         EffectControl.reload_clip(timeline_item)
 
 
@@ -22,5 +22,5 @@ def on_apply_effect_for_all():
 
 def on_apply_effect_for_clip(composition: PyRemoteComposition):
     with LoadingWindow("EffectControl", "Applying Effects..."):
-        timeline_item = ScriptUtils.get_timeline_item_from_composition(composition)
+        timeline_item, _ = ScriptUtils.get_timeline_item_from_composition(composition)
         EffectControl.apply_effect_for_clip(timeline_item)

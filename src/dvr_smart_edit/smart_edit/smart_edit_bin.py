@@ -11,7 +11,7 @@ class SmartEditBin:
     FOLDER_NAME = "SmartEdit"
 
     class ClipName(Enum):
-        UNI_TEXTPLUS = "UniText+"
+        TEXTPLUS = "Text+"
         EFFECT_CONTROL = "EffectControl"
 
     @classmethod
@@ -20,8 +20,8 @@ class SmartEditBin:
         cls._get_or_import_bin(media_pool)
 
     @classmethod
-    def get_or_import_uni_textplus(cls):
-        return cls._get_or_import_clip(cls.ClipName.UNI_TEXTPLUS)
+    def get_or_import_textplus(cls):
+        return cls._get_or_import_clip(cls.ClipName.TEXTPLUS)
 
     @classmethod
     def get_or_import_effect_control(cls):
