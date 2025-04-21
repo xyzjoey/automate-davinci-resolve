@@ -5,7 +5,7 @@ LABEL_PREFIX_LEN = #CHECKED_LABEL
 
 FuRegisterClass("EffectControl", CT_Tool, {
 	REGS_Category         = "SmartEdit",
-	REGS_OpIconString     = "SeEc",
+	REGS_OpIconString     = "EC",
 	REGS_OpDescription    = "Controls of effect generation in timeline",
 	REG_OpNoMask          = true,
 	REG_NoBlendCtrls      = true,
@@ -15,7 +15,7 @@ FuRegisterClass("EffectControl", CT_Tool, {
 	-- REG_Fuse_NoReload     = true,
 	REG_Fuse_NoEdit       = false,
 	REG_Fuse_NoReload     = false,
-	-- REG_Version        = 1,
+	REG_Version           = 0,
 })
 
 function Create()
@@ -24,8 +24,12 @@ function Create()
 	InReload = self:AddInput("for This Clip", "Reload", {
 		LINKID_DataType    = "Number",
 		INPID_InputControl = "ButtonControl",
-		BTNCS_Execute      =
-		"!Py: from dvr_smart_edit.entrypoints import setup_module; setup_module(bmd, resolve, fusion); from dvr_smart_edit.entrypoints import effect_control_clip; effect_control_clip.on_reload_for_clip(comp)",
+		BTNCS_Execute      = "!Py: " .. [[
+from dvr_smart_edit.entrypoints import setup_module
+setup_module(bmd, resolve, fusion)
+from dvr_smart_edit.entrypoints import effect_control_clip
+effect_control_clip.on_reload_for_clip(comp)
+		]],
 		ICD_Width          = 0.5,
 		INP_External       = false,
 		INP_Passive        = true,
@@ -34,8 +38,12 @@ function Create()
 	InReloadForAll = self:AddInput("for All", "ReloadForAll", {
 		LINKID_DataType    = "Number",
 		INPID_InputControl = "ButtonControl",
-		BTNCS_Execute      =
-		"!Py: from dvr_smart_edit.entrypoints import setup_module; setup_module(bmd, resolve, fusion); from dvr_smart_edit.entrypoints import effect_control_clip; effect_control_clip.on_reload_for_all()",
+		BTNCS_Execute      = "!Py: " .. [[
+from dvr_smart_edit.entrypoints import setup_module
+setup_module(bmd, resolve, fusion)
+from dvr_smart_edit.entrypoints import effect_control_clip
+effect_control_clip.on_reload_for_all()
+		]],
 		ICD_Width          = 0.5,
 		INP_External       = false,
 		INP_Passive        = true,
@@ -48,8 +56,12 @@ function Create()
 	InApplyEffect = self:AddInput("for This Clip", "ApplyEffect", {
 		LINKID_DataType    = "Number",
 		INPID_InputControl = "ButtonControl",
-		BTNCS_Execute      =
-		"!Py: from dvr_smart_edit.entrypoints import setup_module; setup_module(bmd, resolve, fusion); from dvr_smart_edit.entrypoints import effect_control_clip; effect_control_clip.on_apply_effect_for_clip(comp)",
+		BTNCS_Execute      = "!Py: " .. [[
+from dvr_smart_edit.entrypoints import setup_module
+setup_module(bmd, resolve, fusion)
+from dvr_smart_edit.entrypoints import effect_control_clip
+effect_control_clip.on_apply_effect_for_clip(comp)
+		]],
 		ICD_Width          = 0.5,
 		INP_External       = false,
 		INP_Passive        = true,
@@ -58,8 +70,12 @@ function Create()
 	InApplyEffectForAll = self:AddInput("for All", "ApplyEffectForAll", {
 		LINKID_DataType    = "Number",
 		INPID_InputControl = "ButtonControl",
-		BTNCS_Execute      =
-		"!Py: from dvr_smart_edit.entrypoints import setup_module; setup_module(bmd, resolve, fusion); from dvr_smart_edit.entrypoints import effect_control_clip; effect_control_clip.on_apply_effect_for_all()",
+		BTNCS_Execute      = "!Py: " .. [[
+from dvr_smart_edit.entrypoints import setup_module
+setup_module(bmd, resolve, fusion)
+from dvr_smart_edit.entrypoints import effect_control_clip
+effect_control_clip.on_apply_effect_for_all()
+		]],
 		ICD_Width          = 0.5,
 		INP_External       = false,
 		INP_Passive        = true,

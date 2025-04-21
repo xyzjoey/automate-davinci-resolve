@@ -3,7 +3,7 @@ MAX_ADJUST_CONTROL_COUNT = 30
 FuRegisterClass("AdjustFusion", CT_Tool, {
 	REGS_Name             = "AdjustFusion",
 	REGS_Category         = "SmartEdit",
-	REGS_OpIconString     = "SeAf",
+	REGS_OpIconString     = "AF",
 	REGS_OpDescription    = "",
 	REG_OpNoMask          = true,
 	REG_NoBlendCtrls      = true,
@@ -13,27 +13,31 @@ FuRegisterClass("AdjustFusion", CT_Tool, {
 	-- REG_Fuse_NoReload     = true,
 	REG_Fuse_NoEdit       = false,
 	REG_Fuse_NoReload     = false,
-	-- REG_Version        = 1,
+	REG_Version           = 0,
 })
 
 function Create()
-	self:BeginControlNest("Copy Values to Underneath Tracks", "CopyLabel", true, {});
+	self:BeginControlNest("Apply Control Values", "CopyLabel", true, {});
 
-	InReload = self:AddInput("This Clip", "Copy", {
+	InReload = self:AddInput("under This Clip", "Copy", {
 		LINKID_DataType    = "Number",
 		INPID_InputControl = "ButtonControl",
-		BTNCS_Execute      =
-		"!Py: from dvr_smart_edit.entrypoints import setup_module; setup_module(bmd, resolve, fusion); from dvr_smart_edit.entrypoints import adjust_fusion_clip; adjust_fusion_clip.on_copy_for_clip(comp)",
+		BTNCS_Execute      = "!Py: " .. [[
+from dvr_smart_edit.entrypoints import setup_module
+setup_module(bmd, resolve, fusion)
+from dvr_smart_edit.entrypoints import adjust_fusion_clip
+adjust_fusion_clip.on_apply_for_clip(comp)
+		]],
 		ICD_Width          = 0.5,
 		INP_External       = false,
 		INP_Passive        = true,
 	})
 
-	InReloadForAll = self:AddInput("All CopyFusion", "CopyForAll", {
+	InReloadForAll = self:AddInput("under All AdjustFusion", "CopyForAll", {
 		LINKID_DataType    = "Number",
 		INPID_InputControl = "ButtonControl",
 		-- BTNCS_Execute      =
-		-- "!Py: from dvr_smart_edit.entrypoints import setup_module; setup_module(bmd, resolve, fusion); from dvr_smart_edit.entrypoints import adjust_fusion_clip; adjust_fusion_clip.on_copy_for_all()",
+		-- "!Py: from dvr_smart_edit.entrypoints import setup_module; setup_module(bmd, resolve, fusion); from dvr_smart_edit.entrypoints import adjust_fusion_clip; adjust_fusion_clip.on_apply_for_all()",
 		ICD_Width          = 0.5,
 		INP_External       = false,
 		INP_Passive        = true,
@@ -51,7 +55,7 @@ function Create()
 	self:EndControlNest()
 	self:BeginControlNest("Add Control", "AddControlLabel", true, {});
 
-	InAddSourceInput = self:AddInput("Add Control", "AddSourceInput", {
+	InAddControl = self:AddInput("Add Control", "AddControl", {
 		LINKID_DataType     = "Text",
 		INPID_InputControl  = "TextEditControl",
 		TEC_Lines           = 1,
@@ -61,82 +65,73 @@ function Create()
 	})
 
 	self:EndControlNest()
-	self:BeginControlNest("Adjust Controls", "AdjustControlsLabel", true, {});
+	self:BeginControlNest("Controls", "AdjustControlsLabel", true, {});
 
 	InAdjustControlLabels = {}
-	InUseNodes = {}
-	InUseInputIds = {}
 	InDestinationNodes = {}
+	InUsePreviousNodes = {}
 	InDestinationInputIds = {}
 	InAdjustControls = {}
 
 	for i = 1, MAX_ADJUST_CONTROL_COUNT do
-		table.insert(InAdjustControlLabels, self:AddInput("Adjust Control " .. i, "AdjustControlLabel" .. i, {
+		table.insert(InAdjustControlLabels, self:AddInput("Control " .. i, "AdjustControlLabel" .. i, {
 			LINKID_DataType    = "Text",
 			INPID_InputControl = "LabelControl",
 			IC_Visible         = false,
 			INP_External       = false,
 			INP_Passive        = true,
 		}))
-		table.insert(InUseNodes, self:AddInput("Use Node", "UseNode" .. i, {
-			LINKID_DataType        = "Number",
-			INPID_InputControl     = "CheckboxControl",
-			INP_Default            = i == 1 and 1 or 0,
-			IC_Visible             = false,
-			INP_External           = false,
-			INP_InteractivePassive = true,
-			ICD_Width              = 0.5,
-		}))
-		table.insert(InUseInputIds, self:AddInput("Use Input Id", "UseInputId" .. i, {
-			LINKID_DataType        = "Number",
-			INPID_InputControl     = "CheckboxControl",
-			INP_Default            = false,
-			IC_Visible             = false,
-			INP_External           = false,
-			INP_InteractivePassive = true,
-			ICD_Width              = 0.5,
-		}))
-		table.insert(InDestinationNodes, self:AddInput("Destination Node", "DestinationNode" .. i, {
-			LINKID_DataType        = "Text",
-			INPID_InputControl     = "TextEditControl",
-			TEC_Lines              = 1,
-			INPS_DefaultText       = "",
-			IC_Visible             = false,
-			INP_External           = false,
-			INP_InteractivePassive = true,
-		}))
-		table.insert(InDestinationInputIds, self:AddInput("Destination Input Id", "DestinationInputId" .. i, {
-			LINKID_DataType        = "Text",
-			INPID_InputControl     = "TextEditControl",
-			TEC_Lines              = 1,
-			INPS_DefaultText       = "",
-			IC_Visible             = false,
-			INP_External           = false,
-			INP_InteractivePassive = true,
-		}))
 		table.insert(InAdjustControls, self:AddInput("", "AdjustControl" .. i, {
-			INP_InitialNotify = false,
-			IC_Visible        = false,
-			INP_External      = false,
-			INP_Passive       = true,
+			INP_InitialNotify      = false,
+			IC_Visible             = false,
+			INP_External           = false,
+			INP_InteractivePassive = true,
 		}))
+		table.insert(InDestinationNodes, self:AddInput("Destination", "DestinationNode" .. i, {
+			LINKID_DataType        = "Text",
+			INPID_InputControl     = "TextEditControl",
+			TEC_Lines              = 1,
+			IC_Visible             = false,
+			INP_External           = false,
+			INP_InteractivePassive = true,
+			INP_InitialNotify      = false,
+			ICD_Width              = 0.5,
+		}))
+		table.insert(InDestinationInputIds, self:AddInput("", "DestinationInputId" .. i, {
+			LINKID_DataType        = "Text",
+			INPID_InputControl     = "TextEditControl",
+			TEC_Lines              = 1,
+			IC_Visible             = false,
+			INP_External           = false,
+			INP_InteractivePassive = true,
+			INP_InitialNotify      = false,
+			ICD_Width              = 0.5,
+		}))
+
+		if i == 1 then
+			table.insert(InUsePreviousNodes, "None")
+		else
+			table.insert(InUsePreviousNodes, self:AddInput("Use Previous", "UsePreviousNode" .. i, {
+				LINKID_DataType        = "Number",
+				INPID_InputControl     = "CheckboxControl",
+				INP_Default            = 1,
+				IC_Visible             = false,
+				INP_External           = false,
+				INP_InteractivePassive = true,
+				INP_InitialNotify      = false,
+			}))
+		end
 	end
 
 	self:EndControlNest()
 
-	InNewControlAttrs = self:AddInput("NewControlAttrs", "NewControlAttrs", {
-		LINKID_DataType     = "Text",
-		INPID_InputControl  = "TextEditControl",
-		INP_DoNotifyChanged = true,
+	InPendingControl = self:AddInput("", "PendingControl", {
+		LINKID_DataType     = "Number",
 		IC_Visible          = false,
 		INP_External        = false,
 		INP_Passive         = true,
+		INP_DoNotifyChanged = true,
 	})
-
-	-- target input
-	-- (warning: same target)
-	-- (keyword)
-	-- remove button
 
 	OutImage = self:AddOutput("Output", "Output", {
 		LINKID_DataType = "Image",
@@ -146,12 +141,27 @@ end
 
 function NotifyChanged(inp, param, time)
 	if inp ~= nil and param ~= nil then
-		if inp == InAddSourceInput then
-			self:GetComp():Execute(
-				"!Py: from dvr_smart_edit.entrypoints import setup_module; setup_module(bmd, resolve, fusion); from dvr_smart_edit.entrypoints import adjust_fusion_clip; adjust_fusion_clip.on_add_control(comp, '" ..
-				self.Name .. "')")
-		elseif inp == InNewControlAttrs then
-			SetNewControl(param.Value)
+		if inp == InAddControl then
+			AddControl()
+		elseif inp == InPendingControl then
+			if param.Value == 1.0 then
+				InPendingControl:SetSource(Number(0.0), 0)
+			else
+				SetControls()
+			end
+		else
+			local id = inp:GetAttr("LINKID_ID")
+
+			if StartsWith(id, "DestinationNode") then
+				local index = tonumber(RemovePrefix(id, "DestinationNode"), 10)
+				OnDestinationNodeChanged(index)
+			elseif StartsWith(id, "DestinationInputId") then
+				local index = tonumber(RemovePrefix(id, "DestinationInputId"), 10)
+				OnDestinationInputIdChanged(index)
+			elseif StartsWith(id, "UsePreviousNode") and param.Value == 1.0 then
+				local index = tonumber(RemovePrefix(id, "UsePreviousNode"), 10)
+				ResetDestinationNodeToUsePrevious(index)
+			end
 		end
 	end
 end
@@ -165,125 +175,198 @@ function Process(req)
 	OutImage:Set(req, out)
 end
 
-function SetNewControl(attrsText)
-	if attrsText == "" then
-		return
+function GetControlInfos()
+	local controlInfos = self:GetData("SmartEdit.ControlInfos")
+
+	if controlInfos == nil then
+		return {}
 	end
 
-	local success, result = pcall(function()
-		return load("return " .. attrsText)()
-	end)
-
-	if not success then
-		print("Error during parsing: " .. result)
-		return
-	end
-
-	print("Parsing successful!")
-	local count = GetAddedControlCount()
-
-	if count < MAX_ADJUST_CONTROL_COUNT then
-		local nextControlIndex = count + 1
-		local attrs = ConvertToFuseAttrs(result)
-
-		InAdjustControls[nextControlIndex]:SetAttrs(attrs)
-		LinkPreviewControls()
-
-		InAdjustControlLabels[nextControlIndex]:SetAttrs({ IC_Visible = true })
-		if nextControlIndex ~= 1 then
-			InUseNodes[nextControlIndex]:SetAttrs({ IC_Visible = true })
-		end
-		InUseInputIds[nextControlIndex]:SetAttrs({ IC_Visible = true })
-		if nextControlIndex == 1 then
-			InDestinationNodes[nextControlIndex]:SetAttrs({ IC_Visible = true })
-		end
-		InAdjustControls[nextControlIndex]:SetAttrs({ IC_Visible = true })
-
-		InNewControlAttrs:SetSource(Text(""), 0)
-		-- self:GetComp():Execute(
-		-- 	"!Py: from dvr_smart_edit.entrypoints import setup_module; setup_module(bmd, resolve, fusion); from dvr_smart_edit.entrypoints import adjust_fusion_clip; adjust_fusion_clip.on_set_control(comp, '" ..
-		-- 	self.Name .. "', " .. count .. ")")
-	end
+	return controlInfos
 end
 
-function ConvertToFuseAttrs(attrs)
-	local newAttrs = {}
+function AddControl()
+	local addControlCallback = string.format("!Py: " .. [[
+from dvr_smart_edit.entrypoints import setup_module
+setup_module(bmd, resolve, fusion)
+from dvr_smart_edit.entrypoints import adjust_fusion_clip
+adjust_fusion_clip.on_add_control(comp, "%s")
+	]], self.Name)
 
-	newAttrs.INPS_ID = attrs.INPS_ID
+	self.Comp:Execute(addControlCallback)
+end
 
-	newAttrs.LINKS_Name = attrs.INPS_Name
-	newAttrs.LINKID_DataType = attrs.INPS_DataType
-	newAttrs.INPID_InputControl = attrs.INPID_InputControl
+function SetControls()
+	local infos = GetControlInfos()
 
-	if attrs.INPN_ICD_Width > 0 then
-		newAttrs.ICD_Width = attrs.INPN_ICD_Width
-	end
+	for i, info in ipairs(infos) do
+		if i ~= "__flags" then
+			if i > MAX_ADJUST_CONTROL_COUNT then
+				break
+			end
 
-	newAttrs.IC_Visible = true
-	newAttrs.INP_External = true
-	newAttrs.INP_Passive = false
-	newAttrs.INP_InteractivePassive = true
+			info.attrs.IC_Visible = true
+			info.attrs.INP_External = true
+			info.attrs.INP_Passive = false
 
-	if newAttrs.LINKID_DataType == "Number" then
-		newAttrs.INP_Default = attrs.INPN_Default
-	end
+			InAdjustControls[i]:SetAttrs(info.attrs)
+			InAdjustControlLabels[i]:SetAttrs({ IC_Visible = true })
 
-	if attrs.INPID_PreviewControl ~= nil then
-		newAttrs.INPID_PreviewControl = attrs.INPID_PreviewControl
-		newAttrs.PC_ControlGroup      = attrs.INPI_PC_ControlGroup
-		newAttrs.PC_ControlID         = attrs.INPI_PC_ControlID
-	end
+			InDestinationNodes[i]:SetAttrs({
+				IC_Visible          = true,
+				-- INPS_DefaultText    = info.default_destination_node, -- dynamic default cause value not being preserved
+				INP_DoNotifyChanged = true,
+			})
+			InDestinationInputIds[i]:SetAttrs({
+				IC_Visible = true,
+				-- INPS_DefaultText = info.default_destination_input_id,
+				INP_DoNotifyChanged = true,
+			})
 
-	-- MultiButtonControl
-	if attrs.INPST_MultiButtonControl_String then
-		for _, buttonName in ipairs(attrs.INPST_MultiButtonControl_String) do
-			table.insert(newAttrs, { MBTNC_AddButton = buttonName })
+			if i ~= 1 then
+				InUsePreviousNodes[i]:SetAttrs({
+					IC_Visible = true,
+					INP_DoNotifyChanged = true,
+				})
+			end
 		end
-		-- newAttrs.MBTNC_ShowName = attrs.INPB_MultiButtonControl_ShowName
 	end
 
-	-- MultiButtonIDControl
-	if attrs.INPIDT_MultiButtonControl_ID then
-		for _, buttonName in ipairs(attrs.INPIDT_MultiButtonControl_ID) do
-			table.insert(newAttrs, { MBTNC_AddButton = buttonName })
+	for i = #infos + 1, MAX_ADJUST_CONTROL_COUNT do
+		InAdjustControls[i]:SetAttrs({ IC_Visible = false })
+		InAdjustControlLabels[i]:SetAttrs({ IC_Visible = false })
+		InDestinationNodes[i]:SetAttrs({
+			IC_Visible = false,
+			INP_DoNotifyChanged = false,
+		})
+		InDestinationInputIds[i]:SetAttrs({
+			IC_Visible = false,
+			INP_DoNotifyChanged = false,
+		})
+		if i ~= 1 then
+			InUsePreviousNodes[i]:SetAttrs({
+				IC_Visible = false,
+				INP_DoNotifyChanged = false,
+			})
 		end
 	end
 
-	return newAttrs
+	LinkPreviewControls()
+
+	local setControlValueCallback = string.format("!Py: " .. [[
+from dvr_smart_edit.entrypoints import setup_module
+setup_module(bmd, resolve, fusion)
+from dvr_smart_edit.entrypoints import adjust_fusion_clip
+adjust_fusion_clip.on_set_control_value(comp, "%s")
+	]], self.Name)
+
+	self.Comp:Execute(setControlValueCallback)
 end
 
 function LinkPreviewControls()
-	local last = GetAddedControlCount()
-	local previewControl = InAdjustControls[last]:GetAttr("INPID_PreviewControl")
+	local infos = GetControlInfos()
+	local rectangleGroupSize = 4
 
-	if previewControl == "RectangleControl" then
-		for i = last - 1, 1, -1 do
-			if InAdjustControls[i]:GetAttr("INPID_PreviewControl") == "CrosshairControl" then
-				InAdjustControls[last]:SetAttrs({
-					RCP_Center = InAdjustControls[i]
-				})
-				break
+	for i = 1, math.max(#infos - rectangleGroupSize + 1, 1) do
+		local centerIndex = nil
+		-- local angleIndex = nil -- TODO
+		local widthIndex = nil
+		local heightIndex = nil
+
+		for j = i, math.min(i + rectangleGroupSize, #infos) do
+			local previewControl = infos[j].attrs.INPID_PreviewControl
+			if previewControl == "CrosshairControl" then
+				centerIndex = j
+			elseif previewControl == "RectangleControl" and InAdjustControls[j]:GetAttr("RCP_Center") == nil then
+				if infos[j].attrs.PC_ControlID == 0 then
+					widthIndex = j
+				elseif infos[j].attrs.PC_ControlID == 1 then
+					heightIndex = j
+				end
 			end
 		end
-	elseif previewControl == "CrosshairControl" then
-		for i = last - 1, 1, -1 do
-			if InAdjustControls[i]:GetAttr("INPID_PreviewControl") == "RectangleControl" and InAdjustControls[i]:GetAttr("RCP_Center") == nil then
-				InAdjustControls[i]:SetAttrs({
-					RCP_Center = InAdjustControls[last]
-				})
-			end
+
+		if centerIndex ~= nil and widthIndex ~= nil then
+			InAdjustControls[widthIndex]:SetAttrs({ RCP_Center = InAdjustControls[centerIndex] })
+		end
+
+		if centerIndex ~= nil and heightIndex ~= nil then
+			InAdjustControls[heightIndex]:SetAttrs({ RCP_Center = InAdjustControls[centerIndex] })
 		end
 	end
 end
 
-function GetAddedControlCount()
-	for i, control in ipairs(InAdjustControls) do
-		local visible = control:GetAttr("IC_Visible")
+function OnDestinationNodeChanged(index)
+	local dstNodeName = InDestinationNodes[index]:GetSource(0).Value
 
-		if not visible then
-			return i - 1
+	-- set default -- cannot use INPS_DefaultText
+	if dstNodeName == "" then
+		local infos = GetControlInfos()
+
+		if #infos >= index then
+			local defaultDstNode = infos[index].default_destination_node
+			InDestinationNodes[index]:SetSource(Text(defaultDstNode), 0)
+			dstNodeName = defaultDstNode
 		end
 	end
 
-	return MAX_ADJUST_CONTROL_COUNT
+	-- cancel UsePrevious if changed
+	if index > 1 then
+		local usePrevious = (InUsePreviousNodes[index]:GetSource(0).Value == 1)
+
+		if usePrevious then
+			local prevDstNodeName = InDestinationNodes[index - 1]:GetSource(0).Value
+
+			if prevDstNodeName ~= dstNodeName then
+				InUsePreviousNodes[index]:SetSource(Number(0.0), 0)
+			end
+		end
+	end
+
+	-- sync following DestinationNode
+	for i = index + 1, #InDestinationNodes do
+		if not InDestinationNodes[i]:GetAttr("IC_Visible") then
+			break
+		end
+
+		local usePrevious = (InUsePreviousNodes[i]:GetSource(0).Value == 1)
+
+		if usePrevious then
+			InDestinationNodes[i]:SetAttrs({ INP_DoNotifyChanged = false })
+			InDestinationNodes[i]:SetSource(Text(dstNodeName), 0)
+			InDestinationNodes[i]:SetAttrs({ INP_DoNotifyChanged = true })
+		else
+			break
+		end
+	end
+end
+
+function OnDestinationInputIdChanged(index)
+	local dstInputId = InDestinationInputIds[index]:GetSource(0).Value
+
+	-- set default -- cannot use INPS_DefaultText
+	if dstInputId == "" then
+		local infos = GetControlInfos()
+
+		if #infos >= index then
+			local defaultDstInputId = infos[index].default_destination_input_id
+			InDestinationInputIds[index]:SetSource(Text(defaultDstInputId), 0)
+			dstInputId = defaultDstInputId
+		end
+	end
+end
+
+function ResetDestinationNodeToUsePrevious(index)
+	if index > 1 then
+		local prevDstNodeName = InDestinationNodes[index - 1]:GetSource(0).Value
+		InDestinationNodes[index]:SetSource(Text(prevDstNodeName), 0)
+	end
+end
+
+function StartsWith(str, prefix)
+	return str:sub(1, #prefix) == prefix
+end
+
+function RemovePrefix(str, prefix)
+	return str:gsub("^" .. prefix, "")
 end

@@ -2,7 +2,7 @@ import asyncio
 from types import ModuleType
 
 from ..resolve_types import PyRemoteFusion, PyRemoteResolve
-from ..smart_edit.user_settings import UserSettings
+from ..smart_edit.fusion_custom_data import FusionCustomData
 
 
 def setup_module(module: ModuleType, resolve: PyRemoteResolve = None, fusion: PyRemoteFusion = None):
@@ -27,7 +27,7 @@ async def init_fusion():
         id2 = project2.GetUniqueId() if project2 is not None else None
         return id1 == id2
 
-    if not UserSettings.get_init_fusion_enabled():
+    if not FusionCustomData.get_init_fusion_enabled():
         return
 
     while True:
@@ -38,6 +38,10 @@ async def init_fusion():
 
             if page is not None:
                 if page != "fusion":
+                    await asyncio.sleep(3)  # even page is not None, UI may not be ready
+                    page = resolve._resolve.GetCurrentPage()
+
+                if page is not None and page != "fusion":
                     with LoadingWindow("Setup", "Opening Fusion Page..."):
                         resolve._resolve.OpenPage("fusion")
                         resolve._resolve.OpenPage(page)

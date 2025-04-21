@@ -1,5 +1,6 @@
 import os
 import platform
+import shutil
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -41,17 +42,18 @@ class Main:
             InstallFiles.get_data_dir() / "scripts" / "Edit",
             InstallFiles.get_dvr_program_data_dir() / "Fusion" / "Scripts" / "Edit" / "SmartEdit",
         )
+        self.create_dir_symlink(
+            InstallFiles.get_data_dir() / "fusion_configs",
+            InstallFiles.get_dvr_program_data_dir() / "Fusion" / "Config" / "SmartEdit",
+        )
         self.create_file_symlink(
             InstallFiles.get_data_dir() / "scripts" / "root" / "SmartEdit.scriptlib",
             InstallFiles.get_dvr_program_data_dir() / "Fusion" / "Scripts" / "SmartEdit.scriptlib",
         )
+        # dev only
         self.create_dir_symlink(
             InstallFiles.get_data_dir() / "macros" / "Generators",
             InstallFiles.get_dvr_program_data_dir() / "Fusion" / "Templates" / "Edit" / "Generators" / "SmartEdit",
-        )
-        self.create_dir_symlink(
-            InstallFiles.get_data_dir() / "macros" / "Titles",
-            InstallFiles.get_dvr_program_data_dir() / "Fusion" / "Templates" / "Edit" / "Titles" / "SmartEdit",
         )
 
     def create_dir_symlink(self, src_path, dst_path):
@@ -65,7 +67,10 @@ class Main:
             dst_path.symlink_to(src_path, **kw)
             print(f"[dvr_smart_edit] Created link `{dst_path}`")
         elif self.force:
-            dst_path.unlink()
+            if dst_path.is_file() or dst_path.is_symlink():
+                dst_path.unlink()
+            else:
+                shutil.rmtree(dst_path)
             dst_path.symlink_to(src_path, **kw)
             print(f"[dvr_smart_edit] Created link `{dst_path}`")
         else:

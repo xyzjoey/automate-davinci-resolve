@@ -1,6 +1,11 @@
 from enum import Enum
 
 
+class CharacterLevelStylingCopyMode(Enum):
+    NONE = 0
+    MAP_TO_LINES = 1
+
+
 class SnapMode(Enum):
     NONE = 0
     AUTO = 1

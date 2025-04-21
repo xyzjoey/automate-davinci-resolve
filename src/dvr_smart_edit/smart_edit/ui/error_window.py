@@ -144,7 +144,7 @@ class ErrorWindow:
         if isinstance(error, UserError):
             if error.detailed_error is not None:
                 traceback.print_exception(error)
-            log.error(error)
+            log.info(error)
         else:
             traceback.print_exc()
 

@@ -7,7 +7,6 @@ dynamic = ["version"]
 requires-python = ">= 3.9"
 dependencies = [
     "srt~=3.5.3",
-    "luadata~=1.0.5"
 ]
 
 [project.urls]

@@ -1,7 +1,7 @@
 from ..extended_resolve import davinci_resolve_module
 
 
-class UserSettings:
+class FusionCustomData:
     @staticmethod
     def set_init_fusion_enabled(enabled: bool):
         fusion = davinci_resolve_module.get_fusion()
@@ -13,6 +13,6 @@ class UserSettings:
         enabled = fusion.GetData("SmartEdit.InitFusionEnabled")
 
         if enabled is None:
-            enabled = True
+            return True
 
         return enabled

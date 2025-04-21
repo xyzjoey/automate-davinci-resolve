@@ -1,23 +1,15 @@
 import importlib.metadata
-import tkinter as tk
-from pathlib import Path
-from pprint import pprint
-from tkinter import filedialog
 
 from ...extended_resolve import davinci_resolve_module
-from ...extended_resolve.textplus import TextPlusComposition
-from ...extended_resolve.track import TrackHandle
-from ...extended_resolve.ui_dispatcher import UiDispatcher
 from ...smart_edit.constants import SnapMode
 from ...smart_edit.effect_control import EffectControl
 from ...smart_edit.errors import UserError
+from ...smart_edit.fusion_custom_data import FusionCustomData
 from ...smart_edit.smart_edit_bin import SmartEditBin
 from ...smart_edit.textplus_utilities import TextPlusUtilities
 from ...smart_edit.ui.error_window import ErrorWindow
 from ...smart_edit.ui.loading_window import LoadingWindow
 from ...smart_edit.ui.menu_factory import MenuFactory
-from ...smart_edit.user_settings import UserSettings
-from ..script_utils import ScriptUtils
 
 
 class MenuCallbacks:
@@ -26,6 +18,13 @@ class MenuCallbacks:
             SmartEditBin.import_bin()
 
     def on_generate_textplus_clips(self, **kw):
+        if "subtitle_track_index" in kw and kw["subtitle_track_index"] is None:
+            ErrorWindow.log_and_pop(UserError("Missing subtitle track"))
+            return
+        elif "srt_file_path" in kw and not kw["srt_file_path"]:
+            ErrorWindow.log_and_pop(UserError("Missing SRT file path"))
+            return
+
         with LoadingWindow("Text+", "Generating clips..."):
             TextPlusUtilities.generate_textplus_clips(**kw)
 
@@ -34,7 +33,7 @@ class MenuCallbacks:
             EffectControl.generate_effect_control_clips()
 
     def on_toggle_init_fusion(self, enabled):
-        UserSettings.set_init_fusion_enabled(enabled)
+        FusionCustomData.set_init_fusion_enabled(enabled)
 
     def on_debug(self, *args, **kw):
         pass
@@ -114,7 +113,7 @@ def smart_edit_menu():
                             "Weight": 1.0,
                         },
                         [
-                            # General tab content
+                            # General tab
                             menu_factory.vertical_center(
                                 menu_factory.horizontal_center(
                                     ui.Button(
@@ -137,7 +136,7 @@ def smart_edit_menu():
                                     ),
                                 ),
                             ),
-                            # Text+ tab content
+                            # Text+ tab
                             menu_factory.vertical_center(
                                 menu_factory.header2(
                                     {
@@ -230,7 +229,7 @@ def smart_edit_menu():
                                     ),
                                 ),
                             ),
-                            # EffectControl tab content
+                            # EffectControl tab
                             menu_factory.vertical_center(
                                 menu_factory.horizontal_center(
                                     ui.Button(
@@ -243,7 +242,7 @@ def smart_edit_menu():
                                     ),
                                 )
                             ),
-                            # Settings tab content
+                            # Settings tab
                             menu_factory.vertical_center(
                                 menu_factory.horizontal_center(
                                     ui.CheckBox(
@@ -256,7 +255,7 @@ def smart_edit_menu():
                                                 "If disabled, Smart Edit Text+ Menu won't open until Fusion Page is manually accessed.\n"
                                                 "Changes to this setting will take effect after restarting DaVinci Resolve."
                                             ),
-                                            "Checked": UserSettings.get_init_fusion_enabled(),
+                                            "Checked": FusionCustomData.get_init_fusion_enabled(),
                                             "Weight": 0.0,
                                         }
                                     ),
@@ -305,10 +304,6 @@ def smart_edit_menu():
             if timeline.get_track_enabled(track_handle):
                 items["GenerateTextSubtitleTrack"].CurrentIndex = i
 
-    def get_snap_mode():
-        index = snap_modes.get_selected_index(window)
-        return SnapMode(index) if index is not None else SnapMode.NONE
-
     def browse_srt_file_path():
         fusion = davinci_resolve_module.get_fusion()
         file_path = fusion.RequestFile(
@@ -333,9 +328,14 @@ def smart_edit_menu():
         }
 
         if source_type_index == 0:
-            sutitle_track_code = items["GenerateTextSubtitleTrack"].CurrentText.split(" ", 1)[0]
-            sutitle_track_index = int(sutitle_track_code.removeprefix("ST"))
-            args["subtitle_track_index"] = sutitle_track_index
+            sutitle_track_code = items["GenerateTextSubtitleTrack"].CurrentText
+
+            if sutitle_track_code:
+                sutitle_track_code = sutitle_track_code.split(" ", 1)[0]
+                sutitle_track_index = int(sutitle_track_code.removeprefix("ST"))
+                args["subtitle_track_index"] = sutitle_track_index
+            else:
+                args["subtitle_track_index"] = None
         else:
             srt_file_path = items["GenerateTextSrtFile"].Text
             args["srt_file_path"] = srt_file_path
@@ -352,17 +352,6 @@ def smart_edit_menu():
 
     on_source_type(0)
     reset_subtitle_track_list()
-
-    # items["GenerateTextFrom"].AddItem("Item1")
-    # items["GenerateTextFrom"].AddItem("Item2")
-    # items["GenerateTextFrom"].AddItem("Item3")
-    # window.On.GenerateTextFrom.CurrentIndexChanged = lambda event: print(f"CurrentIndexChanged\n{event}")
-    # window.On.GenerateTextFrom.CurrentTextChanged = lambda event: print(f"CurrentTextChanged\n{event}")
-    # window.On.GenerateTextFrom.TextEdited = lambda event: print(f"TextEdited\n{event}")
-    # window.On.GenerateTextFrom.EditTextChanged = lambda event: print(f"EditTextChanged\n{event}")
-    # window.On.GenerateTextFrom.EditingFinished = lambda event: print(f"EditingFinished\n{event}")
-    # window.On.GenerateTextFrom.ReturnPressed = lambda event: print(f"ReturnPressed\n{event}")
-    # window.On.GenerateTextFrom.Activated = lambda event: print(f"Activated\n{event}")
 
     # functional callbacks
     menu_callbacks = MenuCallbacks()

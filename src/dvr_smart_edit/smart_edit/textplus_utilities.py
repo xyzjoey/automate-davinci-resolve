@@ -1,5 +1,7 @@
+import copy
 import itertools
 from pathlib import Path
+from pprint import pprint
 from typing import Iterable, NamedTuple
 
 import srt
@@ -7,97 +9,193 @@ import srt
 from ..extended_resolve import davinci_resolve_module
 from ..extended_resolve.media_pool_item import MediaPoolItem
 from ..extended_resolve.resolve import MediaPoolItemInsertInfo
-from ..extended_resolve.textplus import TextPlusComposition, TextPlusSettings
+from ..extended_resolve.textplus import TextPlusComposition
 from ..extended_resolve.timecode import Timecode
 from ..extended_resolve.timeline import Timeline
 from ..extended_resolve.timeline_item import TimelineItem
 from ..extended_resolve.track import TrackHandle
 from ..resolve_types import PyRemoteComposition, PyRemoteOperator
 from ..utils.math import FrameRange
-from .constants import GeneratedTrackName, SnapMode
+from .constants import CharacterLevelStylingCopyMode, GeneratedTrackName, SnapMode
 from .errors import UserError
 from .smart_edit_bin import SmartEditBin
+from .textplus_custom_data import TextPlusCustomData
 from .ui.loading_window import LoadingWindow
 
 LineRange = tuple[int, int]
 
+INPUT_IDS_FOR_DOD_SIMULATE = {
+    # text page
+    "StyledText",
+    "Font",
+    "Style",
+    "Size",
+    "VerticalTopCenterBottom",
+    "VerticallyJustified",
+    "HorizontalLeftCenterRight",
+    "HorizontallyJustified",
+    "Direction",
+    "LineDirection",
+    # text page tab
+    "Tab1Position",
+    "Tab1Alignment",
+    "Tab2Position",
+    "Tab2Alignment",
+    "Tab3Position",
+    "Tab3Alignment",
+    "Tab4Position",
+    "Tab4Alignment",
+    "Tab5Position",
+    "Tab5Alignment",
+    "Tab6Position",
+    "Tab6Alignment",
+    "Tab7Position",
+    "Tab7Alignment",
+    "Tab8Position",
+    "Tab8Alignment",
+    # text page advanced controls
+    "ReadingDirection",
+    "ForceMonospaced",
+    "UseFontKerning",
+    "UseLigatures",
+    "SplitLigatures",
+    "StylisticSet",
+    "FontFeatures",
+    # layout page
+    "LayoutType",
+    "Wrap",
+    # "CenterZ",
+    "LayoutWidth",
+    "LayoutHeight",
+    # "Perspective",
+    # transform page
+    "LineSpacing",
+    "WordSpacing",
+    "CharacterSpacing",
+    "LineSizeX",
+    "LineSizeY",
+    "WordSizeX",
+    "WordSizeY",
+    "CharacterSizeX",
+    "CharacterSizeY",
+}
 
-# class UniTextPlusControl:
-#     @classmethod
-#     def fit_to_textbox_for_clip(cls, composition: PyRemoteComposition):
-#         textplus = composition.Template
 
-#         if textplus is None:
-#             return
+class TextplusLinkTool:
+    def __init__(self, _tool: PyRemoteOperator):
+        self._tool = _tool
 
-#         dod = textplus.Output.GetDod()
+    @classmethod
+    def get_from_connected_textplus_tool(cls, textplus_tool: PyRemoteOperator) -> "TextplusLinkTool":
+        for connected_input in textplus_tool.Output.GetConnectedInputs().values():
+            connected_tool = connected_input.GetTool()
 
-#         print(dod)
+            if connected_tool is not None and connected_tool.ID == "Fuse.TextPlusLink":
+                return TextplusLinkTool(connected_tool)
 
-#         # get line direction
-#         # get textbox width height
-#         # change font size
-#         # change line X/Y
+        return None
 
-#     @classmethod
-#     def fit_to_textbox_for_all(cls):
-#         pass
+    @classmethod
+    def get_from_or_create_and_connect_textplus_tool(cls, textplus_tool: PyRemoteOperator) -> "TextplusLinkTool":
+        link_tool = cls.get_from_connected_textplus_tool(textplus_tool)
 
-#     @classmethod
-#     def enable_fit_to_textbox(cls, uni_control_tool: PyRemoteOperator):
-#         in1 = uni_control_tool.TextPlus.GetConnectedOutput()
-#         textplus = in1.GetTool() if in1 is not None else None
+        if link_tool is None:
+            comp = textplus_tool.Composition
 
-#         in2 = uni_control_tool.DataWindowReference.GetConnectedOutput()
-#         dod_ref = in2.GetTool() if in2 is not None else None
+            _tool = comp.AddTool("Fuse.TextPlusLink")
+            _tool.TextPlus.ConnectTo(textplus_tool.Output)
+            link_tool = TextplusLinkTool(_tool)
 
-#         in3 = uni_control_tool.TextBox.GetConnectedOutput()
-#         textbox = in3.GetTool() if in3 is not None else None
+        return link_tool
 
-#         if textplus is None or dod_ref is None or textbox is None:
-#             return
+    def get_connected_dod_simulate_tool(self) -> PyRemoteOperator | None:
+        out = self._tool.TextDodSimulate.GetConnectedOutput()
 
-#         textbox_width = f"({textplus.Name}.Width * {textbox.Name}.Width)"
-#         textbox_height = f"({textplus.Name}.Height * {textbox.Name}.Height)"
-#         dod_width = f"({dod_ref.Name}.Output.DataWindow[3] - {dod_ref.Name}.Output.DataWindow[1])"
-#         dod_height = f"({dod_ref.Name}.Output.DataWindow[4] - {dod_ref.Name}.Output.DataWindow[2])"
+        return out.GetTool() if out is not None else None
 
-#         if textplus.LayoutSize.GetExpression() is None:
-#             uni_control_tool.SetInput("SavedLayoutSize", textplus.GetInput("LayoutSize"))
-#         if textplus.LineSizeX.GetExpression() is None:
-#             uni_control_tool.SetInput("SavedLineSizeX", textplus.GetInput("LineSizeX"))
+    def get_or_create_connected_dod_simulate_tool(self, name: str = "TextDodSimulate") -> PyRemoteOperator:
+        dod_simulate_tool = self.get_connected_dod_simulate_tool()
 
-#         textplus.LayoutSize.SetExpression(f"iif({dod_height} ~= 0, {textbox_height} / {dod_height}, 1.0)")
-#         textplus.LineSizeX.SetExpression(f"iif({dod_width} ~= 0, min(1.0, {textbox_width} * {dod_height} / ({dod_width} * {textbox_height})), 1.0)")
+        if dod_simulate_tool is None:
+            comp = self._tool.Composition
 
-#     @classmethod
-#     def disable_fit_to_textbox(cls, uni_control_tool: PyRemoteOperator):
-#         in1 = uni_control_tool.TextPlus.GetConnectedOutput()
-#         textplus = in1.GetTool() if in1 is not None else None
+            dod_simulate_tool = comp.AddTool("TextPlus")
+            dod_simulate_tool.SetAttrs({"TOOLS_Name": name})
 
-#         if textplus is None:
-#             return
+            self._tool.TextDodSimulate.ConnectTo(dod_simulate_tool.Output)
 
-#         textplus.LayoutSize.SetExpression()
-#         textplus.LineSizeX.SetExpression()
-#         textplus.SetInput("LayoutSize", uni_control_tool.GetInput("SavedLayoutSize"))
-#         textplus.SetInput("LineSizeX", uni_control_tool.GetInput("SavedLineSizeX"))
+        return dod_simulate_tool
 
-#     @classmethod
-#     def reset_resolution(cls, composition: PyRemoteComposition, uni_control_tool: PyRemoteOperator):
-#         width = composition.GetPrefs("Comp.FrameFormat.Width")
-#         height = composition.GetPrefs("Comp.FrameFormat.Height")
+    def init_expressions(self):
+        if self._tool.TextBoxCenter.GetExpression() is None:
+            self._tool.TextBoxCenter.SetExpression("self:GetSourceTool('TextPlus').Center")
 
-#         in1 = uni_control_tool.TextPlus.GetConnectedOutput()
-#         textplus = in1.GetTool() if in1 is not None else None
+        if self._tool.TextBoxWidth.GetExpression() is None:
+            self._tool.TextBoxWidth.SetExpression("self:GetSourceTool('TextPlus').LayoutWidth")
 
-#         in2 = uni_control_tool.DataWindowReference.GetConnectedOutput()
-#         dod_ref = in2.GetTool() if in2 is not None else None
+        if self._tool.TextBoxHeight.GetExpression() is None:
+            self._tool.TextBoxHeight.SetExpression("self:GetSourceTool('TextPlus').LayoutHeight")
 
-#         textplus.SetInput("Width", width)
-#         textplus.SetInput("Height", height)
-#         dod_ref.SetInput("Width", width)
-#         dod_ref.SetInput("Height", height)
+        dod_name = "self:GetSourceTool('TextDodSimulate').Output.DataWindow"  # not able to fetch by using dod_simulate_tool.Name (unknown reason)
+
+        if self._tool.DodSimulateWidth.GetExpression() is None:
+            self._tool.DodSimulateWidth.SetExpression(f"{dod_name}[3] - {dod_name}[1]")
+
+        if self._tool.DodSimulateHeight.GetExpression() is None:
+            self._tool.DodSimulateHeight.SetExpression(f"{dod_name}[4] - {dod_name}[2]")
+
+    @classmethod
+    def enable_fit_to_textbox(cls, textplus_tool: PyRemoteOperator):
+        link_tool = TextplusLinkTool.get_from_or_create_and_connect_textplus_tool(textplus_tool)
+        link_tool.init_expressions()
+
+        dod_simulate_tool = link_tool.get_or_create_connected_dod_simulate_tool(
+            name="TextDodSimulate1"
+        )  # don't name `TextDodSimulate` to avoid wrong auto rename in expression
+
+        TEXTPLUS_EXPRESSION_TARGETS = {"LayoutSize", "LineSizeX"}
+
+        for input_id in INPUT_IDS_FOR_DOD_SIMULATE:
+            input = getattr(dod_simulate_tool, input_id)
+
+            if input_id in TEXTPLUS_EXPRESSION_TARGETS:
+                if input.GetExpression() is not None:
+                    input.SetExpression()  # avoid circular dependency
+                dod_simulate_tool.SetInput(input_id, 1.0)  # normalize to simplify expression
+            else:
+                if input.GetExpression() is None:
+                    input.SetExpression(f"{textplus_tool.Name}.{input_id}")
+
+        dod_width = f"{link_tool._tool.Name}.DodSimulateWidth"
+        dod_height = f"{link_tool._tool.Name}.DodSimulateHeight"
+
+        textbox_width = f"(Width * {link_tool._tool.Name}.TextBoxWidth)"
+        textbox_height = f"(Height * {link_tool._tool.Name}.TextBoxHeight)"
+
+        textplus_tool.SetInput("LayoutType", 1)  # set LayoutType to Text Box
+        textplus_tool.SetInput("Wrap", False)  # wrap is not supported together with fit to textbox
+        textplus_tool.LayoutSize.SetExpression(f"iif({dod_height} ~= 0, {textbox_height} / {dod_height}, 1.0)")
+        textplus_tool.LineSizeX.SetExpression(f"iif({dod_width} ~= 0, min(1.0, {textbox_width} * {dod_height} / ({dod_width} * {textbox_height})), 1.0)")
+
+    @classmethod
+    def disable_fit_to_textbox(cls, textplus_tool: PyRemoteOperator):
+        if textplus_tool.LayoutSize.GetExpression() is not None:
+            textplus_tool.LayoutSize.SetExpression()
+
+        if textplus_tool.LineSizeX.GetExpression() is not None:
+            textplus_tool.LineSizeX.SetExpression()
+
+        link_tool = TextplusLinkTool.get_from_connected_textplus_tool(textplus_tool)
+
+        if link_tool is None:
+            return
+
+        dod_simulate_tool = link_tool.get_connected_dod_simulate_tool()
+
+        link_tool._tool.Delete()
+
+        if dod_simulate_tool is not None:
+            dod_simulate_tool.Delete()
 
 
 class SubtitleInfo(NamedTuple):
@@ -206,38 +304,6 @@ class TextPlusUtilities:
         file_path.write_text(file_content, encoding="utf-8")
 
     @classmethod
-    def fit_textbox_for_clip(cls, timeline_item: TimelineItem):
-        if not cls._is_textplus_clip(timeline_item):
-            return
-
-        comp = timeline_item.get_last_fusion_composition()
-        textplus_tool = comp.Template
-        dod = textplus_tool.Output.GetDoD()
-
-        textplus_tool.SetInput("LayoutType", 1)  # set Type to Text Box
-
-        width = textplus_tool.GetInput("Width")
-        height = textplus_tool.GetInput("Height")
-        textbox_width = width * textplus_tool.GetInput("LayoutWidth")
-        textbox_height = height * textplus_tool.GetInput("LayoutHeight")
-        dod_width = dod[3] - dod[1]
-        dod_height = dod[4] - dod[2]
-
-        if dod_height != 0:
-            size = textbox_height / dod_height
-            size *= textplus_tool.GetInput("Size")
-            textplus_tool.SetInput("Size", size)
-
-            if dod_width != 0 and textbox_height != 0:
-                dod_ratio = dod_width / dod_height
-                textbox_ratio = textbox_width / textbox_height
-
-                line_size_x = textbox_ratio / dod_ratio
-                line_size_x *= textplus_tool.GetInput("LineSizeX")
-                line_size_x = min(1, line_size_x)
-                textplus_tool.SetInput("LineSizeX", line_size_x)
-
-    @classmethod
     def _get_subtitle_infos_from_subtitle_track(cls, timeline: Timeline, track_index) -> list[SubtitleInfo]:
         track_handle = TrackHandle("subtitle", track_index)
 
@@ -314,91 +380,102 @@ class TextPlusUtilities:
     @classmethod
     def _copy_style(cls, src_item: TimelineItem, dst_items: Iterable[TimelineItem]):
         src_comp = TextPlusComposition(src_item.get_last_fusion_composition())
-        src_settings = src_comp.get_settings("UniTextControl", "TextBox")
-
-        cls._copy_style_from_settings(src_settings, dst_items)
-
-    @classmethod
-    def _copy_style_from_settings(cls, src_settings: TextPlusSettings, dst_items: Iterable[TimelineItem]):
-        new_settings = src_settings
+        src_settings = src_comp.get_settings()
+        char_level_style_copy_mode = TextPlusCustomData.get_character_styling_level_copy_mode(src_comp._composition)
 
         for i, dst_item in enumerate(dst_items):
             if i % 5 == 4:
                 LoadingWindow.set_message(f"Setting {i + 1}/{len(dst_items)} Text+ content...", dispatch_log=False)
 
             dst_comp = TextPlusComposition(dst_item.get_last_fusion_composition())
-            old_settings = dst_comp.get_settings()
-            new_textplus_settings = new_settings.get_textplus_tool()
-            old_textplus_settings = old_settings.get_textplus_tool()
+            old_settings = dst_comp.get_settings(tools=[dst_comp._composition.Template])
+            text_value = old_settings.get_text_value()
 
-            new_text = old_settings.get_text_input()._settings["Value"]
+            new_settings = copy.deepcopy(src_settings)
+            new_settings.set_text_value(text_value)
 
-            new_settings.get_text_input()._settings["Value"] = new_text
-            new_textplus_settings._settings["Inputs"]["GlobalOut"] = old_textplus_settings._settings["Inputs"]["GlobalOut"]
+            if char_level_style_copy_mode == CharacterLevelStylingCopyMode.MAP_TO_LINES:
+                char_level_style_settings = new_settings.find_character_level_styling()
 
-            character_level_settings = new_settings.find_character_level_styling()
-            if character_level_settings is not None:
-                new_style_array = cls._map_style_array_to_lines(character_level_settings.style_array, new_text)
-                character_level_settings.style_array = new_style_array
+                if char_level_style_settings is not None:
+                    old_style_array = char_level_style_settings.get_style_array()
+                    new_style_array = cls._map_style_array_to_lines(old_style_array, text_value)
+                    char_level_style_settings.set_style_array(new_style_array)
 
             dst_comp.set_settings(new_settings)
 
-            # new_settings_has_uni_control = new_settings.get_tool("UniTextControl") is not None
-            # uni_control_tool = dst_comp._composition.UniTextControl
-
-            # if not new_settings_has_uni_control and uni_control_tool is not None:
-            #     fit = uni_control_tool.GetInput("FitToTextBox")
-
-            #     if fit:
-            #         UniTextPlusControl.enable_fit_to_textbox(uni_control_tool)
-
     @classmethod
     def _map_style_array_to_lines(cls, style_array: dict, text: str):
-        line_ranges: list[LineRange] = sorted({(value[2], value[3]) for value in style_array.values()})
-        new_line_ranges = cls._get_line_ranges(text, max_line_count=len(line_ranges) + 1)
+        # example
+        # CharacterLevelStyling = Input {
+        # 	Value = StyledText {
+        # 		Array = {
+        # 			{ 102, 7, 11, Value = 0.033 },
+        # 			{ 2401, 10, 11, Value = 0.156862750649452 },
+        # 			{ 2402, 10, 11, Value = 0.0823529437184334 },
+        # 			{ 2403, 10, 11, Value = 1 },
+        # 			{ 2401, 12, 12, Value = 0.156862795352936 },
+        # 			{ 2402, 12, 12, Value = 0.0823529437184334 },
+        # 			{ 2403, 12, 12, Value = 1 },
+        # 			{ 102, 12, 12, Value = 0.181 }
+        # 		}
+        # 	},
+        # }
+
+        style_grouped_by_line: dict[LineRange, list[dict] | None] = {}
+        old_line_ranges = []
+        new_line_ranges = []
+
+        # group by line
+        for style_item in style_array.values():
+            line_range = (style_item[2], style_item[3])
+            style_grouped_by_line.setdefault(line_range, [])
+            style_grouped_by_line[line_range].append(style_item)
+
+        last_line_end = 0
+
+        # build old_line_ranges
+        for line_range in sorted(style_grouped_by_line.keys()):
+            if line_range[0] > last_line_end:
+                old_line_ranges.append((last_line_end, line_range[0] - 1))
+            old_line_ranges.append(line_range)
+            last_line_end = line_range[1]
+
+        new_line_ranges = cls._get_line_ranges(text)
+
+        # merge exceeding line ranges
+        if len(old_line_ranges) < len(new_line_ranges):
+            last_line_range = (
+                new_line_ranges[len(old_line_ranges) - 1][0],
+                new_line_ranges[-1][1],
+            )
+            new_line_ranges[len(old_line_ranges) - 1] = last_line_range
+            new_line_ranges = new_line_ranges[: len(old_line_ranges)]
+
         new_style_array = {}
 
-        for i, value in list(style_array.items()):
-            line_range = (value[2], value[3])
-            line_index = line_ranges.index(line_range)
+        for old_line_range, new_line_range in zip(old_line_ranges, new_line_ranges):
+            style_items = style_grouped_by_line.get(old_line_range)
 
-            if line_index < len(new_line_ranges):
-                line_start, line_end = new_line_ranges[line_index]
-                value[2] = line_start
-                value[3] = line_end
-                new_style_array[len(new_style_array) + 1] = value
-            else:
-                style_array.pop(i)
+            if style_items is not None:
+                for style_item in style_items:
+                    style_item[2] = new_line_range[0]
+                    style_item[3] = new_line_range[1]
+                    new_style_array[len(new_style_array) + 1] = style_item
 
         return new_style_array
 
     @classmethod
-    def _get_line_ranges(cls, text: str, max_line_count: int) -> list[LineRange]:
+    def _get_line_ranges(cls, text: str) -> list[LineRange]:
         ranges = []
-        prev_end = -1
+        next_start = 0
 
-        for i, line in enumerate(text.splitlines()[:max_line_count]):
-            start = prev_end + 1
-
-            if i < max_line_count - 1:
-                end = start + len(line)
-            else:
-                end = len(text)
-
-            ranges.append((start, end))
-            prev_end = end
+        for i, line in enumerate(text.splitlines()):
+            end = next_start + len(line)
+            ranges.append((next_start, end))
+            next_start = end + 1
 
         return ranges
-
-    @classmethod
-    def _find_text_input(cls, textplus_settings):
-        textplus_tool = next((tool for tool in textplus_settings["Tools"].values() if tool["__ctor"] == "TextPlus"))
-        character_level_styling_tool = next((tool for tool in textplus_settings["Tools"].values() if tool["__ctor"] == "StyledTextCLS"), None)
-
-        if character_level_styling_tool is not None:
-            return character_level_styling_tool["Inputs"]["Text"]
-        else:
-            return textplus_tool["Inputs"]["StyledText"]
 
     @classmethod
     def _compute_subtitle_insert_ranges(cls, timeline: Timeline, subtitle_infos: list[SubtitleInfo], snap_mode: SnapMode):
