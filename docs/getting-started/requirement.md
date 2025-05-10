@@ -1,2 +1,2 @@
-- davinci resolve (studio?) version
-- python version
+- davinci resolve studio version 20 (need studio becuz )
+- python version ?

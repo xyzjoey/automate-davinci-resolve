@@ -14,11 +14,15 @@ Choose one of the following methods to install **DVR Smart Edit**:
     - Drag the `install.py` file into the Console.
 
 3. **Complete Installation**:
-    - Restart DaVinci Resolve when done.
+    - Restart DaVinci Resolve after installation.
 
 ---
 
-## Install via Pip (for Python Users)
+## Install from Reactor
+
+---
+
+## Install via Pip
 
 1. Open your terminal or command prompt.
 2. Run:
@@ -28,5 +32,5 @@ Choose one of the following methods to install **DVR Smart Edit**:
 
 ---
 
-??? note "Development Version"
+!!! note "Install Development Version"
     See **[Developer Installation Guide](developer/installation.md)** for instructions.
