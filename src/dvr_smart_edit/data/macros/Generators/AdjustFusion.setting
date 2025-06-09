@@ -1,0 +1,9 @@
+{
+	Tools = ordered() {
+		Template = Fuse.AdjustFusion {
+			CtrlWZoom = false,
+			ViewInfo = OperatorInfo { Pos = { 220, 49.5 } },
+		}
+	},
+	ActiveTool = "Template"
+}

@@ -1,0 +1,24 @@
+{
+    Language = "Python3",
+
+    Action {
+        ID = "SmartEditTextplusMenu",
+        Name = "SmartEdit Text+ Menu",
+        Targets = {
+            Composition = {
+                Execute = _Python [=[
+from importlib.resources import files
+SCRIPT_PATH = str(files("dvr_smart_edit.data").joinpath("internal_scripts/textplus_menu.py"))
+obj.Comp().RunScript(SCRIPT_PATH)
+			    ]=],
+            },
+        },
+    },
+
+    Menus {
+        Target = "TextEditControl",
+        After "Edit" {
+            'SmartEditTextplusMenu{}',
+        }
+    },
+}

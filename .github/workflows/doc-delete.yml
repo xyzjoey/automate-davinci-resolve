@@ -1,0 +1,22 @@
+name: Delete Documentation
+
+on:
+  pull_request:
+    branches:
+      - master
+    types:
+      - closed
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/actions/doc-setup
+
+      - name: Delete Documentation for Closed Pull Requests
+        run: mike delete pr-${{ github.event.pull_request.number }} --push

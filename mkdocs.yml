@@ -1,0 +1,58 @@
+site_name: DVR Smart Edit
+repo_name: dvr_smart_edit
+repo_url: https://github.com/xyzkaz/automate-davinci-resolve
+
+theme:
+  name: material
+  features:
+    - search.highlight   # Highlights keywords in search results
+    - search.share       # Enables sharing of search queries
+    - navigation.expand       # Expandable sidebar for nested navigation
+    - navigation.sections     # Group sections for better organization
+    - toc.integrate  # Integrates the table of contents into the page layout
+    - palette.toggle
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+      primary: grey
+      accent: orange
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+      primary: grey
+      accent: orange
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.superfences
+  - toc:
+      permalink: "🔗&#xFE0E;"
+
+extra:
+  version:
+    provider: mike
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - First Steps: getting-started/first-steps.md
+      - Requirement: getting-started/requirement.md
+  - Features:
+      - Text+ Utilities: features/textplus-utilities.md
+      - Effect Control: features/effect-control.md
+  - Developer:
+      - Install Dev Version: developer/installation.md
+  - FAQ: faq.md
+

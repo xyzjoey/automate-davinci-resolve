@@ -1,0 +1,24 @@
+name: Documentation Workflow Setup
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure Git User
+      shell: bash
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Pull gh-pages
+      shell: bash
+      run: |
+          git fetch origin gh-pages:gh-pages
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install Dependencies
+      shell: bash
+      run: pip install -r requirements.doc.txt

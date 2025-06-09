@@ -1,0 +1,101 @@
+FuRegisterClass("TextPlusLink", CT_Tool, {
+	REGS_Name             = "Text+Link",
+	REGS_Category         = "SmartEdit",
+	REGS_OpIconString     = "TL",
+	REGS_OpDescription    = "",
+	REG_OpNoMask          = true,
+	REG_NoBlendCtrls      = true,
+	REG_NoObjMatCtrls     = true,
+	REG_NoMotionBlurCtrls = true,
+	-- REG_Fuse_NoEdit       = true,
+	-- REG_Fuse_NoReload     = true,
+	REG_Fuse_NoEdit       = false,
+	REG_Fuse_NoReload     = false,
+	REG_Version           = 0,
+})
+
+function Create()
+	self:BeginControlNest("Text Box", "TextBoxNest", true, {});
+	InTextBoxCenter = self:AddInput("Center", "TextBoxCenter", {
+		LINKID_DataType        = "Point",
+		INPID_InputControl     = "OffsetControl",
+		INPID_PreviewControl   = "CrosshairControl",
+		INP_DefaultX           = 0.5,
+		INP_DefaultY           = 0.5,
+		INP_DoNotifyChanged    = true,
+		INP_InitialNotify      = false,
+		INP_InteractivePassive = true,
+	})
+	InTextBoxWidth = self:AddInput("Text Box Width", "TextBoxWidth", {
+		LINKID_DataType        = "Number",
+		INPID_InputControl     = "SliderControl",
+		INPID_PreviewControl   = "RectangleControl",
+		PC_ControlGroup        = 1,
+		PC_ControlID           = 0,
+		INP_MinScale           = 0.0,
+		INP_MaxScale           = 1.0,
+		INP_Default            = 0.5,
+		INP_DoNotifyChanged    = true,
+		INP_InitialNotify      = false,
+		INP_InteractivePassive = true,
+	})
+	InTextBoxWidth:SetAttrs({
+		RCP_Center = InTextBoxCenter,
+	})
+	InTextBoxHeight = self:AddInput("Text Box Height", "TextBoxHeight", {
+		LINKID_DataType        = "Number",
+		INPID_InputControl     = "SliderControl",
+		INPID_PreviewControl   = "RectangleControl",
+		PC_ControlGroup        = 1,
+		PC_ControlID           = 1,
+		INP_MinScale           = 0.0,
+		INP_MaxScale           = 1.0,
+		INP_Default            = 0.5,
+		INP_DoNotifyChanged    = true,
+		INP_InitialNotify      = false,
+		INP_InteractivePassive = true,
+	})
+	InTextBoxHeight:SetAttrs({
+		RCP_Center = InTextBoxCenter,
+	})
+	self:EndControlNest()
+
+	InDodSimulateWidth = self:AddInput("Dod Simulate Width", "DodSimulateWidth", {
+		LINKID_DataType        = "Number",
+		INPID_InputControl     = "SliderControl",
+		INP_DoNotifyChanged    = true,
+		INP_InitialNotify      = false,
+		INP_InteractivePassive = true,
+	})
+	InDodSimulateHeight = self:AddInput("Dod Simulate Height", "DodSimulateHeight", {
+		LINKID_DataType        = "Number",
+		INPID_InputControl     = "SliderControl",
+		INP_DoNotifyChanged    = true,
+		INP_InitialNotify      = false,
+		INP_InteractivePassive = true,
+	})
+
+	InTextPlus = self:AddInput("Text+", "TextPlus", {
+		LINKID_DataType = "Image",
+		LINK_Main       = 1,
+	})
+
+	InTextDodSimulate = self:AddInput("Text+DodSimulate", "TextDodSimulate", {
+		LINKID_DataType = "Image",
+		LINK_Main       = 2,
+	})
+
+	OutImage = self:AddOutput("Output", "Output", {
+		LINKID_DataType = "Image",
+		LINK_Main       = 1,
+	})
+end
+
+function Process(req)
+	p = Pixel({ R = 0, G = 0, B = 0, A = 0 })
+
+	out = Image({})
+	out:Fill(p)
+
+	OutImage:Set(req, out)
+end

@@ -1,72 +1,32 @@
-[tool.tox]
-legacy_tox_ini = """
+[project]
+name = "dvr_smart_edit"
+description = "Davinci Resolve plugin to automate editing"
+readme = "README.md"
+authors = [{name = "xyzjoey"}]
+dynamic = ["version"]
+requires-python = ">= 3.9"
+dependencies = [
+    "srt~=3.5.3",
+]
 
-[testenv]
-skipsdist = true
-skip_install = true
-platform =
-    win: win32
+[project.urls]
+Homepage = "https://example.com"
+Documentation = "https://readthedocs.org"
+Repository = "https://github.com/me/spam.git"
+Issues = "https://github.com/me/spam/issues"
+Changelog = "https://github.com/me/spam/blob/master/CHANGELOG.md"
 
-[base]
-setenv = 
-    DATA_DIR={toxinidir}{/}data
-    TEMP_DIR={toxinidir}{/}.tmp
-deps =
-    customtkinter >= 5.1.2
-    pydantic < 2.0.0
-    srt >= 3.5.2
+[build-system]
+requires = ["setuptools >= 61.0", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
 
-[testenv:gui-{win}]
-setenv =
-    {[base]setenv}
-    win: PROGRAMDATA={env:PROGRAMDATA}
-    win: PROGRAMFILES={env:PROGRAMFILES}
-    win: RESOLVE_SCRIPT_API={env:PROGRAMDATA}{/}Blackmagic Design{/}DaVinci Resolve{/}Support{/}Developer{/}Scripting
-    win: RESOLVE_SCRIPT_LIB={env:PROGRAMFILES}{/}Blackmagic Design{/}DaVinci Resolve{/}fusionscript.dll
-    win: PYTHONPATH={toxinidir}{/}src{:}{env:RESOLVE_SCRIPT_API}{/}Modules{/}
-deps =
-    {[base]deps}
-commands =
-    python {toxinidir}/main_gui.py {posargs}
+[tool.setuptools.packages.find]
+where = ["src"]
 
-[testenv:cli-{win}]
-setenv =
-    {[base]setenv}
-    win: PROGRAMDATA={env:PROGRAMDATA}
-    win: PROGRAMFILES={env:PROGRAMFILES}
-    win: RESOLVE_SCRIPT_API={env:PROGRAMDATA}{/}Blackmagic Design{/}DaVinci Resolve{/}Support{/}Developer{/}Scripting
-    win: RESOLVE_SCRIPT_LIB={env:PROGRAMFILES}{/}Blackmagic Design{/}DaVinci Resolve{/}fusionscript.dll
-    win: PYTHONPATH={toxinidir}{/}src{:}{env:RESOLVE_SCRIPT_API}{/}Modules{/}
-deps =
-    {[base]deps}
-commands =
-    python {toxinidir}/main_cli.py {posargs}
-
-[testenv:test]
-passenv =
-    DISPLAY
-setenv =
-    {[base]setenv}
-    PYTHONPATH={toxinidir}{/}src
-    RESOURCE_DIR={toxinidir}{/}test{/}resources
-deps =
-    {[base]deps}
-    pytest
-commands =
-    pytest {toxinidir}/tests -v -ra {posargs}
-
-[testenv:check_format]
-deps =
-    black
-commands =
-    black {toxinidir} --check --color {posargs}
-
-[testenv:format]
-deps =
-    black
-commands =
-    black {toxinidir} {posargs}
-"""
+[tool.setuptools_scm]
 
 [tool.black]
 line-length = 160
+
+[tool.isort]
+profile = "black"

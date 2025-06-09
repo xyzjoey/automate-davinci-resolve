@@ -1,0 +1,347 @@
+MAX_KEYWORD_SELECTOR_COUNT = 300
+CHECKED_LABEL = "✅ "
+UNCHECKED_LABEL = "⬛ "
+LABEL_PREFIX_LEN = #CHECKED_LABEL
+
+FuRegisterClass("EffectControl", CT_Tool, {
+	REGS_Category         = "SmartEdit",
+	REGS_OpIconString     = "EC",
+	REGS_OpDescription    = "Controls of effect generation in timeline",
+	REG_OpNoMask          = true,
+	REG_NoBlendCtrls      = true,
+	REG_NoObjMatCtrls     = true,
+	REG_NoMotionBlurCtrls = true,
+	-- REG_Fuse_NoEdit       = true,
+	-- REG_Fuse_NoReload     = true,
+	REG_Fuse_NoEdit       = false,
+	REG_Fuse_NoReload     = false,
+	REG_Version           = 0,
+})
+
+function Create()
+	self:BeginControlNest("Reload Template from Media Pool", "ReloadLabel", true, {});
+
+	InReload = self:AddInput("for This Clip", "Reload", {
+		LINKID_DataType    = "Number",
+		INPID_InputControl = "ButtonControl",
+		BTNCS_Execute      = "!Py: " .. [[
+from dvr_smart_edit.entrypoints import setup_module
+setup_module(bmd, resolve, fusion)
+from dvr_smart_edit.entrypoints import effect_control_clip
+effect_control_clip.on_reload_for_clip(comp)
+		]],
+		ICD_Width          = 0.5,
+		INP_External       = false,
+		INP_Passive        = true,
+	})
+
+	InReloadForAll = self:AddInput("for All", "ReloadForAll", {
+		LINKID_DataType    = "Number",
+		INPID_InputControl = "ButtonControl",
+		BTNCS_Execute      = "!Py: " .. [[
+from dvr_smart_edit.entrypoints import setup_module
+setup_module(bmd, resolve, fusion)
+from dvr_smart_edit.entrypoints import effect_control_clip
+effect_control_clip.on_reload_for_all()
+		]],
+		ICD_Width          = 0.5,
+		INP_External       = false,
+		INP_Passive        = true,
+	})
+
+	self:EndControlNest()
+
+	self:BeginControlNest("Apply Effect", "ApplyEffectLabel", true, {});
+
+	InApplyEffect = self:AddInput("for This Clip", "ApplyEffect", {
+		LINKID_DataType    = "Number",
+		INPID_InputControl = "ButtonControl",
+		BTNCS_Execute      = "!Py: " .. [[
+from dvr_smart_edit.entrypoints import setup_module
+setup_module(bmd, resolve, fusion)
+from dvr_smart_edit.entrypoints import effect_control_clip
+effect_control_clip.on_apply_effect_for_clip(comp)
+		]],
+		ICD_Width          = 0.5,
+		INP_External       = false,
+		INP_Passive        = true,
+	})
+
+	InApplyEffectForAll = self:AddInput("for All", "ApplyEffectForAll", {
+		LINKID_DataType    = "Number",
+		INPID_InputControl = "ButtonControl",
+		BTNCS_Execute      = "!Py: " .. [[
+from dvr_smart_edit.entrypoints import setup_module
+setup_module(bmd, resolve, fusion)
+from dvr_smart_edit.entrypoints import effect_control_clip
+effect_control_clip.on_apply_effect_for_all()
+		]],
+		ICD_Width          = 0.5,
+		INP_External       = false,
+		INP_Passive        = true,
+	})
+
+	self:EndControlNest()
+
+	self:BeginControlNest("Effect Options", "EffectOptionsLabel", false, {});
+
+	InKeywordPriority = self:AddInput("Keyword Priority (WIP)", "KeywordPriority", {
+		LINKID_DataType = "Number",
+		INPID_InputControl = "MultiButtonControl",
+		{
+			MBTNC_AddButton = "by Reverse Register Order",
+			MBTNCS_ToolTip = "Later keyword in registered keywords has higher priority",
+		},
+		{
+			MBTNC_AddButton = "by Register Order",
+			MBTNCS_ToolTip = "Earlier keyword in registered keywords has higher priority",
+		},
+		{
+			MBTNC_AddButton = "by Reverse Select Order",
+			MBTNCS_ToolTip = "Later keyword in selected keywords has higher priority",
+		},
+		{
+			MBTNC_AddButton = "by Select Order",
+			MBTNCS_ToolTip = "Earlier keyword in selected keywords has higher priority",
+		},
+		{
+			MBTNC_AddButton = "Same",
+			MBTNCS_ToolTip = "All keywords has same priority",
+		},
+		INP_External = false,
+		INP_InteractivePassive = true,
+	})
+
+	InSelectMode = self:AddInput("Select Mode (WIP)", "SelectMode", {
+		LINKID_DataType = "Number",
+		INPID_InputControl = "MultiButtonControl",
+		{
+			MBTNC_AddButton = "Alternate",
+			MBTNCS_ToolTip = "Select different effect from previous clips if possible",
+		},
+		{
+			MBTNC_AddButton = "Repeat",
+			MBTNCS_ToolTip = "Select same effect as previous clips",
+		},
+		{
+			MBTNC_AddButton = "RoundRobin",
+			MBTNCS_ToolTip = "Select next effect candidate on each Apply Effect",
+		},
+		INP_External = false,
+		INP_InteractivePassive = true,
+	})
+
+	self:EndControlNest()
+
+	self:BeginControlNest("Select Keywords", "SelectKeywordsLabel", true, {});
+
+	InKeywords = self:AddInput("Keywords", "Keywords", {
+		LINKID_DataType        = "Text",
+		INPID_InputControl     = "TextEditControl",
+		TEC_Lines              = 3,
+		TEC_Wrap               = true,
+		TEC_ReadOnly           = false,
+		INP_DoNotifyChanged    = true,
+		INP_External           = false,
+		INP_InteractivePassive = true,
+	})
+
+	InKeywordSelectors = {} -- dynamically change to labels or buttons
+
+	for i = 1, MAX_KEYWORD_SELECTOR_COUNT do
+		table.insert(InKeywordSelectors, self:AddInput("", "SelectKeyword" .. i, {
+			INP_InitialNotify = false,
+			IC_Visible        = false,
+			INP_External      = false,
+			INP_Passive       = true,
+		}))
+	end
+
+	self:EndControlNest()
+
+	self:BeginControlNest("Register Keywords", "RegisterKeywordsLabel", false, {});
+
+	InRegisterKeywords = self:AddInput("Register Keywords", "RegisterKeywords", {
+		LINKID_DataType        = "Text",
+		INPID_InputControl     = "TextEditControl",
+		INPS_DefaultText       = "-- Speaker\nspeakerA,speakerB\n-- Tone\nstress,high,question,shock\n-- Tempo\nfast",
+		TEC_Lines              = 20,
+		TEC_Wrap               = true,
+		TEC_ReadOnly           = false,
+		INP_DoNotifyChanged    = true,
+		INP_External           = false,
+		INP_InteractivePassive = true,
+	})
+
+	self:EndControlNest()
+
+	OutImage = self:AddOutput("Output", "Output", {
+		LINKID_DataType = "Image",
+		LINK_Main       = 1,
+	})
+end
+
+function NotifyChanged(inp, param, time)
+	if inp ~= nil and param ~= nil then
+		if inp == InRegisterKeywords then
+			RegisterKeywords(param.Value)
+		elseif inp == InKeywords then
+			ToggleKeywordFromText(param.Value)
+		else
+			local id = inp:GetAttr("LINKID_ID")
+
+			if StartsWith(id, "SelectKeyword") and param.Value == 1.0 then
+				ToggleKeywordFromButton(inp)
+			end
+		end
+	end
+end
+
+function Process(req)
+	p = Pixel({ R = 0, G = 0, B = 0, A = 0 })
+
+	out = Image({})
+	out:Fill(p)
+
+	OutImage:Set(req, out)
+end
+
+function RegisterKeywords(text)
+	local sep = ",\n"
+	local selectorIndex = 1
+
+	for token in string.gmatch(text, "([^" .. sep .. "]+)") do
+		token = token:gsub("^%s+", ""):gsub("%s+$", "")
+		local isLabel = false
+
+		if token:sub(1, 1) == "#" then
+			token = token:sub(2):gsub("^%s+", "")
+			isLabel = true
+		elseif token:sub(1, 2) == "--" then
+			token = token:sub(3):gsub("^%s+", "")
+			isLabel = true
+		end
+
+		if isLabel then
+			InKeywordSelectors[selectorIndex]:SetAttrs({
+				LINKID_DataType     = "Text",
+				INPID_InputControl  = "LabelControl",
+				LINKS_Name          = token,
+				IC_Visible          = true,
+				INP_DoNotifyChanged = false,
+				ICD_Width           = 1.0,
+			})
+			InKeywordSelectors[selectorIndex]:SetSource(Text(""), 0) -- avoid incorrect data type error
+		else
+			local keywordsText = InKeywords:GetSource(0).Value
+			local prefix = UNCHECKED_LABEL
+
+			if FindWholeWord(keywordsText, token) then
+				prefix = CHECKED_LABEL
+			end
+
+			InKeywordSelectors[selectorIndex]:SetAttrs({
+				LINKID_DataType     = "Number",
+				INPID_InputControl  = "ButtonControl",
+				LINKS_Name          = prefix .. token,
+				IC_Visible          = true,
+				INP_DoNotifyChanged = true,
+				ICD_Width           = math.min((#token + 5) / 50.0, 1.0),
+			})
+		end
+
+		selectorIndex = selectorIndex + 1
+		if selectorIndex > MAX_KEYWORD_SELECTOR_COUNT then
+			break
+		end
+	end
+
+	for i = selectorIndex, #InKeywordSelectors do
+		InKeywordSelectors[i]:SetAttrs({
+			LINKS_Name = "",
+			INP_DoNotifyChanged = false,
+			IC_Visible = false,
+			ICD_Width = 1.0,
+		})
+	end
+end
+
+function ToggleKeywordFromText(text)
+	local sep = ",\n"
+	local keywords = {}
+
+	for token in string.gmatch(text, "([^" .. sep .. "]+)") do
+		token = token:gsub("^%s+", ""):gsub("%s+$", "")
+
+		keywords[token] = true
+	end
+
+	for i = 1, #InKeywordSelectors do
+		if InKeywordSelectors[i]:GetAttr("INPID_InputControl") == "ButtonControl" then
+			local prefixedName = InKeywordSelectors[i]:GetAttr("LINKS_Name")
+			local name = prefixedName:sub(LABEL_PREFIX_LEN + 1)
+
+			if name == "" then
+				break
+			end
+
+			if keywords[name] then
+				InKeywordSelectors[i]:SetAttrs({
+					LINKS_Name = CHECKED_LABEL .. name,
+				})
+			else
+				InKeywordSelectors[i]:SetAttrs({
+					LINKS_Name = UNCHECKED_LABEL .. name,
+				})
+			end
+		end
+	end
+end
+
+function ToggleKeywordFromButton(inKeywordButton)
+	local prefixedName = inKeywordButton:GetAttr("LINKS_Name")
+	local keyword = prefixedName:sub(LABEL_PREFIX_LEN + 1)
+	local wasChecked = StartsWith(prefixedName, CHECKED_LABEL)
+	local keywordsText = InKeywords:GetSource(0).Value
+
+	if wasChecked then
+		keywordsText = string.gsub(keywordsText, "," .. keyword, "")
+		keywordsText = string.gsub(keywordsText, keyword .. ",", "")
+		keywordsText = string.gsub(keywordsText, keyword, "")
+
+		InKeywords:SetSource(Text(keywordsText), 0)
+
+		inKeywordButton:SetAttrs({
+			LINKS_Name = UNCHECKED_LABEL .. keyword,
+		})
+	else
+		if keywordsText == "" then
+			keywordsText = keyword
+		elseif EndsWith(keywordsText, ",") or EndsWith(keywordsText, "\n") then
+			keywordsText = keywordsText .. keyword
+		else
+			keywordsText = keywordsText .. "," .. keyword
+		end
+
+		InKeywords:SetSource(Text(keywordsText), 0)
+
+		inKeywordButton:SetAttrs({
+			LINKS_Name = CHECKED_LABEL .. keyword,
+		})
+	end
+end
+
+function StartsWith(str, prefix)
+	return str:sub(1, #prefix) == prefix
+end
+
+function EndsWith(str, suffix)
+	return str:sub(- #suffix) == suffix
+end
+
+function FindWholeWord(str, word)
+	local utf8Lead = "\194-\247"
+	local utf8Tail = "\128-\191"
+	local pattern = "%f[%w_" .. utf8Lead .. "]" .. word .. "%f[^%w_" .. utf8Tail .. "]"
+	return str:find(pattern)
+end

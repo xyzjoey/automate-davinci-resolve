@@ -1,0 +1,240 @@
+{0: {'color': 'Blue',
+     'customData': '',
+     'duration': 1,
+     'name': 'Marker 17',
+     'note': '搞笑,登場,moment,(連續)\n'
+             '- text: name --> big center\n'
+             '- text: subtitle --> small center (by char level?)\n'
+             '- vfx: 速度線\n'
+             '- vfx: zoom in\n'
+             '- se: wind / reveal\n'
+             '- transition: directional'},
+ 220: {'color': 'Blue',
+       'customData': '',
+       'duration': 1,
+       'name': 'Marker 18',
+       'note': '謎煙/白雪煙/御煙 + (pop)\n'
+               '- text: 謎煙/白雪煙/御煙\n'
+               '- text: (pop)\n'
+               '- vfx: \n'
+               '- se: (pop)\n'
+               '- transition:'},
+ 381: {'color': 'Blue',
+       'customData': '',
+       'duration': 1,
+       'name': 'Marker 19',
+       'note': '出現 / jumpy\n'
+               '- text: 羽煙 / relax / squash / jumpy\n'
+               '- vfx: zoom\n'
+               '- se: wiu~\n'
+               '- transition:'},
+ 503: {'color': 'Blue',
+       'customData': '',
+       'duration': 1,
+       'name': 'Marker 6',
+       'note': '- text: notice ?\n- vfx: focus\n- se:\n- transition:'},
+ 655: {'color': 'Blue',
+       'customData': '',
+       'duration': 1,
+       'name': 'Marker 6',
+       'note': '- text:\n- vfx:\n- se: question at end\n- transition:'},
+ 824: {'color': 'Blue',
+       'customData': '',
+       'duration': 1,
+       'name': 'Marker 6',
+       'note': 'strong?\n- text: 毛筆? strong\n- vfx:\n- se: dong\n- transition'},
+ 898: {'color': 'Blue',
+       'customData': '',
+       'duration': 1,
+       'name': 'Marker 6',
+       'note': '驚訝, react\n'
+               '- text: 誇張\n'
+               '- text: (shake)\n'
+               '- vfx: (shake)\n'
+               '- se: 驚訝\n'
+               '- transition:'},
+ 1070: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '察覺\n- text:\n- vfx:\n- se: ding\n- transition:'},
+ 1258: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '- text: 得瑟\n- vfx:\n- se:\n- transition:'},
+ 1347: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '困惑\n- text: weak wavy\n- vfx:\n- se:\n- transition:'},
+ 1611: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '- text: relax\n- text: (pop)\n- vfx:\n- se:\n- transition:'},
+ 1666: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '- text: cover title\n- vfx:\n- se:\n- transition: scene chg'},
+ 2001: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '- text: lyrics\n- vfx: pan\n- se:\n- transition:'},
+ 3745: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '驚嚇\n'
+                '- text: !?\n'
+                '- text: (shake)\n'
+                '- vfx: 集中線/(shake)\n'
+                '- se: kuang~\n'
+                '- transition:'},
+ 3914: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': 'danger\n'
+                '- text: red, danger\n'
+                '- vfx: shake in\n'
+                '- se: dong / jojo link se\n'
+                '- transition:'},
+ 3997: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': 'the world\n'
+                '- text: jojo style\n'
+                '- text: slide\n'
+                '- vfx: (shake?) / (focus)\n'
+                '- se: the world\n'
+                '- transition:'},
+ 4441: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '- text: strong\n- vfx:\n- se: dong / pop\n- transition:'},
+ 4501: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '- text: 邪惡\n- vfx:\n- se: 詭異笑\n- transition:'},
+ 4599: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '- text: round\n'
+                '- text: pop?\n'
+                '- vfx:\n'
+                '- se: pop?\n'
+                '- transition:'},
+ 4719: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '- text:\n'
+                '- vfx: zoom out?\n'
+                '- se: the world end\n'
+                '- transition:'},
+ 5265: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '- text: notice\n- vfx:\n- se: !? / ding\n- transition:'},
+ 5704: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '- text: notice\n- vfx: pan, focus\n- se: ding\n- transition:'},
+ 7816: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '- text: red? 悔恨\n- vfx:\n- se:\n- transition:'},
+ 7930: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '接近真相 / 探究\n'
+                '- text: 探究\n'
+                '- vfx: focus & zoom in\n'
+                '- se:\n'
+                '- transition:'},
+ 8345: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '- text:\n- vfx:\n- se: pop\n- transition:'},
+ 8671: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '投票\n- text:\n- vfx:\n- se:\n- transition:'},
+ 9006: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '- text: big\n'
+                '- text: (shake in)\n'
+                '- vfx:\n'
+                '- se:\n'
+                '- transition:'},
+ 9457: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '- text: 汗顏?\n- vfx:\n- se:\n- transition:'},
+ 9737: {'color': 'Blue',
+        'customData': '',
+        'duration': 1,
+        'name': 'Marker 6',
+        'note': '- text:\n'
+                '- vfx: shake? moving聚光燈?\n'
+                '- se: roll drump\n'
+                '- transition:'},
+ 10036: {'color': 'Blue',
+         'customData': '',
+         'duration': 1,
+         'name': 'Marker 6',
+         'note': '- text: winner gold\n'
+                 '- vfx: winner / congrat\n'
+                 '- se: congrat\n'
+                 '- transition:'},
+ 10977: {'color': 'Blue',
+         'customData': '',
+         'duration': 1,
+         'name': 'Marker 6',
+         'note': '- text: weak?\n- vfx:\n- se: weak pop?\n- transition:'},
+ 11482: {'color': 'Blue',
+         'customData': '',
+         'duration': 1,
+         'name': 'Marker 6',
+         'note': 'winner\n- text:\n- vfx:\n- se: \n- transition:'},
+ 12264: {'color': 'Blue',
+         'customData': '',
+         'duration': 1,
+         'name': 'Marker 6',
+         'note': '- text: 華麗\n- vfx: zoom?\n- se: shine\n- transition:'},
+ 12534: {'color': 'Blue',
+         'customData': '',
+         'duration': 1,
+         'name': 'Marker 6',
+         'note': '- text: arrow?\n- vfx: \n- se: 戳\n- transition:'},
+ 12714: {'color': 'Blue',
+         'customData': '',
+         'duration': 1,
+         'name': 'Marker 6',
+         'note': '- text:\n- vfx: \n- se: move away\n- transition:'},
+ 13781: {'color': 'Blue',
+         'customData': '',
+         'duration': 1,
+         'name': 'Marker 6',
+         'note': '- text: weak wave?\n- vfx: \n- se: weak\n- transition:'},
+ 13821: {'color': 'Blue',
+         'customData': '',
+         'duration': 1,
+         'name': 'Marker 6',
+         'note': '- text:\n- vfx: circle out\n- se: scene chg\n- transition:'}}
