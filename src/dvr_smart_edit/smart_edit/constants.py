@@ -12,6 +12,20 @@ class SnapMode(Enum):
 
 
 class EffectType(Enum):
+    ADJUST_TEXT_STYLE = 0
+    INSERT_VIDEO = 1
+    INSERT_AUDIO = 2
+
+    def get_label(self):
+        if self == EffectType.ADJUST_TEXT_STYLE:
+            return "Adjust Text Style"
+        elif self == EffectType.INSERT_VIDEO:
+            return "Insert Video"
+        elif self == EffectType.INSERT_AUDIO:
+            return "Insert Audio"
+
+
+class EffectTypeDeprecated(Enum):
     TEXT_ANIMATION = 0
     TEXT_STYLE = 1
     TRANSITION = 2
@@ -32,10 +46,10 @@ class GeneratedTrackName:
 
 
 EFFECT_TRACK_MAP = {
-    # EffectType.TRANSITION: ("video", GeneratedTrackName.TRANSITION),
-    EffectType.VISUAL_OVERLAY: ("video", GeneratedTrackName.VISUAL_OVERLAY),
-    EffectType.VISUAL_ADJUST: ("video", GeneratedTrackName.VISUAL_ADJUST),
-    EffectType.CAMERA_ADJUST: ("video", GeneratedTrackName.CAMERA_ADJUST),
-    EffectType.SOUND_EFFECT: ("audio", GeneratedTrackName.SOUND_EFFECT),
-    # EffectType.BACKGROUND_MUSIC: ("audio", GeneratedTrackName.BACKGROUND_MUSIC),
+    # EffectTypeDeprecated.TRANSITION: ("video", GeneratedTrackName.TRANSITION),
+    EffectTypeDeprecated.VISUAL_OVERLAY: ("video", GeneratedTrackName.VISUAL_OVERLAY),
+    EffectTypeDeprecated.VISUAL_ADJUST: ("video", GeneratedTrackName.VISUAL_ADJUST),
+    EffectTypeDeprecated.CAMERA_ADJUST: ("video", GeneratedTrackName.CAMERA_ADJUST),
+    EffectTypeDeprecated.SOUND_EFFECT: ("audio", GeneratedTrackName.SOUND_EFFECT),
+    # EffectTypeDeprecated.BACKGROUND_MUSIC: ("audio", GeneratedTrackName.BACKGROUND_MUSIC),
 }

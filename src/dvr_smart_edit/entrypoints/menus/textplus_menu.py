@@ -71,22 +71,7 @@ def textplus_menu(composition: PyRemoteComposition):
     disp = ui_dispatcher._ui_dispatcher
     menu_factory = MenuFactory(ui_manager)
 
-    char_level_style_copy_modes = menu_factory.multi_buttons(
-        {
-            "ID": "CharacterLevelStyleCopyMode{index}",
-            "Weight": 0.0,
-        },
-        [
-            {
-                "Text": "None",
-                "Checked": CharacterLevelStylingCopyMode.NONE == character_styling_level_copy_mode,
-            },
-            {
-                "Text": "Map to Lines",
-                "Checked": CharacterLevelStylingCopyMode.MAP_TO_LINES == character_styling_level_copy_mode,
-            },
-        ],
-    )
+    char_level_style_copy_modes = menu_factory.multi_buttons()
 
     window = disp.AddWindow(
         {
@@ -157,7 +142,22 @@ def textplus_menu(composition: PyRemoteComposition):
                             }
                         ),
                         menu_factory.horizontal_center(
-                            *char_level_style_copy_modes.get_elements(),
+                            *char_level_style_copy_modes.create_elements(
+                                {
+                                    "ID": "CharacterLevelStyleCopyMode{index}",
+                                    "Weight": 0.0,
+                                },
+                                [
+                                    {
+                                        "Text": "None",
+                                        "Checked": CharacterLevelStylingCopyMode.NONE == character_styling_level_copy_mode,
+                                    },
+                                    {
+                                        "Text": "Map to Lines",
+                                        "Checked": CharacterLevelStylingCopyMode.MAP_TO_LINES == character_styling_level_copy_mode,
+                                    },
+                                ],
+                            ),
                         ),
                     ),
                     menu_factory.separater(),

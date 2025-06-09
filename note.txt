@@ -1,0 +1,130 @@
+
+[keywords]
+## Cover ##
+- cover title
+  -> text style: title/subtitle
+  -> (text effect: fade in/out)
+- lyrics
+  -> text style: lyrics
+  -> (camera: pan)
+## 過場 ##
+- 片尾
+  -> visual overlay: circle out
+  -> se: scene chg
+## Situation ##
+- 人物登場
+  -> text style: title/subtitle text
+  -> se: * 3 (wind / reveal)
+  -> visual overlay: 集中線
+  -> (transition: directional)
+- 彈出
+  -> camera: zoom_in_up
+  -> text style: cute / round
+  -> text effect: squash / jumpy
+  -> se: wiu~
+- 移開
+  -> se: wiu⤵
+- (the world end)
+  -> camera: zoom out easing
+- roll drump
+  -> visual overlay: moving 聚光燈
+  -> (se: roll drump)
+- winner
+  -> text style: winner gold
+  -> visual overlay: winner / congrat
+  -> camera: zoom in
+  -> se: congrat
+- 指名
+  -> visual overlay: arrow
+  -> se: 戳
+## 語氣 ##
+- 吐槽
+- high
+- 輕鬆疑問
+  -> se: ?
+- 提重點
+  -> text style: heavy
+  -> (text effect: one shake)
+  -> se: dong! / pop
+  -> camera: zoom in
+- 小震驚
+  -> (text effect: one shake)
+- 大震驚
+  -> text style: 震驚 起角
+  -> text effect: shake
+  -> camera: zoom in
+  -> se: ! / kuang~
+  -> (visual overlay: 集中線)
+- 察覺
+  -> text style: white notice
+  -> se: ding
+- 探究
+  -> text style: white notice
+  -> se: ding
+  -> camrea: zoom in
+- (得瑟)
+- (困惑)
+- 樂呵呵
+  -> text style: relax
+  -> text effect: pop
+- 叫喊/jojo台詞
+  -> text style:
+  -> text effect: slide
+  -> text adjust: center big
+  -> visual overaly: 集中線
+- 邪惡
+  -> text stlye: 邪惡
+  -> se: 詭異笑
+- interrupt
+  -> text effect: one shake
+- 失望/汗顏
+  -> text style:
+  -> text effect: weak wave
+  -> se: ⤵
+- weak
+  -> text effect: weak wave
+- 嘆氣
+  -> text effect: weak wave
+  -> se: ⤵
+## 氣氛 ##
+- 輕鬆
+  -> (text adjust: pop)
+  -> se: pop
+- jojo
+  -> visual overlay: gogogo
+  -> se: gogogo
+- 危險
+  -> text style: red danger
+  -> se: danger...
+- 悔恨
+  ->
+- 閃亮/華麗
+  -> text style: 華麗
+  -> se: shine
+## 節奏 ##
+- 瞬間 -> 速度線 * 3
+## Speaker ##
+  -> visual adjust: camera zoom per speaker (video specific)
+- 羽煙 -> purple text
+- 謎煙 -> pink purple text
+- 白雪煙 -> white pink text
+- 御煙 -> blue text
+- 旁白 -> white tsukomi
+
+
+
+
+[effec type]
+- text style
+- text effect
+- visual overlay
+- visual adjust
+- camera effect (auto pivot base on speaker)
+- transition
+- se
+- bgm
+
+EffectInfo
+    media_pool_item: MediaPoolItem
+    previously_disabled: bool
+EffectInfos = dict[EffectTypeDeprecated, EffectInfo]

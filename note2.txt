@@ -1,0 +1,49 @@
+TEXT_ANIMATION
+- lock [] (*)
+- effect type [Fusion Node]
+- bin name ["text_animation"]
+-- keyword []
+-- - clip type [FUSION_COMPOSITION/FUSION_GENERATOR/FUSION_TITLE]
+- track name ["Generated Text+"]
+
+TEXT_STYLE
+- lock []
+- effect type [Text+ Style]
+- bin name [""]
+-- keyword []
+-- - clip type [FUSION_TITLE]
+- track name ["Generated Text+"]
+
+TRANSITION
+- effect type [Transition Clip]
+- bin name ["transition"]
+- clip type [GENERATOR]
+- track name ["Generated Transition"]
+
+VISUAL_OVERLAY
+- effect type [Clip]
+- bin name [""]
+- clip type [COMPOUND/FUSION_CLIP/FUSION_COMPOSITION/FUSION_GENERATOR/VIDEO/VIDEO_AUDIO]
+- track name ["Generated Visual Overlay"]
+
+VISUAL_ADJUST
+- effect type [Clip]
+- bin name [""]
+- clip type [GENERATOR]
+- track name ["Generated Visual Adjust"]
+
+CAMERA_ADJUST
+- effect type [Clip]
+- bin name ["camera"]
+- clip type [GENERATOR]
+- track name ["Generated Camera Adjust"]
+
+SOUND_EFFECT
+- effect type [Clip]
+- bin name [""]
+- clip type [AUDIO]
+- keyword ["se"]
+- track name ["Generated SE"]
+
+BACKGROUND_MUSIC
+- effect type [Clip]

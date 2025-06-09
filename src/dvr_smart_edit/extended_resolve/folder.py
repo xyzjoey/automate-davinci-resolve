@@ -23,6 +23,9 @@ class Folder:
         self._folder = folder_path.bottom
         self.folder_path = folder_path
 
+    def get_name(self):
+        return self._folder.GetName()
+
     def find_item(self, condition):
         return next(self.iter_items(condition), None)
 
@@ -36,6 +39,12 @@ class Folder:
             if condition(item):
                 yield item
 
-    def iter_subfolders(self):
+    def iter_subfolders(self, condition=lambda _: True):
         for _subfolder in self._folder.GetSubFolderList():
-            yield Folder(folder_path=FolderPath([*self.folder_path._folders, _subfolder]))
+            folder = Folder(folder_path=FolderPath([*self.folder_path._folders, _subfolder]))
+
+            if condition(folder):
+                yield folder
+
+    def find_subfolder(self, subfolder_name: str):
+        return next(self.iter_subfolders(lambda subfolder: subfolder_name == subfolder.get_name()), None)

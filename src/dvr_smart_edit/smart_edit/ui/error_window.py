@@ -84,7 +84,7 @@ class ErrorWindow:
                 "WindowTitle": f"Smart Edit - {title}",
                 "ID": "SmartEditErrorWindow",
                 "WindowFlags": {"CoverWindow": True},
-                "WindowModality": "WindowModal",
+                # "WindowModality": "WindowModal",
                 "Margin": 0,
                 "Spacing": 0,
             },

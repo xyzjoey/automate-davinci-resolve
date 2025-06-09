@@ -1,4 +1,5 @@
 from ..extended_resolve import davinci_resolve_module
+from .effect_defines import DEFAULT_EFFECT_TRACKS_SETTINGS, EffectTracksSettings
 
 
 class FusionCustomData:
@@ -16,3 +17,23 @@ class FusionCustomData:
             return True
 
         return enabled
+
+    @staticmethod
+    def set_effect_tracks_settings(settings: EffectTracksSettings | None):
+        fusion = davinci_resolve_module.get_fusion()
+
+        if settings is not None:
+            data = settings.as_dict()
+            fusion.SetData("SmartEdit.EffectTracksSettings", data)
+        else:
+            fusion.SetData("SmartEdit.EffectTracksSettings", None)
+
+    @staticmethod
+    def get_effect_tracks_settings():
+        fusion = davinci_resolve_module.get_fusion()
+        data = fusion.GetData("SmartEdit.EffectTracksSettings")
+
+        if data is None:
+            return DEFAULT_EFFECT_TRACKS_SETTINGS
+
+        return EffectTracksSettings.from_lua_like_table(data)

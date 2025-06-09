@@ -14,7 +14,7 @@ from ..extended_resolve.timeline import Timeline
 from ..extended_resolve.timeline_item import TimelineItem
 from ..extended_resolve.track import TrackHandle
 from ..utils.math import FrameRange
-from .constants import EFFECT_TRACK_MAP, EffectType, GeneratedTrackName
+from .constants import EFFECT_TRACK_MAP, EffectTypeDeprecated, GeneratedTrackName
 from .errors import UserError
 from .smart_edit_bin import SmartEditBin
 from .textplus_utilities import TextPlusUtilities
@@ -36,7 +36,7 @@ class KeywordMatcher:
         return matched_keywords
 
 
-SelectedEffects = dict[EffectType, MediaPoolItem]
+SelectedEffects = dict[EffectTypeDeprecated, MediaPoolItem]
 
 
 class EffectSelector:
@@ -92,24 +92,24 @@ class EffectSelector:
 
         if item_type == MediaPoolItemType.FUSION_TITLE:
             if "text_animation" in item.folder.folder_path.get_names():
-                return EffectType.TEXT_ANIMATION, support_keyword
+                return EffectTypeDeprecated.TEXT_ANIMATION, support_keyword
             else:
-                return EffectType.TEXT_STYLE, support_keyword
+                return EffectTypeDeprecated.TEXT_STYLE, support_keyword
         elif item_type == MediaPoolItemType.AUDIO:
             duration = item.get_duration_as_timedelta()
 
             if duration <= timedelta(seconds=30):
-                return EffectType.SOUND_EFFECT, support_keyword
+                return EffectTypeDeprecated.SOUND_EFFECT, support_keyword
             else:
-                return EffectType.BACKGROUND_MUSIC, support_keyword
+                return EffectTypeDeprecated.BACKGROUND_MUSIC, support_keyword
         else:
             folder_names = item.folder.folder_path.get_names()
             if "visual_adjust" in folder_names:
-                return EffectType.VISUAL_ADJUST, support_keyword
+                return EffectTypeDeprecated.VISUAL_ADJUST, support_keyword
             elif "camera_adjust" in folder_names:
-                return EffectType.CAMERA_ADJUST, support_keyword
+                return EffectTypeDeprecated.CAMERA_ADJUST, support_keyword
             else:
-                return EffectType.VISUAL_OVERLAY, support_keyword
+                return EffectTypeDeprecated.VISUAL_OVERLAY, support_keyword
 
 
 class EffectControl:
@@ -199,10 +199,10 @@ class EffectControl:
         timeline = resolve.get_current_timeline()
 
         effect_selector = EffectSelector(media_pool)
-        generated_tracks = cls._get_or_add_generated_tracks(timeline)
+        generated_tracks = cls._get_or_add_effect_tracks(timeline)
 
         with timeline.temp_unlock_tracks(*generated_tracks.values()):
-            LoadingWindow.set_message("Cutting overlapped clips in generated tracks...")
+            LoadingWindow.set_message("Cutting overlapped clips in effect tracks...")
             cls._clear_ranges_in_tracks(
                 timeline=timeline,
                 track_handles=[t for t in generated_tracks.values() if t is not None],
@@ -221,10 +221,10 @@ class EffectControl:
                 frame_range = item.get_frame_range()
 
                 for effect_type in [
-                    EffectType.VISUAL_OVERLAY,
-                    EffectType.VISUAL_ADJUST,
-                    EffectType.CAMERA_ADJUST,
-                    EffectType.SOUND_EFFECT,
+                    EffectTypeDeprecated.VISUAL_OVERLAY,
+                    EffectTypeDeprecated.VISUAL_ADJUST,
+                    EffectTypeDeprecated.CAMERA_ADJUST,
+                    EffectTypeDeprecated.SOUND_EFFECT,
                 ]:
                     track_handle = generated_tracks.get(effect_type)
                     media_pool_item = selected_effects.get(effect_type)
@@ -247,7 +247,7 @@ class EffectControl:
         textplus_map = {}
 
         for item, selected_effects in zip(effect_control_items, all_selected_effects):
-            src_item = selected_effects.get(EffectType.TEXT_STYLE)
+            src_item = selected_effects.get(EffectTypeDeprecated.TEXT_STYLE)
             dst_items = cls._find_generated_textplus_in_range(timeline, item.get_frame_range())
 
             if src_item is not None:
@@ -258,18 +258,19 @@ class EffectControl:
         for map in textplus_map.values():
             TextPlusUtilities.copy_style_for_clips(map["destinated_items"], map["media_pool_item"])
 
+    # FIXME: dont assume track per effect type
     @classmethod
-    def _get_or_add_generated_tracks(cls, timeline: Timeline) -> dict[EffectType, TrackHandle | None]:
+    def _get_or_add_effect_tracks(cls, timeline: Timeline) -> dict[EffectTypeDeprecated, TrackHandle | None]:
         tracks = {}
 
-        at_video_track_handle = timeline.find_track_by_name("video", GeneratedTrackName.TEXT)
+        before_video_track_handle = timeline.find_track_by_name("video", GeneratedTrackName.TEXT)
 
         for effect_type, (track_type, track_name) in EFFECT_TRACK_MAP.items():
             track_handle = timeline.find_track_by_name(track_type, track_name)
 
             if track_handle is None:
-                if track_type == "video" and at_video_track_handle is not None:
-                    track_handle = timeline.get_or_add_track_by_name(track_type, track_name, at_video_track_handle.index)
+                if track_type == "video" and before_video_track_handle is not None:
+                    track_handle = timeline.get_or_add_track_by_name(track_type, track_name, before_video_track_handle.index)
                 else:
                     track_handle = timeline.get_or_add_track_by_name(track_type, track_name)
 
@@ -277,7 +278,7 @@ class EffectControl:
                     timeline.set_track_locked(track_handle, True)
 
             if track_type == "video":
-                at_video_track_handle = TrackHandle("video", min(at_video_track_handle.index, track_handle.index))
+                before_video_track_handle = TrackHandle("video", min(before_video_track_handle.index, track_handle.index))
 
             tracks[effect_type] = track_handle
 
@@ -303,7 +304,7 @@ class EffectControl:
     def _clear_ranges_in_tracks(
         cls,
         timeline: Timeline,
-        track_handles: dict[EffectType, TrackHandle | None],
+        track_handles: dict[EffectTypeDeprecated, TrackHandle | None],
         frame_ranges: list[FrameRange],
     ):
         resolve = davinci_resolve_module.get_resolve()
